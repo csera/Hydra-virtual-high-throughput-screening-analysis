@@ -45,7 +45,7 @@
 				<tr>
 					<td><iframe src="viewer.html" width="100%" height="100%"
 					frameBorder="0" scrolling="no" style="padding:0px;
-					overflow: hidden;overflow-x: hidden;overflow-y: hidden;">
+					overflow: auto;overflow-x: hidden;overflow-y: hidden;">
 					</iframe></td>
 				</tr>
 			</table>
@@ -201,13 +201,15 @@
 					},
 					
 					// middle column contains central workspace with all of the visualization object
-					{id:"workspace", container:"central_workspace",type:"line",
+					/*{id:"workspace", container:"central_workspace",type:"line",
 					rows:[{
 						template:"html->mastergrid",
 						id:"master_grid",
 						type:"line",
 					}]
-					},
+					},*/
+					
+					{id:"workspace", container:"mastergrid",view:"iframe", src:"viewer.html"},
 					
 					// right column has compounds list, details are accordioned components
 					{view:"scrollview",scroll:"y",body:
@@ -262,27 +264,21 @@
 			// Loads client-side file into instance after complete upload to browser
 			$$("uploader_1").attachEvent("onAfterFileAdd",function(data){
 					
-					webix.message(data);
-					
 					var fileData = data.file;
-					webix.message(fileData);
 					
-					webix.message("making FileReader");
 					var reader = new FileReader();
-					webix.message("made FR");
+					
+					reader.readAsText(fileData);
+					
 					reader.onload = function(e) {
-						webix.message("onload done");
 						webix.message(reader.result);
-						hydraUI.parse(fileData, 'csv'); //load data into table
+						$$("comp_table").add(reader.result); //add data to table
+						hydraUI.parse(fileData, 'csv');
 					};
 					reader.onerror = function(e) {
 						console.error("File could not be read. code: "+e.target.error.code);
 						alert("error");
 					}
-					webix.message("reading");
-					reader.readAsText(fileData);
-						
-					alert("done");
 				});
 			
         	// binds selected compound detail panel with selection in compounds list, default selection is first
