@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
        <link rel="stylesheet" href="codebase/webix.css" type="text/css" media="screen" charset="utf-8">
 
        <script src="codebase/webix.js" type="text/javascript" charset="utf-8"></script>
-       <script src="codebase/jquery-1.11.1.min.js"></script>
+       <script src="codebase/jquery-2.1.4.min.js"></script>
        <script src="codebase/Three49custom.js"></script>
        <script src="codebase/GLmol.js"></script>
        <script src="codebase/gridupdater.js"></script>
@@ -23,6 +24,8 @@
 	   	position: absolute; top: 0; left: 0;
 			overflow: auto;
 	   }
+		/*table{float:center; border-spacing:0; padding:3px; border:0px;	height:100%; width:100%;}
+		td{height:100%}*/
 	    </style>
 
        <title>Hydra α</title>
@@ -43,15 +46,21 @@
 			<table id="view_table" align="center" cellspacing="0" cellpadding="3"
 					 border="0" width="100%" height="100%">
 				<tr>
-					<td><iframe src="viewer.html" width="100%" height="100%"
-					frameBorder="0" scrolling="no" style="padding:0px;
+					<td>
+						<iframe src="viewer.html" width="100%" height="100%"
+					frameBorder="0" scrolling="no" id="viewer" style="padding:0px;
 					overflow: hidden;overflow-x: hidden;overflow-y: hidden;">
-					</iframe></td>
+					</iframe>
+					</td>
 				</tr>
 			</table>
 	   </div>
 			
+		<script type="text/javascript" src="codebase/GLmol.js")></script>
 		<script type="text/javascript" charset="utf-8">
+		
+		//var glmol = new GLmol('glmol',true);	
+		
 		// script modified from http://www.amcharts.com/tutorials/loading-external-data/
 		function loadCSV(file) {
 			//webix.message(file);
@@ -119,7 +128,6 @@
 		// Data Processor
 		// 
 		
-		
 		webix.ready(function(){
         	hydraUI = webix.ui({
 				container:"masterarea",
@@ -137,8 +145,7 @@
 						scroll:"y",
 						type:"line",
 						body:
-						{
-							multi:true, view:"accordion", type:"line", 
+						{multi:true, view:"accordion", type:"line", 
 							rows:[
 							
 								// Upload compound list / DOCK data
@@ -172,6 +179,7 @@
 								// control panel: grid dimensions and assigning compound IDs to objects
 							{header:"Control Panel", maxWidth:250, collapsed:false, body:
 								{view:"form", id:"grid_dim", elements:[
+									//{view:"text",value:"blarg",label:"test",name:"mg"},
 									{
 										view:"text",value:"1",label:"Rows:",name:"numRow",//specifies rows count
 									},
@@ -201,12 +209,27 @@
 					},
 					
 					// middle column contains central workspace with all of the visualization object
-					{id:"workspace", container:"central_workspace",type:"line",
-					rows:[{
-						template:"html->mastergrid",
+					{id:"workspace", view:"scrollview", container:"central_workspace",type:"line",
+					scroll:"xy", //Enables horizontal (x) and vertical (y) scrolling
+					body:{id:"workRows", rows:[{
+						/*template:"html->mastergrid",
 						id:"master_grid",
-						type:"line",
+						type:"line",*/
+						id:"workCols"+"0",cols:[{
+								view:"iframe",
+								id:"viewer"+"0"+","+"0",
+								src:"viewer.html",
+								minWidth:250,minHeight:250,
+							}]
 					}]
+						/*template:"http->viewer.html",
+						minHeight:250, minWidth:250,*/
+						
+						/*view:"iframe",
+						id:"master_grid",
+						src:"viewer.html",
+						minHeight:250, minWidth:250,*/
+					}
 					},
 					
 					// right column has compounds list, details are accordioned components
@@ -251,6 +274,11 @@
 								{ view:"text",name:"res",label:"Residues" },
 							]}
 						},
+						
+						//For debugging: Textarea to display contents of .mol2/.pdb files
+						/*{header:"File Value", collapsed:false, body:
+							{view:"textarea", id:"file_dump", maxWidth:300}
+						},*/
 							
 					]},	
 					},
@@ -261,29 +289,29 @@
         	
 			// Loads client-side file into instance after complete upload to browser
 			$$("uploader_1").attachEvent("onAfterFileAdd",function(data){
-					
-					webix.message(data);
-					
 					var fileData = data.file;
-					webix.message(fileData);
-					
-					webix.message("making FileReader");
 					var reader = new FileReader();
-					webix.message("made FR");
+					
+					reader.readAsText(fileData);
+					
 					reader.onload = function(e) {
-						webix.message("onload done");
-						webix.message(reader.result);
-						hydraUI.parse(fileData, 'csv'); //load data into table
+						//webix.message(reader.result);
+						$$('comp_table').add(reader.result); //add data to table
+						//hydraUI.parse(fileData, 'csv'); //load data into table
+						//glmol.loadMolecule();
+						//$$('file_dump').setValue(reader.result);　//temp: dump reader results into a txtarea
+						//document.getElementById('viewer').contentWindow.loadFile(reader.result);
+						
 					};
 					reader.onerror = function(e) {
 						console.error("File could not be read. code: "+e.target.error.code);
 						alert("error");
-					}
-					webix.message("reading");
-					reader.readAsText(fileData);
-						
-					alert("done");
-				});
+					};
+					
+					//var viewerTbl = $('view_table');
+					/*var viewerTbl = document.getElementById('view_table');
+					viewerTbl.rows*/
+			});
 			
         	// binds selected compound detail panel with selection in compounds list, default selection is first
         	$$('comp_det').bind($$('comp_table'));
@@ -297,7 +325,7 @@
         	//$$('comp_table').data.sync($$('data_col'));
         	
 			//logic.init(); //reference to logic section 
-        });
+      });
 			
 		//Resizes GUI dynamically with the window size
       webix.event(window,"resize", function(){hydraUI.adjust();});

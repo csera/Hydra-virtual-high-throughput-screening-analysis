@@ -165,7 +165,7 @@
       addTab('#glmol01_viewbox', '400px', 1);
       addTab('#glmol01_infobox', '400px', 2);
       
-      var glmol01 = new GLmol('glmol01', true);
+      var glmol01 = new GLmol('glmol01', true);  //places a GLmol.js in div "glmol01"
       var query = window.location.search.substring(1);
       if (query == '') download('pdb:1xtc');
       else download(query);
@@ -211,21 +211,41 @@
          );
       }
       
-      function loadFile() {
-         var file = $('#glmol01_file').get(0);
-         if (file) file = file.files;
-         if (!file || !window.FileReader || !file[0]) {
-            alert("No file is selected. Or File API is not supported in your browser. Please try Firefox or Chrome.");
+      function loadFile(file) {
+         //var file = $('#glmol01_file').get(0);
+         
+         if (file) {
+            //file = file.files;
+         }
+         else if (!file || !file[0]) {
+            alert("No file is selected.");
             return;
          }
+         if (!window.FileReader ) {
+            alert("The File API is not supported in your browser. Please try Firefox or Chrome.");
+            return;
+         }
+         console.log("Checks passed");
+         console.log(file);
          $('#loading').show();
-         var reader = new FileReader();
+         
+         /*var reader = new FileReader();
          reader.onload = function() {
+            console.log("onload");
+            
             $('#glmol01_src').val(reader.result); //displays read molecular info in textarea
-            glmol01.loadMolecule();
+            glmol01.loadMoleculeStr(null,reader.result);
             $('#loading').hide();
          };
-         reader.readAsText(file[0]);
+         reader.onerror = function(e) {
+            console.error("File could not be read. code: "+e.target.error.code);
+         };
+         reader.onabort = function(){
+            console.log("aborted");
+         };
+         reader.readAsText(file);*/
+         
+         glmol01.loadMoleculeStr(null,file);
       }
       
       function saveImage() {
