@@ -15,12 +15,12 @@ function updategridfxn() {
    
    //console.log("new: "+$$('workRows').getChildViews().length);
    
-   /*var newNumRows = $$('grid_dim').getValues().numRow,
+   var newNumRows = $$('grid_dim').getValues().numRow,
       newNumCols = $$('grid_dim').getValues().numCol;
-   var currentNumRows = $$('workLayout').getChildViews().length,
-      currentNumCols = $$('workRow0').getChildViews().length;
+   var origNumRows = $$('workLayout').getChildViews().length,
+      origNumCols = $$('workRow0').getChildViews().length;
    
-   if(newNumRows < currentNumRowsRows)
+   /*if(newNumRows < currentNumRowsRows)
       deleteRows();
    else if(newNumRows > currentNumRows)
       appendRows();
@@ -31,7 +31,7 @@ function updategridfxn() {
    else
       return; //ie if the new dimensions are the same as the current grid size */
    
-   appendRows();
+   appendRows(newNumRows, origNumRows);
    calculateCols();
 }
 
@@ -43,17 +43,18 @@ function deleteCols(){
    
 }
 
-function appendRows(){
-	var numRowstoAdd = $$('grid_dim').getValues().numRow - $$('workLayout').getChildViews().length;
+function appendRows(newNumRows, origNumRows){
+	var numRowstoAdd = newNumRows - origNumRows;
    
-   //****THE CURRENT NAMING SYSTEM WON'T WORK AFTER THE FIRST USE OF THIS
    for(var y=0; y<numRowstoAdd; y++){
-      $$('workLayout').addView({id:"workRow"+(y+1),cols:[{id:"viewer"+"0,"+(y+1),view:'iframe',
-                                    src:'viewer.html', minWidth:250,minHeight:250}]});
+      $$('workLayout').addView({id:"workRow"+(origNumRows+y),cols:[{id:"viewer"+"0,"+(origNumRows+y),
+                                    view:'iframe', src:'viewer.html', minWidth:250,minHeight:250}]});
+      //No need for +1 to id # because element length starts at 1
       
       if($$('grid_dim').getValues().numCol > 1){
-         var numColstoAdd = $$('grid_dim').getValues().numCol - $$('workRow'+y).getChildViews().length;
-         appendCols(y, numColstoAdd);
+         var numColstoAdd = $$('grid_dim').getValues().numCol -
+            $$('workRow'+(origNumRows+y)).getChildViews().length;
+         appendCols((origNumRows+y), numColstoAdd);
       }
    }
 }
