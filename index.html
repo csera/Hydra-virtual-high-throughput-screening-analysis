@@ -64,7 +64,7 @@
 		// script modified from http://www.amcharts.com/tutorials/loading-external-data/
 		function loadCSV(file) {
 			//webix.message(file);
-			webix.message("hi");
+			webix.message("loadCSV");
 		    var request;
 		    if (window.XMLHttpRequest) {
 		        // IE7+, Firefox, Chrome, Opera, Safari
@@ -211,11 +211,11 @@
 					// middle column contains central workspace with all of the visualization object
 					{id:"workspace", view:"scrollview", container:"central_workspace",type:"line",
 					scroll:"xy", //Enables horizontal (x) and vertical (y) scrolling
-					body:{id:"workRows", rows:[{
+					body:{id:"workLayout", rows:[{
 						/*template:"html->mastergrid",
 						id:"master_grid",
 						type:"line",*/
-						id:"workCols"+"0",cols:[{
+						id:"workRow"+"0",cols:[{
 								view:"iframe",
 								id:"viewer"+"0"+","+"0",
 								src:"viewer.html",
@@ -298,9 +298,8 @@
 						//webix.message(reader.result);
 						$$('comp_table').add(reader.result); //add data to table
 						//hydraUI.parse(fileData, 'csv'); //load data into table
-						//glmol.loadMolecule();
-						//$$('file_dump').setValue(reader.result);　//temp: dump reader results into a txtarea
-						//document.getElementById('viewer').contentWindow.loadFile(reader.result);
+						
+						$$('viewer0,0').getWindow().loadFile(reader.result);
 						
 					};
 					reader.onerror = function(e) {
