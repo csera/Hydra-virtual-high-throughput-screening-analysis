@@ -211,25 +211,18 @@
 					// middle column contains central workspace with all of the visualization object
 					{id:"workspace", view:"scrollview", container:"central_workspace",type:"line",
 					scroll:"xy", //Enables horizontal (x) and vertical (y) scrolling
+					
+					//Framework for a resizable grid of GLmol instances
+					//Viewers start at index of 0 with coordinates (x,y)
+					//Eg "viewer1,0" is in the first row, second column from the left
 					body:{id:"workLayout", rows:[{
-						/*template:"html->mastergrid",
-						id:"master_grid",
-						type:"line",*/
 						id:"workRow"+"0",cols:[{
-								view:"iframe",
-								id:"viewer"+"0"+","+"0",
-								src:"viewer.html",
-								minWidth:250,minHeight:250,
-							}]
-					}]
-						/*template:"http->viewer.html",
-						minHeight:250, minWidth:250,*/
-						
-						/*view:"iframe",
-						id:"master_grid",
-						src:"viewer.html",
-						minHeight:250, minWidth:250,*/
-					}
+							view:"iframe",
+							id:"viewer"+"0"+","+"0",
+							src:"viewer.html",
+							minWidth:250,minHeight:250,
+						}]
+					}]}
 					},
 					
 					// right column has compounds list, details are accordioned components

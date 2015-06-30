@@ -64,7 +64,6 @@ function calculateCols(){
 	var numColstoAdd;
    
    //Go through each row and add columns to the end of each
-   //****THE CURRENT NAMING SYSTEM WON'T WORK AFTER THE FIRST USE OF THIS
    for(var y=0; y<numRows; y++){
       numColstoAdd = $$('grid_dim').getValues().numCol - $$('workRow'+y).getChildViews().length;
       
@@ -73,8 +72,9 @@ function calculateCols(){
 }
 
 function appendCols(y, numColstoAdd) {
+   //The y var that gets passed in is already adjusted so no adjustments are necessary here
    for (var x=0; x<numColstoAdd; x++){
-         $$('workRow'+y).addView({id:"viewer"+(x+1)+","+(y+1),view:'iframe',src:'viewer.html',
+         $$('workRow'+y).addView({id:"viewer"+(x+1)+","+(y),view:'iframe',src:'viewer.html',
                                   minWidth:250,minHeight:250});
    }
 }

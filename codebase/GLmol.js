@@ -1568,11 +1568,10 @@ GLmol.prototype.rebuildScene = function() {
 };
 
 GLmol.prototype.loadMolecule = function(repressZoom) {
-   //alert(this.id);
+   console.log(this.id);
    //this.loadMoleculeStr(repressZoom, $('#' + this.id + '_src').val());
    //the above passes the value of textarea "glmol01_src"
-   this.loadMoleculeStr(repressZoom, $('#' + this.id + '_src').val());
-
+   
 };
 
 GLmol.prototype.loadMoleculeStr = function(repressZoom, source) {

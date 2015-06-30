@@ -48,43 +48,7 @@
 
 <body>
     <div id="glmol01"></div>
-    
-    
-    <div class="tabBox" id="glmol01_infobox" style="left: 40%; z-index: 2;">
-        <span class="bottomTab">About</span>
-        <div class="insideTab" style="overflow: auto;">
-            <h1>About</h1>
-            <p>GLmol -- Molecular Viewer on WebGL/Javascript<br>
-                Version 0.47 (20120827)</p>
-            <p>This program is written by biochem_fan and released under LGPL. Please visit <a href="http://webglmol.sfjp.jp/">my project page</a> for the details and source code distribution.</p>
-                <p>Comments and Suggestions are welcome. Please mail to biochem_fan at users.sourceforge.jp or write in <a href="http://sourceforge.jp/projects/webglmol/forums/">the forum</a>.</p>
-            <h1>How to use</h1>
-              <ul><li>Rotation: left button</li>
-                <li>Translation: middle button or Ctrl-key + left button</li>
-                <li>Zoom: mousewheel or right button(up/down) or Shift-key + left button(up/down)</li>
-                <li>Slab: left button + Ctrl-key. horizontal move adjusts near clipping plane, vertical move far clipping plane.</li>
-          </ul>
-          <p>You can also change mouse mode with radio buttons at right-bottom corner.</p>
-        </div>
-    </div>
-    
-    <div class="tabBox" id="glmol01_srcbox" style="left: 10%; z-index:0;">
-        <span class="bottomTab">Load</span>
-        <div class="insideTab">
-            You can load PDB, SDF/MOL(MDL not SYBYL) or XYZ files <br>
-            -from local disk (don't worry. your file will not be uploaded),
-            <input id="glmol01_file" type="file" size=1><button onClick="loadFile()">Load from file</button><br>
-            -from RCSB PDB server,
-            PDBID: <input id="glmol01_pdbid" value="" size=4><button onClick="download('pdb:' + $('#glmol01_pdbid').val())">Download</button><br>
-            -from PubChem server,
-            Compound ID(CID): <input id="glmol01_cid" value="2244" size=4><button onClick="download('cid:' + $('#glmol01_cid').val())">Download</button><br>
-            <!-- CHECK: CSS nowrap is not working? -->
-            -or from the textarea below.<br><!-- white-space: nowrap not only doesn't work in Firefox but also let Chrome reformatting continuous spaces!!! -->
-            <textarea wrap="off" id="glmol01_src" style="width: 100%; height: 8em; overflow:scroll;"></textarea><br>
-            <button onClick="glmol01.loadMolecule(); $('#loading').hide();">Reload molecule from textarea</button>
-        </div>
-    </div>
-    
+
     <div class="tabBox" id="glmol01_viewbox" style="left: 25%; z-index:1;">
         <span class="bottomTab">View</span>
         <div class="insideTab" style="overflow: auto;">
@@ -155,7 +119,7 @@
     </div>
     
     <div id="glmol01_pdbTitle" style="position:absolute; color: white; background-color: rgba(0, 0, 0, 0.65); font-size:80%"></div>
-    
+        
     <script src="codebase/jquery-1.7.min.js"></script>
     <script src="codebase/Three49custom.js"></script>
     <script type="text/javascript" src="codebase/GLmol.js"></script>
@@ -166,11 +130,15 @@
       addTab('#glmol01_infobox', '400px', 2);
       
       var glmol01 = new GLmol('glmol01', true);  //places a GLmol.js in div "glmol01"
-      var query = window.location.search.substring(1);
-      if (query == '') download('pdb:1xtc');
-      else download(query);
+      //var query = window.location.search.substring(1);
+      //if (query == '') download('pdb:1xtc');
+      //else download(query);
+      //var query not necessary once the tabs are removed
+      
+      download('pdb:1xtc'); //display this molecule (Cholera toxin) on load by default
       
       function download(query) {
+         console.log("download");
          var baseURL = '';
          if (query.substr(0, 4) == 'pdb:') {
             query = query.substr(4).toUpperCase();
@@ -188,10 +156,16 @@
               "/SDF?record_type=3d";
          }
       
+         console.log("url set");
          $('#loading').show();
          $.get(uri, function(ret) {
-            $("#glmol01_src").val(ret);
-            glmol01.loadMolecule();
+            //$("#glmol01_src").val(ret);
+            //glmol01.loadMolecule();
+            
+            /* Now calls the structure loading fxn directly rather than relying on a value
+             * stored in the "Load" tab's text area (which has been removed)
+             */
+            glmol01.loadMoleculeStr(null,ret);
             $('#loading').hide();
          });
       }
@@ -213,7 +187,6 @@
       
       function loadFile(file) {
          //var file = $('#glmol01_file').get(0);
-         console.log("loadFile STARTED NOOOOOOOOOOOOOOOWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
          
          if (file) {
             //file = file.files;
