@@ -89,6 +89,9 @@
 		function load_fxn(){
 			// loads uploaded.js to overwrite compound_data var with uploaded data
 			delete compound_data;
+
+			// if you want the data from "uploaded.txt" to be displayed, select that file as your .mol2 file input
+			loadCSV("uploads/" + file_name);
 			
 			/*var files = $$("uploader_1").files.data.pull;
 			webix.message(files);
@@ -97,7 +100,6 @@
 			var fObj = $$("uploader_1").files.getItem(fID).file;
 			webix.message(fObj);*/
 			
-			loadCSV("uploads/uploaded.txt");
 			//parseCSV(compound_data)
 			webix.message('loading');
 			// refreshes the compounds list id comp_table via .refresh()
@@ -272,6 +274,7 @@
 								{ view:"text",name:"compname",label:"Name" },
 								{ view:"text",name:"pdb",label:"PDB #" },
 								{ view:"text",name:"res",label:"Residues" },
+								{ view:"text", name:"vendor", label:"Vendors" }
 							]}
 						},
 						
@@ -290,6 +293,7 @@
 			// Loads client-side file into instance after complete upload to browser
 			$$("uploader_1").attachEvent("onAfterFileAdd",function(data){
 					var fileData = data.file;
+					file_name = fileData.name;
 					var reader = new FileReader();
 					
 					reader.readAsText(fileData);
