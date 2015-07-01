@@ -221,6 +221,12 @@
 							id:"viewer"+"0"+","+"0",
 							src:"viewer.html",
 							minWidth:250,minHeight:250,
+							on:{
+								'onAfterLoad':function(){
+									console.log(this.height);
+									this.getWindow().setGridCoordinates('0,0');
+								}
+							}
 						}]
 					}]}
 					},
@@ -292,7 +298,7 @@
 						$$('comp_table').add(reader.result); //add data to table
 						//hydraUI.parse(fileData, 'csv'); //load data into table
 						
-						$$('viewer0,0').getWindow().loadFile(reader.result);
+						$$('viewer0,2').getWindow().loadFile(reader.result);
 						
 					};
 					reader.onerror = function(e) {
@@ -304,6 +310,10 @@
 					/*var viewerTbl = document.getElementById('view_table');
 					viewerTbl.rows*/
 			});
+			
+			/*$$('viewer0,0').attachEvent("onAfterLoad",function(){
+				$$('viewer0,0').getWindow().setGridCoordinates('0,0');
+			});*/
 			
         	// binds selected compound detail panel with selection in compounds list, default selection is first
         	$$('comp_det').bind($$('comp_table'));
