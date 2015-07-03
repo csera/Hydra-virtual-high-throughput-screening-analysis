@@ -129,6 +129,8 @@
 		// 
 		
 		webix.ready(function(){
+			//webix.ui.fullScreen(); //for fullscreen on mobile devices
+			
         	hydraUI = webix.ui({
 				container:"masterarea",
 				type:"line",
@@ -148,10 +150,21 @@
 						{multi:true, view:"accordion", type:"line", 
 							rows:[
 							
-								// Upload compound list / DOCK data
+							{header:"Upload to Viewer", maxWidth:250, collapsed:false, body:
+								{id:'upload_controller', view:'form', elements:[
+									{ //column index to upload to
+										view:'text', value:'0', label:'Column', name:'uploadCol',
+									},
+									{ //row index to upload to
+										view:'text', value:'0', label:'Row', name:'uploadRow',
+									}
+								]}
+							},
+							
+							// Upload compound list / DOCK data
 							{header:"Import Compounds", maxWidth:250, autoheight:true, collapsed:false, body:
 								{view:"form", rows:[
-									{
+									{ //Uploader element
 										view:"uploader",
 										value:"Upload .mol2 Files",
 										id:"uploader_1",
@@ -160,8 +173,9 @@
 										autosend:true,
 										upload:"parser.php"
 									},
-									{
-										view:"list",id:"myfiles",type:"uploader",autoheight:true,borderless:true,
+									{ //Linked list of files from "uploader_1"
+										id:"myfiles", view:"list", type:"uploader", maxHeight:200,
+										scroll:true, autoheight:true, borderless:true,
 									},
 									{
 										//view:"toolbar",
@@ -176,15 +190,16 @@
 									}
 								]}
 							},
-								// control panel: grid dimensions and assigning compound IDs to objects
+							
+							// control panel: grid dimensions and assigning compound IDs to objects
 							{header:"Control Panel", maxWidth:250, collapsed:false, body:
 								{view:"form", id:"grid_dim", elements:[
 									//{view:"text",value:"blarg",label:"test",name:"mg"},
 									{
-										view:"text",value:"1",label:"Rows:",name:"numRow",//specifies rows count
+										view:"text",value:"1",label:"Columns:",name:"numCol",//specifies cols count
 									},
 									{
-										view:"text",value:"1",label:"Cols:",name:"numCol",//specifies cols count
+										view:"text",value:"1",label:"Rows:",name:"numRow",//specifies rows count
 									},
 									{	// NOTE: feature not yet implemented --> dropdown menu to select the ID for each of the viewers in the central grid, as defined in the grid_dim form above; via this drop down menu, we can set and specify the docking file and legand to be shown in each viewer
 										view:"form", type:"space", rows:[
@@ -278,7 +293,7 @@
 						/*{header:"File Value", collapsed:false, body:
 							{view:"textarea", id:"file_dump", maxWidth:300}
 						},*/
-							
+						
 					]},	
 					},
 						 
@@ -288,6 +303,9 @@
         	
 			// Loads client-side file into instance after complete upload to browser
 			$$("uploader_1").attachEvent("onAfterFileAdd",function(data){
+					var x = $$('upload_controller').getValues().uploadCol,
+						y = $$('upload_controller').getValues().uploadRow;
+					
 					var fileData = data.file;
 					var reader = new FileReader();
 					
@@ -298,7 +316,7 @@
 						$$('comp_table').add(reader.result); //add data to table
 						//hydraUI.parse(fileData, 'csv'); //load data into table
 						
-						$$('viewer0,2').getWindow().loadFile(reader.result);
+						$$('viewer'+x+','+y).getWindow().loadFile(reader.result);
 						
 					};
 					reader.onerror = function(e) {
@@ -326,7 +344,7 @@
         	// syncs the compound list table displayed with the uploaded data DataCollection
         	//$$('comp_table').data.sync($$('data_col'));
         	
-			//logic.init(); //reference to logic section 
+			//logic.init(); //reference to logic section
       });
 			
 		//Resizes GUI dynamically with the window size
