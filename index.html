@@ -153,10 +153,10 @@
 							{header:"Upload to Viewer", maxWidth:250, collapsed:false, body:
 								{id:'upload_controller', view:'form', elements:[
 									{ //column index to upload to
-										view:'text', value:'0', label:'Column', name:'uploadCol',
+										view:'text', value:'1', label:'Column', name:'uploadCol',
 									},
 									{ //row index to upload to
-										view:'text', value:'0', label:'Row', name:'uploadRow',
+										view:'text', value:'1', label:'Row', name:'uploadRow',
 									}
 								]}
 							},
@@ -201,7 +201,7 @@
 									{
 										view:"text",value:"1",label:"Rows:",name:"numRow",//specifies rows count
 									},
-									{	// NOTE: feature not yet implemented --> dropdown menu to select the ID for each of the viewers in the central grid, as defined in the grid_dim form above; via this drop down menu, we can set and specify the docking file and legand to be shown in each viewer
+									/*{	// NOTE: feature not yet implemented --> dropdown menu to select the ID for each of the viewers in the central grid, as defined in the grid_dim form above; via this drop down menu, we can set and specify the docking file and legand to be shown in each viewer
 										view:"form", type:"space", rows:[
 											{
 												view:"text",label:"Dock File:", id:"dock11var",
@@ -209,7 +209,7 @@
 											{
 												view:"text",label:"Ligand File", id:"lig11var", 
 											},
-									]},
+									]},*/
 									{
 										view:"button",id:"update_grid",value:"Update Grid",inputWidth:"150",align:"center",
 										on:{
@@ -231,15 +231,14 @@
 					//Viewers start at index of 0 with coordinates (x,y)
 					//Eg "viewer1,0" is in the first row, second column from the left
 					body:{id:"workLayout", rows:[{
-						id:"workRow"+"0",cols:[{
+						id:"workRow"+"1",cols:[{
 							view:"iframe",
-							id:"viewer"+"0"+","+"0",
+							id:"viewer"+"1"+","+"1",
 							src:"viewer.html",
 							minWidth:250,minHeight:250,
 							on:{
 								'onAfterLoad':function(){
-									console.log(this.height);
-									this.getWindow().setGridCoordinates('0,0');
+									this.getWindow().setGridCoordinates('1,1');
 								}
 							}
 						}]
