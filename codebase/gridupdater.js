@@ -53,8 +53,8 @@ function appendRows(newNumRows, origNumRows, newNumCols){
    //Non-ideal implementation: using a loop var not = the index var
    //Making it = the index var caused bugs though...
    for(var y=1; y<=numRowstoAdd; y++){
-      $$('workLayout').addView({id:"workRow"+(origNumRows+y), cols:[
-         {id:"viewer0,"+(origNumRows+y), view:'iframe', src:'viewer.html',
+      $$('workLayout').addView({id:"workRow"+(origNumRows+y), type:'head', borderless:true, cols:[
+         {id:"viewer1,"+(origNumRows+y), view:'iframe', src:'viewer.html',
             minWidth:250, minHeight:250,
             on:{'onAfterLoad':setCoord_callback(1,(origNumRows+y))}
          }

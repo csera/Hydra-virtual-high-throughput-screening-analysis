@@ -226,10 +226,8 @@
       }
       
       function setGridCoordinates(gc) {
-         console.log("                        setting coordinates: "+gc);
-         //$('#webixID').val(gc);
-         $('#webixID').html(gc);
-         console.log("value set");
+         $('#webixID').html(gc); //Pass gc in to show between the div tags
+         console.log("Coordinates set: "+gc);
       }
       
       function saveImage() {

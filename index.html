@@ -88,16 +88,39 @@
 		
 		function load_fxn(){
 			// loads uploaded.js to overwrite compound_data var with uploaded data
-			delete compound_data;
+			//delete compound_data;
 			
-			/*var files = $$("uploader_1").files.data.pull;
+			var files = $$("uploader_1").files.data.pull;
 			webix.message(files);
 			var fID = $$("uploader_1").files.getFirstId();
 			webix.message(fID);
-			var fObj = $$("uploader_1").files.getItem(fID).file;
-			webix.message(fObj);*/
+			var fName = $$("uploader_1").files.getItem(fID).name;
+			webix.message(fName);
 			
-			loadCSV("uploads/uploaded.txt");
+			var fData = $$("uploader_1").files.getItem(fID).file;
+			var reader = new FileReader();
+			
+			reader.readAsText(fData);
+			
+			reader.onload = function(e) {
+				//Syntax for adding something. Order of the items doesn't matter
+				//Note how datatable simply ignores data that it doesn't take
+				//$$('comp_table').add({id:1, pdb:"1XTC", compname:"Cholera Toxin", category:"N/A"})
+				$$('uploadPanel').add({col:0, row:0, fileName:fName, fileData:reader.result});
+				//$$('comp_table').add(reader.result); //add data to table
+				//hydraUI.parse(fileData, 'csv'); //load data into table
+				
+				//$$('viewer'+x+','+y).getWindow().loadFile(reader.result);
+				//Call function defined in viewer.html (the iframe's source)
+				
+				webix.message(reader.result);
+			};
+			reader.onerror = function(e) {
+				console.error("File could not be read. code: "+e.target.error.code);
+				alert("error");
+			};
+					
+			/*loadCSV("uploads/uploaded.txt");
 			//parseCSV(compound_data)
 			webix.message('loading');
 			// refreshes the compounds list id comp_table via .refresh()
@@ -105,12 +128,12 @@
 			$$("comp_table").refresh();
 			// displays message noting data loaded
 			//webix.message('Compound List has been updated with the latest data.');
-			webix.message('New compounds have been loaded.');
+			webix.message('New compounds have been loaded.');*/
 		}
 		
 		function clear_fxn(){
 			// TEMP: WILL TURN INTO A FXN THAT CALLS .py SCRIPT TO WIPE uploaded.txt; then click refresh
-			delete compound_data;
+			//delete compound_data;
 			loadCSV("uploads/blank.txt");
 			//$$("comp_table").define("data","[{id:'1',compname:'No data loaded.'}]")
 			$$("comp_table").define("data",compound_data);
@@ -118,6 +141,12 @@
 			// displays message noting data loaded
 			//webix.message('Previous data has been deleted. Press Update to clear list.');
 			webix.message('Previous data has been deleted.');
+		}
+		
+		//Function takes data from file and puts it in the "uploadPanel" datatable
+		//This is to be called in the file upload event
+		function uploadTableParser(fileData){
+			
 		}
 		
 		// DataCollection referring to the uploaded compounds
@@ -166,7 +195,7 @@
 								{view:"form", rows:[
 									{ //Uploader element
 										view:"uploader",
-										value:"Upload .mol2 Files",
+										value:"Upload Files",
 										id:"uploader_1",
 										link:"myfiles",
 										multiple:true,
@@ -174,17 +203,19 @@
 										upload:"parser.php"
 									},
 									{ //Linked list of files from "uploader_1"
-										id:"myfiles", view:"list", type:"uploader", maxHeight:200,
+										id:"myfiles", view:"list", type:"uploader", //maxHeight:200,
 										scroll:true, autoheight:true, borderless:true,
 									},
+									//{view:"resizer"}, //this just makes the buttons really tall...
 									{
-										//view:"toolbar",
 										cols:[
 											{
-												view:"button",id:"load_click",value:"Update Data",type:"form",click:"load_fxn"
+												view:"button",id:"load_click",value:"Update Data",type:"form",
+												click:"load_fxn"
 											},
 											{
-												view:"button",id:"clear_click",value:"Clear Data",type:"danger",click:"clear_fxn"
+												view:"button",id:"clear_click",value:"Clear Data",type:"danger",
+												click:"clear_fxn"
 											}
 										]
 									}
@@ -228,10 +259,10 @@
 					scroll:"xy", //Enables horizontal (x) and vertical (y) scrolling
 					
 					//Framework for a resizable grid of GLmol instances
-					//Viewers start at index of 0 with coordinates (x,y)
-					//Eg "viewer1,0" is in the first row, second column from the left
-					body:{id:"workLayout", rows:[{
-						id:"workRow"+"1",cols:[{
+					//Viewers start at index of 1 with coordinates (x,y)
+					//Eg "viewer2,1" is in the first row, second column from the left
+					body:{id:"workLayout", type:'head', borderless:true, rows:[{
+						id:"workRow"+"1", type:'head', borderless:true, cols:[{
 							view:"iframe",
 							id:"viewer"+"1"+","+"1",
 							src:"viewer.html",
@@ -288,7 +319,7 @@
 							]}
 						},
 						
-						//For debugging: Textarea to display contents of .mol2/.pdb files
+						//For debugging: Textarea to display contents of files
 						/*{header:"File Value", collapsed:false, body:
 							{view:"textarea", id:"file_dump", maxWidth:300}
 						},*/
@@ -311,26 +342,21 @@
 					reader.readAsText(fileData);
 					
 					reader.onload = function(e) {
-						//webix.message(reader.result);
-						$$('comp_table').add(reader.result); //add data to table
+						//Syntax for adding something. Order of the items doesn't matter
+						//Note how datatable simply ignores data that it doesn't take
+						$$('comp_table').add({id:1, pdb:"1XTC", compname:"Cholera Toxin", category:"N/A"})
+						
+						//$$('comp_table').add(reader.result); //add data to table
 						//hydraUI.parse(fileData, 'csv'); //load data into table
 						
 						$$('viewer'+x+','+y).getWindow().loadFile(reader.result);
-						
+						//Call function defined in viewer.html (the iframe's source)
 					};
 					reader.onerror = function(e) {
 						console.error("File could not be read. code: "+e.target.error.code);
 						alert("error");
 					};
-					
-					//var viewerTbl = $('view_table');
-					/*var viewerTbl = document.getElementById('view_table');
-					viewerTbl.rows*/
 			});
-			
-			/*$$('viewer0,0').attachEvent("onAfterLoad",function(){
-				$$('viewer0,0').getWindow().setGridCoordinates('0,0');
-			});*/
 			
         	// binds selected compound detail panel with selection in compounds list, default selection is first
         	$$('comp_det').bind($$('comp_table'));
