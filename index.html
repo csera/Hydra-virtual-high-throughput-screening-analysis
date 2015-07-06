@@ -86,39 +86,10 @@
 		}
 		// end
 		
+		//Change this fxn to update what's displayed in the viewers and compound list coordinates
 		function load_fxn(){
 			// loads uploaded.js to overwrite compound_data var with uploaded data
 			//delete compound_data;
-			
-			var files = $$("uploader_1").files.data.pull;
-			webix.message(files);
-			var fID = $$("uploader_1").files.getFirstId();
-			webix.message(fID);
-			var fName = $$("uploader_1").files.getItem(fID).name;
-			webix.message(fName);
-			
-			var fData = $$("uploader_1").files.getItem(fID).file;
-			var reader = new FileReader();
-			
-			reader.readAsText(fData);
-			
-			reader.onload = function(e) {
-				//Syntax for adding something. Order of the items doesn't matter
-				//Note how datatable simply ignores data that it doesn't take
-				//$$('comp_table').add({id:1, pdb:"1XTC", compname:"Cholera Toxin", category:"N/A"})
-				$$('uploadPanel').add({col:0, row:0, fileName:fName, fileData:reader.result});
-				//$$('comp_table').add(reader.result); //add data to table
-				//hydraUI.parse(fileData, 'csv'); //load data into table
-				
-				//$$('viewer'+x+','+y).getWindow().loadFile(reader.result);
-				//Call function defined in viewer.html (the iframe's source)
-				
-				webix.message(reader.result);
-			};
-			reader.onerror = function(e) {
-				console.error("File could not be read. code: "+e.target.error.code);
-				alert("error");
-			};
 					
 			/*loadCSV("uploads/uploaded.txt");
 			//parseCSV(compound_data)
@@ -129,6 +100,21 @@
 			// displays message noting data loaded
 			//webix.message('Compound List has been updated with the latest data.');
 			webix.message('New compounds have been loaded.');*/
+			var numCols = $$('grid_dim').getValues().numCol,
+				numRows = $$('grid_dim').getValues().numRow;
+			
+			for(var index=0; index<$$('uploadTable').count(); index++){
+				var fID = $$('uploadTable').getIdByIndex(index);
+				var fData = $$('uploadTable').getItem(fID).fileData;
+				var x = $$('uploadTable').getItem(fID).col, y = $$('uploadTable').getItem(fID).row;
+				
+				//Only attempt load if the coordinates are valid
+				if (0<x && x<= numCols && 0<y && y<=numRows){
+					$$('viewer'+x+','+y).getWindow().loadFile(fData);
+					//Calls loading function for "viewer[x],[y]" defined in the iframe source html
+				}
+				else{webix.message('not loading to '+x+','+y);}
+			}
 		}
 		
 		function clear_fxn(){
@@ -143,19 +129,29 @@
 			webix.message('Previous data has been deleted.');
 		}
 		
-		//Function takes data from file and puts it in the "uploadPanel" datatable
+		//Function takes data from file and puts it in the "uploadTable" datatable
 		//This is to be called in the file upload event
-		function uploadTableParser(fileData){
+		function toUploadTable(rawData){
+			var fID = $$("uploader_1").files.getFirstId();
+			var fName = $$("uploader_1").files.getItem(fID).name;
+			webix.message(fName);
 			
+			var fData = $$("uploader_1").files.getItem(fID).file;
+			var reader = new FileReader();
+			
+			reader.readAsText(fData);
+			
+			reader.onload = function(e) {
+				$$('uploadTable').add({col:0, row:0, fileName:fName, fileData:reader.result});
+				//Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
+				//Added as primative data rather than an actual file object
+			};
+			reader.onerror = function(e) {
+				console.error("File could not be read. code: "+e.target.error.code);
+				alert("error");
+			};
+					
 		}
-		
-		// DataCollection referring to the uploaded compounds
-		//var data_col = new webix.DataCollection({ 
-		//	data:""
-		//});
-		
-		// Data Processor
-		// 
 		
 		webix.ready(function(){
 			//webix.ui.fullScreen(); //for fullscreen on mobile devices
@@ -179,7 +175,7 @@
 						{multi:true, view:"accordion", type:"line", 
 							rows:[
 							
-							{header:"Upload to Viewer", maxWidth:250, collapsed:false, body:
+							/*{header:"Upload to Viewer", maxWidth:250, collapsed:false, body:
 								{id:'upload_controller', view:'form', elements:[
 									{ //column index to upload to
 										view:'text', value:'1', label:'Column', name:'uploadCol',
@@ -188,25 +184,35 @@
 										view:'text', value:'1', label:'Row', name:'uploadRow',
 									}
 								]}
-							},
+							},*/
 							
 							// Upload compound list / DOCK data
 							{header:"Import Compounds", maxWidth:250, autoheight:true, collapsed:false, body:
-								{view:"form", rows:[
+								{rows:[ //removed view:'form' to make this take up the whole width
 									{ //Uploader element
-										view:"uploader",
+										id:"uploader_1", view:"uploader",
 										value:"Upload Files",
-										id:"uploader_1",
-										link:"myfiles",
-										multiple:true,
-										autosend:true,
+										//link:"myfiles",
+										multiple:false, autosend:true,
+										//can't find a way to remove items from uploader so set multiple:false
 										upload:"parser.php"
 									},
-									{ //Linked list of files from "uploader_1"
+									/*{ //Linked list of files from "uploader_1"
 										id:"myfiles", view:"list", type:"uploader", //maxHeight:200,
 										scroll:true, autoheight:true, borderless:true,
+									},*/
+									{
+										id:"uploadTable", view:"datatable",
+										select:true, multiselect:true, //ctrl+click & shift+click work
+										editable:true, editaction:"dblclick",
+										maxHeight:350, leftSplit:2, //left 2 col's won't scroll horizontally
+										columns:[
+											{id:"col", header:"Col", width:40, editor:"text"},
+											{id:"row", header:"Row", width:45, editor:"text"},
+											{id:"fileName", header:"File Name", width:200},
+											{id:"fileData", header:"data", hidden:true},
+										]
 									},
-									//{view:"resizer"}, //this just makes the buttons really tall...
 									{
 										cols:[
 											{
@@ -221,6 +227,7 @@
 									}
 								]}
 							},
+							{view:'resizer'},
 							
 							// control panel: grid dimensions and assigning compound IDs to objects
 							{header:"Control Panel", maxWidth:250, collapsed:false, body:
@@ -332,8 +339,10 @@
         	});
         	
 			// Loads client-side file into instance after complete upload to browser
-			$$("uploader_1").attachEvent("onAfterFileAdd",function(data){
-					var x = $$('upload_controller').getValues().uploadCol,
+			$$("uploader_1").attachEvent("onAfterFileAdd",function(){
+					toUploadTable();
+					//function(data){
+					/*(var x = $$('upload_controller').getValues().uploadCol,
 						y = $$('upload_controller').getValues().uploadRow;
 					
 					var fileData = data.file;
@@ -355,16 +364,13 @@
 					reader.onerror = function(e) {
 						console.error("File could not be read. code: "+e.target.error.code);
 						alert("error");
-					};
+					};*/
+					
 			});
 			
         	// binds selected compound detail panel with selection in compounds list, default selection is first
         	$$('comp_det').bind($$('comp_table'));
         	$$("comp_table").select(1);
-        	
-        	//$$("uploader_1").attachEvent("onUploadComplete", function(){
-			//        webix.message("Upload Complete!");
-			//});
         	
         	// syncs the compound list table displayed with the uploaded data DataCollection
         	//$$('comp_table').data.sync($$('data_col'));
