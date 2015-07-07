@@ -102,23 +102,32 @@
 			webix.message('New compounds have been loaded.');*/
 			var numCols = $$('grid_dim').getValues().numCol,
 				numRows = $$('grid_dim').getValues().numRow;
+			var fID, fData, x, y;
 			
 			for(var index=0; index<$$('uploadTable').count(); index++){
-				var fID = $$('uploadTable').getIdByIndex(index);
-				var fData = $$('uploadTable').getItem(fID).fileData;
-				var x = $$('uploadTable').getItem(fID).col, y = $$('uploadTable').getItem(fID).row;
+				fID = $$('uploadTable').getIdByIndex(index);
+				fData = $$('uploadTable').getItem(fID).fileData;
+				x = $$('uploadTable').getItem(fID).col, y = $$('uploadTable').getItem(fID).row;
 				
-				//Only attempt load if the coordinates are valid
-				if (0<x && x<= numCols && 0<y && y<=numRows){
+				console.log($$('uploadTable').getItem(fID).changeCheck);
+				//Only attempt load if the coordinates are valid AND the coordinates have been changed
+				if (0<x && x<= numCols && 0<y && y<=numRows &&
+					 $$('uploadTable').getItem(fID).changeCheck == 1){
+					
+					webix.message('refreshing viewer'+x+','+y);
+					
 					$$('viewer'+x+','+y).getWindow().loadFile(fData);
 					//Calls loading function for "viewer[x],[y]" defined in the iframe source html
+					
+					$$('uploadTable').getItem(fID).changeCheck = 0;
+					console.log("Reset viewer"+x+','+y+' to '+$$('uploadTable').getItem(fID).changeCheck);
 				}
-				else{webix.message('not loading to '+x+','+y);}
+				else{webix.message('NOT loading to '+x+','+y);}
 			}
 		}
 		
 		function clear_fxn(){
-			// TEMP: WILL TURN INTO A FXN THAT CALLS .py SCRIPT TO WIPE uploaded.txt; then click refresh
+			/*// TEMP: WILL TURN INTO A FXN THAT CALLS .py SCRIPT TO WIPE uploaded.txt; then click refresh
 			//delete compound_data;
 			loadCSV("uploads/blank.txt");
 			//$$("comp_table").define("data","[{id:'1',compname:'No data loaded.'}]")
@@ -126,7 +135,10 @@
 			$$("comp_table").refresh();
 			// displays message noting data loaded
 			//webix.message('Previous data has been deleted. Press Update to clear list.');
-			webix.message('Previous data has been deleted.');
+			webix.message('Previous data has been deleted.');*/
+			
+			//$$(...).getSelectedId returns an array of selected items
+			$$('uploadTable').remove($$('uploadTable').getSelectedId(true));
 		}
 		
 		//Function takes data from file and puts it in the "uploadTable" datatable
@@ -150,7 +162,6 @@
 				console.error("File could not be read. code: "+e.target.error.code);
 				alert("error");
 			};
-					
 		}
 		
 		webix.ready(function(){
@@ -193,9 +204,9 @@
 										id:"uploader_1", view:"uploader",
 										value:"Upload Files",
 										//link:"myfiles",
-										multiple:false, autosend:true,
+										multiple:false, autosend:false,
 										//can't find a way to remove items from uploader so set multiple:false
-										upload:"parser.php"
+										//upload:"parser.php"
 									},
 									/*{ //Linked list of files from "uploader_1"
 										id:"myfiles", view:"list", type:"uploader", //maxHeight:200,
@@ -210,8 +221,10 @@
 											{id:"col", header:"Col", width:40, editor:"text"},
 											{id:"row", header:"Row", width:45, editor:"text"},
 											{id:"fileName", header:"File Name", width:200},
-											{id:"fileData", header:"data", hidden:true},
-										]
+											{id:"fileData", header:"Data", hidden:true},
+											{id:"changeCheck", header:"changed",hidden:true},
+										],
+										//on:{'onAfterEditStop':checkCoordChange(state,editor,ignoreUpdate)}
 									},
 									{
 										cols:[
@@ -220,7 +233,7 @@
 												click:"load_fxn"
 											},
 											{
-												view:"button",id:"clear_click",value:"Clear Data",type:"danger",
+												view:"button",id:"clear_click",value:"Delete Data",type:"danger",
 												click:"clear_fxn"
 											}
 										]
@@ -368,7 +381,22 @@
 					
 			});
 			
-        	// binds selected compound detail panel with selection in compounds list, default selection is first
+        	$$('uploadTable').attachEvent('onAfterEditStop',function(state,editor){
+				console.log("edit event detected");
+				
+				if (state.old != state.value) {
+					//Note: The below function name is misleading.
+					//It returns the items by default, but passing in (true,false) -> just IDs
+					var sel = this.getSelectedId(true);
+					var item = this.getItem(sel);
+					
+					item.changeCheck = true;
+					this.updateItem(sel,item);
+					console.log("changeCheck set to true");
+				}
+			});
+			
+			// binds selected compound detail panel with selection in compounds list, default selection is first
         	$$('comp_det').bind($$('comp_table'));
         	$$("comp_table").select(1);
         	
