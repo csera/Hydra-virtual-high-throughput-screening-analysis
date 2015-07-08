@@ -100,68 +100,74 @@
 			// displays message noting data loaded
 			//webix.message('Compound List has been updated with the latest data.');
 			webix.message('New compounds have been loaded.');*/
-			var numCols = $$('grid_dim').getValues().numCol,
-				numRows = $$('grid_dim').getValues().numRow;
-			var fID, fData, x, y;
+			var fID, fData, x, y, origX, origY;
 			
 			for(var index=0; index<$$('uploadTable').count(); index++){
 				fID = $$('uploadTable').getIdByIndex(index);
 				fData = $$('uploadTable').getItem(fID).fileData;
 				x = $$('uploadTable').getItem(fID).col, y = $$('uploadTable').getItem(fID).row;
+				origX=$$('uploadTable').getItem(fID).oCol, origY=$$('uploadTable').getItem(fID).oRow;
 				
-				console.log($$('uploadTable').getItem(fID).changeCheck);
+				console.log($$('uploadTable').getItem(fID).oCol+','+$$('uploadTable').getItem(fID).oRow);
 				//Only attempt load if the coordinates are valid AND the coordinates have been changed
-				if (0<x && x<= numCols && 0<y && y<=numRows &&
-					 $$('uploadTable').getItem(fID).changeCheck == 1){
+				if (validCoordinates(x,y) && (x!=origX || y!=origY)){
+					 //$$('uploadTable').getItem(fID).changeCheck == 1){
 					
 					webix.message('refreshing viewer'+x+','+y);
 					
-					$$('viewer'+x+','+y).getWindow().loadFile(fData);
 					//Calls loading function for "viewer[x],[y]" defined in the iframe source html
+					$$('viewer'+x+','+y).getWindow().loadFile(fData,false);
 					
-					$$('uploadTable').getItem(fID).changeCheck = 0;
-					console.log("Reset viewer"+x+','+y+' to '+$$('uploadTable').getItem(fID).changeCheck);
+					//Clear old cell if the structure was loaded
+					if (origX!=0 && origY!=0) {
+						$$('viewer'+origX+','+origY).getWindow().loadFile('',true);
+					}
+					
+					//$$('uploadTable').getItem(fID).changeCheck = 0;
+					$$('uploadTable').getItem(fID).oCol = x;
+					$$('uploadTable').getItem(fID).oRow = y;
+					//console.log("viewer"+x+','+y+' to '+$$('uploadTable').getItem(fID).changeCheck);
+					console.log($$('uploadTable').getItem(fID).oCol+','+$$('uploadTable').getItem(fID).oRow);
 				}
-				else{webix.message('NOT loading to '+x+','+y);}
+				else if (x==origX || y==origY) {
+					webix.message("Coordinates have not been changed for "+
+									  $$('uploadTable').getItem(fID).fileName);
+				}
+				else{
+					webix.message('NOT loading '+$$('uploadTable').getItem(fID).fileName+' to '+x+','+y);
+				}
 			}
 		}
 		
 		function clear_fxn(){
-			/*// TEMP: WILL TURN INTO A FXN THAT CALLS .py SCRIPT TO WIPE uploaded.txt; then click refresh
-			//delete compound_data;
-			loadCSV("uploads/blank.txt");
-			//$$("comp_table").define("data","[{id:'1',compname:'No data loaded.'}]")
-			$$("comp_table").define("data",compound_data);
-			$$("comp_table").refresh();
-			// displays message noting data loaded
-			//webix.message('Previous data has been deleted. Press Update to clear list.');
-			webix.message('Previous data has been deleted.');*/
-			
 			//$$(...).getSelectedId returns an array of selected items
+			var IDs = $$('uploadTable').getSelectedId(true);
+			var x, y;
+			
+			//Go through each selected item and remove from viewer if it is loaded
+			for(var a=0; a<IDs.length; a++){
+				x = $$('uploadTable').getItem(IDs[a]).col;
+				y = $$('uploadTable').getItem(IDs[a]).row;
+				
+				if (validCoordinates(x,y))
+					$$('viewer'+x+','+y).getWindow().loadFile('', true);
+			}
+			
 			$$('uploadTable').remove($$('uploadTable').getSelectedId(true));
 		}
 		
-		//Function takes data from file and puts it in the "uploadTable" datatable
-		//This is to be called in the file upload event
-		function toUploadTable(rawData){
-			var fID = $$("uploader_1").files.getFirstId();
-			var fName = $$("uploader_1").files.getItem(fID).name;
-			webix.message(fName);
-			
-			var fData = $$("uploader_1").files.getItem(fID).file;
-			var reader = new FileReader();
-			
-			reader.readAsText(fData);
-			
-			reader.onload = function(e) {
-				$$('uploadTable').add({col:0, row:0, fileName:fName, fileData:reader.result});
-				//Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
-				//Added as primative data rather than an actual file object
-			};
-			reader.onerror = function(e) {
-				console.error("File could not be read. code: "+e.target.error.code);
-				alert("error");
-			};
+		function validCoordinates(x, y) {
+			var numCols = $$('grid_dim').getValues().numCol,
+				numRows = $$('grid_dim').getValues().numRow;
+				
+			if (0<x && x<= numCols && 0<y && y<=numRows) {
+				console.log('Valid Coordinates');
+				return true;
+			}
+			else{
+				console.log('Invalid coordinates');
+				return false;
+			}
 		}
 		
 		webix.ready(function(){
@@ -204,7 +210,7 @@
 										id:"uploader_1", view:"uploader",
 										value:"Upload Files",
 										//link:"myfiles",
-										multiple:false, autosend:false,
+										multiple:true, autosend:false,
 										//can't find a way to remove items from uploader so set multiple:false
 										//upload:"parser.php"
 									},
@@ -215,11 +221,14 @@
 									{
 										id:"uploadTable", view:"datatable",
 										select:true, multiselect:true, //ctrl+click & shift+click work
+										drag:true, //NEED TO MAKE THIS SYNC WITH COMPOUND LIST
 										editable:true, editaction:"dblclick",
 										maxHeight:350, leftSplit:2, //left 2 col's won't scroll horizontally
 										columns:[
 											{id:"col", header:"Col", width:40, editor:"text"},
+											{id:"oCol", header:"origCol", hidden:true},
 											{id:"row", header:"Row", width:45, editor:"text"},
+											{id:"oRow", header:"origRow", hidden:true},
 											{id:"fileName", header:"File Name", width:200},
 											{id:"fileData", header:"Data", hidden:true},
 											{id:"changeCheck", header:"changed",hidden:true},
@@ -351,37 +360,31 @@
 				]
         	});
         	
-			// Loads client-side file into instance after complete upload to browser
+			
+			//Takes data from file and puts it in the "uploadTable" datatable
 			$$("uploader_1").attachEvent("onAfterFileAdd",function(){
-					toUploadTable();
-					//function(data){
-					/*(var x = $$('upload_controller').getValues().uploadCol,
-						y = $$('upload_controller').getValues().uploadRow;
-					
-					var fileData = data.file;
-					var reader = new FileReader();
-					
-					reader.readAsText(fileData);
-					
-					reader.onload = function(e) {
-						//Syntax for adding something. Order of the items doesn't matter
-						//Note how datatable simply ignores data that it doesn't take
-						$$('comp_table').add({id:1, pdb:"1XTC", compname:"Cholera Toxin", category:"N/A"})
-						
-						//$$('comp_table').add(reader.result); //add data to table
-						//hydraUI.parse(fileData, 'csv'); //load data into table
-						
-						$$('viewer'+x+','+y).getWindow().loadFile(reader.result);
-						//Call function defined in viewer.html (the iframe's source)
-					};
-					reader.onerror = function(e) {
-						console.error("File could not be read. code: "+e.target.error.code);
-						alert("error");
-					};*/
-					
+				
+				var fID = $$("uploader_1").files.getFirstId();
+				var fName = $$("uploader_1").files.getItem(fID).name;
+				
+				var fData = $$("uploader_1").files.getItem(fID).file;
+				var reader = new FileReader();
+				
+				reader.readAsText(fData);
+				
+				reader.onload = function(e) {
+					$$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
+												 fileName:fName, fileData:reader.result});
+					//Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
+					//Added as primative data rather than an actual file object
+				};
+				reader.onerror = function(e) {
+					console.error("File could not be read. code: "+e.target.error.code);
+					alert("error");
+				};
 			});
 			
-        	$$('uploadTable').attachEvent('onAfterEditStop',function(state,editor){
+        	/*$$('uploadTable').attachEvent('onAfterEditStop',function(state,editor){
 				console.log("edit event detected");
 				
 				if (state.old != state.value) {
@@ -390,12 +393,12 @@
 					var sel = this.getSelectedId(true);
 					var item = this.getItem(sel);
 					
-					item.changeCheck = true;
+					item.changeCheck = 1;
 					this.updateItem(sel,item);
 					console.log("changeCheck set to true");
 				}
-			});
-			
+			});*/
+		
 			// binds selected compound detail panel with selection in compounds list, default selection is first
         	$$('comp_det').bind($$('comp_table'));
         	$$("comp_table").select(1);
@@ -405,7 +408,7 @@
         	
 			//logic.init(); //reference to logic section
       });
-			
+		
 		//Resizes GUI dynamically with the window size
       webix.event(window,"resize", function(){hydraUI.adjust();});
       </script>

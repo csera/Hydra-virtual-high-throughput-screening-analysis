@@ -189,13 +189,10 @@
          );
       }
       
-      function loadFile(file) {
+      function loadFile(file, clear) {
          //var file = $('#glmol01_file').get(0);
          
-         if (file) {
-            //file = file.files;
-         }
-         else if (!file || !file[0]) {
+         if ((!file || !file[0]) && !clear) {
             alert("No file is selected.");
             return;
          }
