@@ -363,25 +363,30 @@
 			
 			//Takes data from file and puts it in the "uploadTable" datatable
 			$$("uploader_1").attachEvent("onAfterFileAdd",function(){
-				
-				var fID = $$("uploader_1").files.getFirstId();
-				var fName = $$("uploader_1").files.getItem(fID).name;
-				
-				var fData = $$("uploader_1").files.getItem(fID).file;
+				var numFiles = 1+$$('uploader_1').files.getIndexById($$('uploader_1').files.getLastId());
+				console.log(numFiles);
 				var reader = new FileReader();
-				
-				reader.readAsText(fData);
-				
-				reader.onload = function(e) {
-					$$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
-												 fileName:fName, fileData:reader.result});
-					//Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
-					//Added as primative data rather than an actual file object
-				};
-				reader.onerror = function(e) {
-					console.error("File could not be read. code: "+e.target.error.code);
-					alert("error");
-				};
+				var fID;
+				//var fID = $$("uploader_1").files.getFirstId();
+				for(var a=0; a<numFiles; a++){
+					fID = $$('uploader_1').files.getIdByIndex(a);
+					
+					fName = $$("uploader_1").files.getItem(fID).name;
+					fData = $$("uploader_1").files.getItem(fID).file;
+					
+					reader.readAsText(fData);
+					
+					reader.onload = function(e) {
+						$$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
+													 fileName:fName, fileData:reader.result});
+						//Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
+						//Added as a string rather than an actual file object
+					};
+					reader.onerror = function(e) {
+						console.error("File could not be read. Code: "+e.target.error.code);
+						alert("error");
+					};
+				}
 			});
 			
         	/*$$('uploadTable').attachEvent('onAfterEditStop',function(state,editor){
