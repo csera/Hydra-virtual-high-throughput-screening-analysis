@@ -192,32 +192,15 @@
 						{multi:true, view:"accordion", type:"line", 
 							rows:[
 							
-							/*{header:"Upload to Viewer", maxWidth:250, collapsed:false, body:
-								{id:'upload_controller', view:'form', elements:[
-									{ //column index to upload to
-										view:'text', value:'1', label:'Column', name:'uploadCol',
-									},
-									{ //row index to upload to
-										view:'text', value:'1', label:'Row', name:'uploadRow',
-									}
-								]}
-							},*/
-							
 							// Upload compound list / DOCK data
 							{header:"Import Compounds", maxWidth:250, autoheight:true, collapsed:false, body:
 								{rows:[ //removed view:'form' to make this take up the whole width
 									{ //Uploader element
 										id:"uploader_1", view:"uploader",
 										value:"Upload Files",
-										//link:"myfiles",
 										multiple:true, autosend:false,
-										//can't find a way to remove items from uploader so set multiple:false
 										//upload:"parser.php"
 									},
-									/*{ //Linked list of files from "uploader_1"
-										id:"myfiles", view:"list", type:"uploader", //maxHeight:200,
-										scroll:true, autoheight:true, borderless:true,
-									},*/
 									{
 										id:"uploadTable", view:"datatable",
 										select:true, multiselect:true, //ctrl+click & shift+click work
@@ -231,9 +214,7 @@
 											{id:"oRow", header:"origRow", hidden:true},
 											{id:"fileName", header:"File Name", width:200},
 											{id:"fileData", header:"Data", hidden:true},
-											{id:"changeCheck", header:"changed",hidden:true},
 										],
-										//on:{'onAfterEditStop':checkCoordChange(state,editor,ignoreUpdate)}
 									},
 									{
 										cols:[
@@ -355,54 +336,44 @@
 						
 					]},	
 					},
-						 
-				]}
+					]}
 				]
         	});
         	
-			
-			//Takes data from file and puts it in the "uploadTable" datatable
+			/* Called after a file is added to the view:uploader. Called successively for each file
+			 * if multiple files are sent at once.
+			 * Takes data from the first file in "uploader_1" and puts it in the "uploadTable"
+			 * view:datatable.  Object is then removed so more items may be read successfully.
+			 */
 			$$("uploader_1").attachEvent("onAfterFileAdd",function(){
-				var numFiles = 1+$$('uploader_1').files.getIndexById($$('uploader_1').files.getLastId());
-				console.log(numFiles);
 				var reader = new FileReader();
-				var fID, fName, fData;
-				//var fID = $$("uploader_1").files.getFirstId();
-				for(var a=0; a<numFiles; a++){
-					fID = $$('uploader_1').files.getIdByIndex(a);
-					
-					fName = $$("uploader_1").files.getItem(fID).name;
-					fData = $$("uploader_1").files.getItem(fID).file;
-					
-					reader.readAsText(fData);
-					
-					reader.onload = function(e) {
-						$$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
-													 fileName:fName, fileData:reader.result});
-						//Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
-						//Added as a string rather than an actual file object
-					};
-					reader.onerror = function(e) {
-						console.error("File could not be read. Code: "+e.target.error.code);
-						alert("error");
-					};
-				}
-			});
-			
-        	/*$$('uploadTable').attachEvent('onAfterEditStop',function(state,editor){
-				console.log("edit event detected");
 				
-				if (state.old != state.value) {
-					//Note: The below function name is misleading.
-					//It returns the items by default, but passing in (true,false) -> just IDs
-					var sel = this.getSelectedId(true);
-					var item = this.getItem(sel);
+				var numFiles = 1+$$('uploader_1').files.getIndexById($$('uploader_1').files.getLastId());
+				var fID, fName, fData;
+				
+				console.log('Number of files found = '+numFiles);
+				
+				fID = $$('uploader_1').files.getFirstId();
+				
+				fName = $$("uploader_1").files.getItem(fID).name;
+				fData = $$("uploader_1").files.getItem(fID).file;
+				
+				reader.onload = function(e) {
+					$$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
+												 fileName:fName, fileData:reader.result});
+					//Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
+					//Added as a string rather than an actual file object
 					
-					item.changeCheck = 1;
-					this.updateItem(sel,item);
-					console.log("changeCheck set to true");
-				}
-			});*/
+				};
+				reader.onerror = function(e) {
+					console.error("File could not be read. Code: "+e.target.error.code);
+					alert("error");
+				};
+				
+				reader.readAsText(fData);
+				
+				$$('uploader_1').files.remove(fID);
+			});
 		
 			// binds selected compound detail panel with selection in compounds list, default selection is first
         	$$('comp_det').bind($$('comp_table'));
