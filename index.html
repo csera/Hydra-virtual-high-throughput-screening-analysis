@@ -366,7 +366,7 @@
 				var numFiles = 1+$$('uploader_1').files.getIndexById($$('uploader_1').files.getLastId());
 				console.log(numFiles);
 				var reader = new FileReader();
-				var fID;
+				var fID, fName, fData;
 				//var fID = $$("uploader_1").files.getFirstId();
 				for(var a=0; a<numFiles; a++){
 					fID = $$('uploader_1').files.getIdByIndex(a);
