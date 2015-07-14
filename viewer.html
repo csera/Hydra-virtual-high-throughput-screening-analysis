@@ -142,6 +142,7 @@
       
       download('pdb:1xtc'); //display this molecule (Cholera toxin) on load by default
       
+      //This function is not currently used
       function download(query) {
          var baseURL = '';
          
@@ -174,6 +175,12 @@
          });
       }
       
+      /** @function addTab
+       *  @description Adds HTML defined tabs to viewer
+       *  @param {string} ID of the tab
+       *  @param {int} Height of the tab
+       *  @param {int} Position  of the tab along the bottom border
+       */
       function addTab(tabId, height, zIndex) {
          $(tabId + ' .bottomTab').toggle(
             function() {
@@ -189,6 +196,13 @@
          );
       }
       
+      /** @function loadFile
+       * @description Checks for a file then calls GLmol's main script to load
+       * the file data passed in
+       * @param {string} File data passed in after being parsed by a FileReader
+       * @param {boolean} True -> viewer is being cleared; prevents if checks
+       * from stopping execution of the function
+       */
       function loadFile(file, clear) {
          //var file = $('#glmol01_file').get(0);
          
@@ -222,11 +236,18 @@
          glmol01.loadMoleculeStr(null,file);
       }
       
+      /** @function setGridCoordinates
+       * @description Takes externally determined coordinates and displays them
+       * in the 'webixID' div
+       * @param gc Externally determined grid coordinates to pass in
+       */
       function setGridCoordinates(gc) {
          $('#webixID').html(gc); //Pass gc in to show between the div tags
          console.log("Coordinates set: "+gc);
       }
-      
+      /** @function saveImage
+       * @description Saves current view as a .png
+       */
       function saveImage() {
          glmol01.show();
          var imageURI = glmol01.renderer.domElement.toDataURL("image/png");
@@ -239,6 +260,10 @@
          glmol01.show();
       });
       
+      /** @function defineRepFromController
+       * @description Draws molecule according to the options set by the
+       * controller (currently the "View" tab)
+       */
       function defineRepFromController() {
          var idHeader = "#" + this.id + '_';
       
