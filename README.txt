@@ -1,3 +1,12 @@
+Hydra is a browser-based tool for high-throughput screening still under development.
+
+It currently impelments GLmol for the molecular viewers and uses the Webix code 
+library for general GUI generation and interactivity.
+
+This README will be updated as development proceeds.
+
+-------------------------------------------------------------
+
 GLmol - Molecular Viewer on WebGL/Javascript
 
 == About GLmol ==

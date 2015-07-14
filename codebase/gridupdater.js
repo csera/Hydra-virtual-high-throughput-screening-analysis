@@ -3,6 +3,12 @@
  * Updated to work with a Webix based central workspace table of viewers
  */
 
+/**
+ * @description Main function: checks for changes to row and col number and
+ * adds or deletes the appropriate accordingly.
+ *
+ * @function updategridfxn
+ */
 function updategridfxn() {
    var newNumRows = $$('grid_dim').getValues().numRow,
       newNumCols = $$('grid_dim').getValues().numCol;
@@ -29,6 +35,11 @@ function updategridfxn() {
    
 }
 
+/**
+ * @function deleteRows
+ * @param {int} newNumRows New number of rows set
+ * @param {int} origNumRows Number of rows before resize
+ */
 function deleteRows(newNumRows, origNumRows){
    
    for(var y=origNumRows; y>newNumRows; y--){
@@ -36,6 +47,11 @@ function deleteRows(newNumRows, origNumRows){
    }
 }
 
+/**
+ * @function deleteCols
+ * @param {int} newNumCols New number of cols set
+ * @param {int} origNumCols Number of cols before resize
+ */
 function deleteCols(newNumCols, origNumCols){
    var numRows = $$('workLayout').getChildViews().length;
    
@@ -47,11 +63,17 @@ function deleteCols(newNumCols, origNumCols){
    }
 }
 
+/**
+ * This requires newNumCols in order to size the new row appropriatesly
+ * 
+ * @function appendRows
+ * @param {int} newNumRows New number of rows set
+ * @param {int} origNumRows Number of rows before resize
+ * @param {int} newNumCols New number of cols set
+ */
 function appendRows(newNumRows, origNumRows, newNumCols){
 	var numRowstoAdd = newNumRows - origNumRows;
    
-   //Non-ideal implementation: using a loop var not = the index var
-   //Making it = the index var caused bugs though...
    for(var y=1; y<=numRowstoAdd; y++){
       $$('workLayout').addView({id:"workRow"+(origNumRows+y), type:'head', borderless:true, cols:[
          {id:"viewer1,"+(origNumRows+y), view:'iframe', src:'viewer.html',
@@ -66,6 +88,13 @@ function appendRows(newNumRows, origNumRows, newNumCols){
    }
 }
 
+/**
+ * @description Called by updategridfxn(). Goes through each row and calls
+ * appendCols(...) as needed.
+ * 
+ * @function calculateCols
+ * @param {int} newNumCols New number of rows set
+ */
 function calculateCols(newNumCols){
    //Using a unique, local var so that it only goes through what is actually there
    //(number of rows may have changed since initial check)
@@ -80,6 +109,12 @@ function calculateCols(newNumCols){
    }
 }
 
+/**
+ * @function appendRows
+ * @param {int} y Index of row being modified
+ * @param {int} newNumCols New number of cols set
+ * @param {int} currentNumCols Current number of cols (may have changed since script initiated)
+ */
 function appendCols(y, newNumCols, currentNumCols) {
    //Goes through a single row and adds viewers as new columns
    //Start at +1 since you add on starting at the end of the row
