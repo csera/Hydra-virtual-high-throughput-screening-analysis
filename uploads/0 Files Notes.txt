@@ -1,0 +1,38 @@
+1vhr_noH...
+Was the output of a docking program.
+Has been modified by my PI from the original version with heteroatom tags as file would not display at all in 3Dmol without these tags.
+This shows odd pink/magenta structures all over the molecule that persist in all views except for cartoon.
+
+2POR.pdb
+Test protein. Displays properly as a trimer
+
+47_top.mol2
+Is a concatenation of 3 separate files outputted by a docking program.
+This will display, but it will only display one of the molecules (the first, I think).
+The 3 files with similar names are the individual compounds that I pulled out of this file.
+
+cry5B
+Both the pdb and mol2 seem to load without a problem.
+
+lig_charged.mol
+The console output suggests that 3Dmol liked this file and is displaying it properly (well as an 'xyz').
+However, nothing actually shows up and the view is not changed at all (ie no repositioning).
+
+lig_charged.mol2
+Causes the tokens[5] is undefined error
+
+lig_charged.pdb
+Similar to the .mol version in terms of the console output and what can be seen.
+Interestingly though, the viewer will zoom out upon accepting this file.
+
+shp2_noH.pdb
+Another outputted file from a docking program.
+This causes almost identical behavior to lig_charged.pdb.
+The only difference isd that the camera has now also moved up and to the left as well as zoomed out.
+
+SSH1_charged.mol2
+tokens[5] error
+
+SSH1_charged.pdb
+Essentially identical to shp2_noH.pdb.
+The camera moved in the same way; it just ended at a slightly different spot.

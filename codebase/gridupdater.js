@@ -76,7 +76,7 @@ function appendRows(newNumRows, origNumRows, newNumCols){
    
    for(var y=1; y<=numRowstoAdd; y++){
       $$('workLayout').addView({id:"workRow"+(origNumRows+y), type:'head', borderless:true, cols:[
-         {id:"viewer1,"+(origNumRows+y), view:'iframe', src:'viewer.html',
+         {id:"viewer1,"+(origNumRows+y), view:'iframe', src:'3Dmol frame.html',
             minWidth:250, minHeight:250,
             on:{'onAfterLoad':setCoord_callback(1,(origNumRows+y))}
          }
@@ -119,7 +119,7 @@ function appendCols(y, newNumCols, currentNumCols) {
    //Goes through a single row and adds viewers as new columns
    //Start at +1 since you add on starting at the end of the row
    for(var x=currentNumCols+1; x<=newNumCols; x++){
-         $$('workRow'+y).addView({id:"viewer"+x+","+(y), view:'iframe', src:'viewer.html',
+         $$('workRow'+y).addView({id:"viewer"+x+","+(y), view:'iframe', src:'3Dmol frame.html',
                                     minWidth:250, minHeight:250,
                                     on:{'onAfterLoad': setCoord_callback(x,y)}
          });

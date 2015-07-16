@@ -6,8 +6,8 @@
 
        <script src="codebase/webix.js" type="text/javascript" charset="utf-8"></script>
        <script src="codebase/jquery-2.1.4.min.js"></script>
-       <script src="codebase/Three49custom.js"></script>
-       <script src="codebase/GLmol.js"></script>
+       <!--<script src="codebase/Three49custom.js"></script>
+       <script src="codebase/GLmol.js"></script>-->
        <script src="codebase/gridupdater.js"></script>
        
        	<!-- You can get these files from https://github.com/webix-hub/components -->
@@ -47,7 +47,7 @@
 					 border="0" width="100%" height="100%">
 				<tr>
 					<td>
-						<iframe src="viewer.html" width="100%" height="100%"
+						<iframe src="3Dmol frame.html" width="100%" height="100%"
 					frameBorder="0" scrolling="no" id="viewer" style="padding:0px;
 					overflow: hidden;overflow-x: hidden;overflow-y: hidden;">
 					</iframe>
@@ -56,7 +56,7 @@
 			</table>
 	   </div>
 			
-		<script type="text/javascript" src="codebase/GLmol.js")></script>
+		<!--<script type="text/javascript" src="codebase/GLmol.js")></script>-->
 		<script type="text/javascript" charset="utf-8">
 		
 		//var glmol = new GLmol('glmol',true);	
@@ -100,7 +100,7 @@
 			// displays message noting data loaded
 			//webix.message('Compound List has been updated with the latest data.');
 			webix.message('New compounds have been loaded.');*/
-			var fID, fData, x, y, origX, origY;
+			var fID, fData, fType, x, y, origX, origY;
 			
 			for(var index=0; index<$$('uploadTable').count(); index++){
 				fID = $$('uploadTable').getIdByIndex(index);
@@ -111,16 +111,21 @@
 				console.log($$('uploadTable').getItem(fID).oCol+','+$$('uploadTable').getItem(fID).oRow);
 				//Only attempt load if the coordinates are valid AND the coordinates have been changed
 				if (validCoordinates(x,y) && (x!=origX || y!=origY)){
-					 //$$('uploadTable').getItem(fID).changeCheck == 1){
-					
 					webix.message('refreshing viewer'+x+','+y);
+					var viewer = $$('viewer'+x+','+y).getWindow().glviewer;
+					
+					fType = getFileType(fID);
+					console.log('Detected file type: '+fType);
 					
 					//Calls loading function for "viewer[x],[y]" defined in the iframe source html
-					$$('viewer'+x+','+y).getWindow().loadFile(fData,false);
+					//$$('viewer'+x+','+y).getWindow().loadFile(fData,false);
+					viewer.clear();
+					$$('viewer'+x+','+y).getWindow().$3Dmol.loadFile(fData,fType,viewer,{doAssembly:true});
 					
 					//Clear old cell if the structure was loaded
 					if (origX!=0 && origY!=0) {
-						$$('viewer'+origX+','+origY).getWindow().loadFile('',true);
+						//$$('viewer'+origX+','+origY).getWindow().loadFile('',true);
+						$$('viewer'+origX+','+origY).getWindow().glviewer.clear();
 					}
 					
 					//$$('uploadTable').getItem(fID).changeCheck = 0;
@@ -139,8 +144,21 @@
 			}
 		}
 		
+		function getFileType(fID) {
+			var fName = $$('uploadTable').getItem(fID).fileName;
+			var fType;
+			
+			//Split fName into an array with elements demarcated by a '.'
+			var splitName = fName.split('.');
+			
+			//User may have included '.' in the name so only grab the last one
+			fType = splitName[splitName.length-1];
+			
+			return fType;
+      }
+		
 		function clear_fxn(){
-			//$$(...).getSelectedId returns an array of selected items
+			//$$(...).getSelectedId returns an array of selected items (with param (true))
 			var IDs = $$('uploadTable').getSelectedId(true);
 			var x, y;
 			
@@ -149,8 +167,13 @@
 				x = $$('uploadTable').getItem(IDs[a]).col;
 				y = $$('uploadTable').getItem(IDs[a]).row;
 				
-				if (validCoordinates(x,y))
-					$$('viewer'+x+','+y).getWindow().loadFile('', true);
+				var fType = getFileType(IDs[a]);
+				
+				if (validCoordinates(x,y)){
+					var viewer = $$('viewer'+x+','+y).getWindow().glviewer;
+					//$$('viewer'+x+','+y).getWindow().$3Dmol.loadFile('',fType,viewer,{doAssembly:true});
+					viewer.clear();
+				}
 			}
 			
 			$$('uploadTable').remove($$('uploadTable').getSelectedId(true));
@@ -160,12 +183,12 @@
 			var numCols = $$('grid_dim').getValues().numCol,
 				numRows = $$('grid_dim').getValues().numRow;
 				
-			if (0<x && x<= numCols && 0<y && y<=numRows) {
+			if ((0<x && x<= numCols) && (0<y && y<=numRows)) {
 				console.log('Valid Coordinates');
 				return true;
 			}
 			else{
-				console.log('Invalid coordinates');
+				console.error('Invalid coordinates');
 				return false;
 			}
 		}
@@ -201,12 +224,13 @@
 										multiple:true, autosend:false,
 										//upload:"parser.php"
 									},
-									{
+									{ //Table showing uploaded files
 										id:"uploadTable", view:"datatable",
 										select:true, multiselect:true, //ctrl+click & shift+click work
 										drag:true, //NEED TO MAKE THIS SYNC WITH COMPOUND LIST
 										editable:true, editaction:"dblclick",
-										maxHeight:350, leftSplit:2, //left 2 col's won't scroll horizontally
+										//maxHeight:300,//minHeight:160,
+										leftSplit:2, //left 2 col's won't scroll horizontally
 										columns:[
 											{id:"col", header:"Col", width:40, editor:"text"},
 											{id:"oCol", header:"origCol", hidden:true},
@@ -232,8 +256,8 @@
 							},
 							{view:'resizer'},
 							
-							// control panel: grid dimensions and assigning compound IDs to objects
-							{header:"Control Panel", maxWidth:250, collapsed:false, body:
+							// "Grid Controls" - controls for resizing the grid
+							{header:"Grid Controls", maxWidth:250, collapsed:false, body:
 								{view:"form", id:"grid_dim", elements:[
 									//{view:"text",value:"blarg",label:"test",name:"mg"},
 									{
@@ -242,7 +266,10 @@
 									{
 										view:"text",value:"1",label:"Rows:",name:"numRow",//specifies rows count
 									},
-									/*{	// NOTE: feature not yet implemented --> dropdown menu to select the ID for each of the viewers in the central grid, as defined in the grid_dim form above; via this drop down menu, we can set and specify the docking file and legand to be shown in each viewer
+									/*{/* NOTE: feature not yet implemented --> dropdown menu to select
+									 *the ID for each of the viewers in the central grid, as defined in the
+									 *grid_dim form above; via this drop down menu, we can set and specify
+									 *the docking file and legand to be shown in each viewer
 										view:"form", type:"space", rows:[
 											{
 												view:"text",label:"Dock File:", id:"dock11var",
@@ -260,7 +287,27 @@
 									},
 								]},
 							},
-								
+							
+							
+							{header:"Viewer Controls", maxWidth:250, collapsed:false, body:
+								{rows:[ //Making this a form would give a cleaner look but would take up more space...
+									{id:'structType', view:'richselect', label:'Display as', options:[
+										{id:'structCartoon', value:'Cartoon'},
+										{id:'structSphere', value:'Sphere'},
+										{id:'structStick', value:'Stick'},
+										{id:'structLine', value:'Line'},
+										{id:'structCross', value:'Cross'},
+									]},
+									{id:'surfaceType', view:'richselect', label:'Surface', options:[
+										{id:'surf1', value:'Surface 1'},
+										{id:'surf2', value:'Surface 2'},
+										{id:'surfRM1', value:'RM Surface 1'},
+										{id:'surfRM2', value:'RM Surface 2'},
+									]},
+									{id:'alphaCs', view:'checkbox', label:"Show α C's"},
+									//recenter (place this in the viewer?)
+								]}
+							},
 						]},
 					},
 					
@@ -275,7 +322,7 @@
 						id:"workRow"+"1", type:'head', borderless:true, cols:[{
 							view:"iframe",
 							id:"viewer"+"1"+","+"1",
-							src:"viewer.html",
+							src:"3Dmol frame.html",
 							minWidth:250,minHeight:250,
 							on:{
 								'onAfterLoad':function(){
@@ -387,6 +434,9 @@
 		
 		//Resizes GUI dynamically with the window size
       webix.event(window,"resize", function(){hydraUI.adjust();});
+		/*webix.attachEvent('onFocusChange',function(current_view, prev_view){
+			console.log('focused: '+(!view?'null' : view.config.id));
+		});*/
       </script>
 	</body>
 </html>
