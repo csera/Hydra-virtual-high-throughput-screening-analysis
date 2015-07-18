@@ -13488,7 +13488,7 @@ $3Dmol.download = function(query, viewer, options, callback) {
     var baseURL = '';
     var type = "";
     var m = viewer.addModel();
-    /*if (query.substr(0, 4) === 'pdb:') {
+    if (query.substr(0, 4) === 'pdb:') {
         type = "pdb";
         query = query.substr(4).toUpperCase();
         if (!query.match(/^[1-9][A-Za-z0-9]{3}$/)) {
@@ -13503,9 +13503,10 @@ $3Dmol.download = function(query, viewer, options, callback) {
         }
         uri = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/" + query + 
           "/SDF?record_type=3d";
-    }*/
-	 type = "pdb";
-	 uri = "http://sdlab.naist.jp/~csera/GLmol version/uploads/lig_charged.pdb";
+    }
+	 //To test loading of stuff from my server for file format reasons
+	 /*type = "pdb";
+	 uri = "http://sdlab.naist.jp/~csera/GLmol version/uploads/lig_charged.pdb";*/
    $.get(uri, function(ret) {
       m.addMolData(ret, type, options);
       viewer.zoomTo();
@@ -23141,7 +23142,7 @@ $3Dmol.GLModel = (function() {
             format = format || "";
             noAssembly = !options.doAssembly; //for BIOMT uses
             dontDuplicateAtoms = !options.duplicateAssemblyAtoms;
-            
+				
             if (!data)
                 return; //leave an empty model
             
@@ -29012,6 +29013,8 @@ $3Dmol.Parsers = (function() {
         var noH = !options.keepH; // suppress hydrogens by default
         var computeStruct = !options.noSecondaryStructure;
         var noAssembly = !options.doAssembly; // don't assemble by default
+		  console.log('doAssembly = '+options.doAssembly);
+		  console.log('noAssembly = '+noAssembly);
         var copyMatrix = !options.duplicateAssemblyAtoms; //default true
         modelData.symmetries = [];
     

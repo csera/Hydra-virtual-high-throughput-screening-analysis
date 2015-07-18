@@ -59,7 +59,9 @@
 		<!--<script type="text/javascript" src="codebase/GLmol.js")></script>-->
 		<script type="text/javascript" charset="utf-8">
 		
-		//var glmol = new GLmol('glmol',true);	
+		function iframeClicked(coordinates) { //Called by iframe if it is clicked
+			webix.message('You clicked viewer'+coordinates);
+		}
 		
 		// script modified from http://www.amcharts.com/tutorials/loading-external-data/
 		function loadCSV(file) {
@@ -108,7 +110,6 @@
 				x = $$('uploadTable').getItem(fID).col, y = $$('uploadTable').getItem(fID).row;
 				origX=$$('uploadTable').getItem(fID).oCol, origY=$$('uploadTable').getItem(fID).oRow;
 				
-				console.log($$('uploadTable').getItem(fID).oCol+','+$$('uploadTable').getItem(fID).oRow);
 				//Only attempt load if the coordinates are valid AND the coordinates have been changed
 				if (validCoordinates(x,y) && (x!=origX || y!=origY)){
 					webix.message('refreshing viewer'+x+','+y);
@@ -120,7 +121,7 @@
 					//Calls loading function for "viewer[x],[y]" defined in the iframe source html
 					//$$('viewer'+x+','+y).getWindow().loadFile(fData,false);
 					viewer.clear();
-					$$('viewer'+x+','+y).getWindow().$3Dmol.loadFile(fData,fType,viewer,{doAssembly:true});
+					$$('viewer'+x+','+y).getWindow().$3Dmol.loadFile(fData,fType,viewer,{doAssembly:false});
 					
 					//Clear old cell if the structure was loaded
 					if (origX!=0 && origY!=0) {
@@ -128,11 +129,11 @@
 						$$('viewer'+origX+','+origY).getWindow().glviewer.clear();
 					}
 					
-					//$$('uploadTable').getItem(fID).changeCheck = 0;
 					$$('uploadTable').getItem(fID).oCol = x;
 					$$('uploadTable').getItem(fID).oRow = y;
-					//console.log("viewer"+x+','+y+' to '+$$('uploadTable').getItem(fID).changeCheck);
-					console.log($$('uploadTable').getItem(fID).oCol+','+$$('uploadTable').getItem(fID).oRow);
+					
+					console.log('Sent to '+$$('uploadTable').getItem(fID).oCol+
+									','+$$('uploadTable').getItem(fID).oRow);
 				}
 				else if (x==origX || y==origY) {
 					webix.message("Coordinates have not been changed for "+
@@ -229,7 +230,7 @@
 										select:true, multiselect:true, //ctrl+click & shift+click work
 										drag:true, //NEED TO MAKE THIS SYNC WITH COMPOUND LIST
 										editable:true, editaction:"dblclick",
-										//maxHeight:300,//minHeight:160,
+										maxHeight:400, minHeight:160,
 										leftSplit:2, //left 2 col's won't scroll horizontally
 										columns:[
 											{id:"col", header:"Col", width:40, editor:"text"},
@@ -256,6 +257,10 @@
 							},
 							{view:'resizer'},
 							
+							//Webix bug: section below resizer expands when resizer moved up
+							//TEMP FIX: Need to nest the below sections in one row
+							
+							{rows:[
 							// "Grid Controls" - controls for resizing the grid
 							{header:"Grid Controls", maxWidth:250, collapsed:false, body:
 								{view:"form", id:"grid_dim", elements:[
@@ -299,15 +304,28 @@
 										{id:'structCross', value:'Cross'},
 									]},
 									{id:'surfaceType', view:'richselect', label:'Surface', options:[
-										{id:'surf1', value:'Surface 1'},
-										{id:'surf2', value:'Surface 2'},
-										{id:'surfRM1', value:'RM Surface 1'},
-										{id:'surfRM2', value:'RM Surface 2'},
+										{id:'surfNone', value:'None'},
+										{id:'surfVDW', value:'Van der Waals'},
+										{id:'surfMS', value:'Molecular'},
+										{id:'surfSAS', value:'Solvent Accessible'},
+										{id:'surfSES', value:'Solvent Excluded'},
 									]},
-									{id:'alphaCs', view:'checkbox', label:"Show α C's"},
-									//recenter (place this in the viewer?)
+									{id:'surfOpacity', view:'slider', level:'Opacity', label:'Opacity',
+										value:'50', min:0, max:100
+										//Gives opacity in percentage
+										//3Dmol requires decimal -> use this.getValue()/100
+									},
+									{cols:[
+										{id:'alphaCs', view:'checkbox', label:"Show α C's"},
+										{id:'ligand', view:'checkbox', label:'Set Ligand'}
+									]},
+									//recenter control here? place this in the viewer?
+									
+									{} //Blank view needed to fix a related resizing issue
+									//Webix thread: http://forum.webix.com/discussion/comment/4771
 								]}
 							},
+							]}
 						]},
 					},
 					
