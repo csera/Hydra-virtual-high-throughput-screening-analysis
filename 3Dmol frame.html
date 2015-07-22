@@ -3,6 +3,8 @@
 <head>
 	<meta charset='utf-8'>
 	<title>$3Dmol Example</title>
+	
+	<script src="codebase/jquery-2.1.4.min.js"></script>
 	<script src="codebase/3Dmol.js"></script>
 
 <style>
@@ -15,14 +17,52 @@ head, body {
 </style>
 </head>
 <body>
+	
 	<script type="text/javascript">
 	var glviewer = null;
 	var labels = [];
-
+	var surfaces = []; //0 index will be for main comp; 1 will be for any ligand
+	
+	//Display settings variables. Follow same indexing scheme as surfaces[]
+	var compDisplay = [];
+	var surfDisplay = [];
+	var surfOpacity = [];
+	var showAlphaCs = [];
+	
+	toDefaultDisp(); //Set initial values of the setting vars
+	
+	//Group of functions for working with the Hydra parent code
 	function setGridCoordinates(gc) {
          $('#webixID').html(gc); //Pass gc in to show between the div tags
          console.log("Coordinates set: "+gc);
    }
+	
+	//Set the default display settings for the viewer
+	//Eventually make a button to restore default settings -> call this
+	function toDefaultDisp() {
+		compDisplay[0] = 'Line';
+		compDisplay[1] = 'Line';
+		
+		surfDisplay[0] = 'surfNone';
+		surfDisplay[1] = 'surfNone';
+		
+		surfOpacity[0] = 90; //90% opaque by default (90% transparent)
+		surfOpacity[1] = 90;
+		
+		showAlphaCs[0]=0; //Webix checkboxes: 0->not checked, 1->checked. Not booleans
+		showAlphaCs[1]=0;
+	}
+	
+	function getViewMode() {
+		var viewSettings = []; //Pseudo 2D array for exporting viewer's settings
+			viewSettings[0] = compDisplay;
+			viewSettings[1] = surfDisplay;
+			viewSettings[2] = surfOpacity;
+			viewSettings[3] = showAlphaCs;
+		
+		return viewSettings;
+	}
+	
 	
 	var addLabels = function() {
 		var atoms = glviewer.getModel().selectedAtoms({
@@ -85,7 +125,8 @@ head, body {
 		glviewer = $3Dmol.createViewer("gldiv", {
 			defaultcolors : $3Dmol.rasmolElementColors
 		});
-		glviewer.setBackgroundColor(0xffffff);
+		glviewer.setBackgroundColor(0xffffff); //White background
+		glviewer.setBackgroundColor(0x000000);
 
 		receptorModel = m = glviewer.addModel(data, "pqr");
 
@@ -104,7 +145,7 @@ head, body {
 		//Fires when mouse button is pressed (before release) on anything within <html></html>
 		//Calls iframeClicked(...) in the Hydra UI to make this element selected
 		$(':root').mousedown(function(){
-			window.parent.iframeClicked($('#webixID').text());
+			window.parent.iframeClicked($('#webixID').text(), getViewMode());
 		});
 	});
 	</script>
