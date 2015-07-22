@@ -13504,9 +13504,7 @@ $3Dmol.download = function(query, viewer, options, callback) {
         uri = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/" + query + 
           "/SDF?record_type=3d";
     }
-	 //To test loading of stuff from my server for file format reasons
-	 /*type = "pdb";
-	 uri = "http://sdlab.naist.jp/~csera/GLmol version/uploads/lig_charged.pdb";*/
+
    $.get(uri, function(ret) {
       m.addMolData(ret, type, options);
       viewer.zoomTo();
@@ -13517,7 +13515,7 @@ $3Dmol.download = function(query, viewer, options, callback) {
    
    return m;
 };
-
+  
 /**
  * Load a local file passed by the container into the viewer.
  * -Author: csera
@@ -13539,7 +13537,7 @@ $3Dmol.loadFile = function(data, type, viewer, options, callback){
 		callback(m);
 	
 	return m;
-};
+};     
 
 /**
  * $3Dmol surface types
@@ -15755,7 +15753,6 @@ $3Dmol.Raycaster = (function() {
         
         if ((clickable.clickable !== true) || (clickable.intersectionShape === undefined))
             return intersects;
-console.log("627");        
         var intersectionShape = clickable.intersectionShape;
         var precision = raycaster.linePrecision;
         precision *= group.matrixWorld.getMaxScaleOnAxis();
@@ -15765,13 +15762,10 @@ console.log("627");
         if (clickable.boundingSphere !== undefined && clickable.boundingSphere instanceof $3Dmol.Sphere) {
             sphere.copy(clickable.boundingSphere);
             sphere.applyMatrix4(group.matrixWorld);
-console.log("center:"+sphere.center.x+" "+sphere.center.y+" "+sphere.center.z+" radius:"+sphere.radius);
-console.log("ray:"+raycaster.ray.origin.x+" "+raycaster.ray.origin.y+" "+raycaster.ray.origin.z+" direction:"+raycaster.ray.direction.x+" "+raycaster.ray.direction.y+" "+raycaster.ray.direction.z);          
             if (!raycaster.ray.isIntersectionSphere(sphere)) {
-console.log("639");                return intersects;
+               return intersects;
             }
         }
-console.log("642");        
         //Iterate through intersection objects
         var i, il,
             norm, normProj, cylProj, rayProj,
@@ -15827,7 +15821,7 @@ console.log("642");
                                      distance : distance});  
             }
         }
-console.log("698");        
+
         //cylinders
         for (i = 0, il = intersectionShape.cylinder.length; i < il; i++) {
             
@@ -15893,7 +15887,7 @@ console.log("698");
             }
             
         }
-console.log("764");        
+
         //lines
         for (i = 0, il = intersectionShape.line.length; i < il; i += 2) {
             
@@ -15932,7 +15926,7 @@ console.log("764");
                                 });
             
         }
-console.log("803");
+
         for (i = 0, il = intersectionShape.sphere.length; i < il; i++) {
             //sphere
             if (intersectionShape.sphere[i] instanceof $3Dmol.Sphere) {
@@ -15965,7 +15959,7 @@ console.log("803");
     
                     intersects.push({clickable : clickable, 
                                      distance : distance});
-console.log("just before return in intersectObject");
+
                     return intersects;
                 }
             }        
@@ -22172,7 +22166,6 @@ $3Dmol.GLModel = (function() {
         var lastColors = null;
         var modelData = {};
         var idMatrix = new $3Dmol.Matrix4();
-        var noAssembly;
         var dontDuplicateAtoms;
         var defaultColor = $3Dmol.elementColors.defaultColor;
         
@@ -23056,19 +23049,17 @@ $3Dmol.GLModel = (function() {
             }
             
             //for BIOMT assembly
-            if (dontDuplicateAtoms && !noAssembly) {
+            if (dontDuplicateAtoms && modelData.symmetries && modelData.symmetries.length > 0) {
                 var finalRet = new $3Dmol.Object3D();
                 var t;
-					if (modelData.symmetries) {
-						for (t = 0; t < modelData.symmetries.length; t++) {
-							 var transformedRet = new $3Dmol.Object3D();
-							 transformedRet = ret.clone();
-							 transformedRet.matrix.copy(modelData.symmetries[t]);
-							 transformedRet.matrixAutoUpdate = false;
-							 finalRet.add(transformedRet);
-						}
+                for (t = 0; t < modelData.symmetries.length; t++) {
+                    var transformedRet = new $3Dmol.Object3D();
+                    transformedRet = ret.clone();
+                    transformedRet.matrix.copy(modelData.symmetries[t]);
+                    transformedRet.matrixAutoUpdate = false;
+                    finalRet.add(transformedRet);
+                }
                 return finalRet;
-					}
             }
 
             return ret;
@@ -23150,9 +23141,8 @@ $3Dmol.GLModel = (function() {
         this.addMolData = function(data, format, options) {
             options = options || {}; 
             format = format || "";
-            noAssembly = !options.doAssembly; //for BIOMT uses
             dontDuplicateAtoms = !options.duplicateAssemblyAtoms;
-				
+            
             if (!data)
                 return; //leave an empty model
             
@@ -23169,7 +23159,7 @@ $3Dmol.GLModel = (function() {
             if(typeof($3Dmol.Parsers[format]) == "undefined") {
             	//let someone provide a file name and get format from extension
             	format = format.split('.').pop();
-            	if(typeof($3Dmol.Parsers[format] == "undefined")) {            	
+            	if(typeof($3Dmol.Parsers[format]) == "undefined") {            	
 	                console.log("Unknown format: "+format);
 	                //try to guess correct format from data contents
 	                if(data.match(/^@<TRIPOS>MOLECULE/gm)) {
@@ -24895,7 +24885,6 @@ $3Dmol.GLViewer = (function() {
             var intersects = [];
 
             intersects = raycaster.intersectObjects(modelGroup, clickables);
-console.log("intersects.length:"+intersects.length);
             if (intersects.length) {
                 var selected = intersects[0].clickable;
                 if (selected.callback !== undefined
@@ -28262,7 +28251,7 @@ $3Dmol.Parsers = (function() {
      */
     parsers.xyz = parsers.XYZ = function(atoms, str, options) {
 
-        var lines = str.split("\n");
+        var lines = str.split(/\r?\n/);
         if (lines.length < 3)
             return;
         var atomCount = parseInt(lines[0].substr(0, 3));
@@ -28308,7 +28297,7 @@ $3Dmol.Parsers = (function() {
         var noH = false;
         if (typeof options.keepH !== "undefined")
             noH = !options.keepH;
-        var lines = str.split("\n");
+        var lines = str.split(/\r?\n/);
         if (lines.length < 4)
             return;
         var atomCount = parseInt(lines[3].substr(0, 3));
@@ -28453,7 +28442,7 @@ $3Dmol.Parsers = (function() {
         }
 
 
-        var lines = str.split("\n");
+        var lines = str.split(/\r?\n/);
         // Filter text to remove comments, trailing spaces, and empty lines
         var linesFiltered = [];
         var trimDisabled = false;
@@ -28777,7 +28766,7 @@ $3Dmol.Parsers = (function() {
         // assert (mol_pos < atom_pos), "Unexpected formatting of mol2 file
         // (expected 'molecule' section before 'atom' section)";
 
-        var lines = str.substr(mol_pos, str.length).split("\n");
+        var lines = str.substr(mol_pos, str.length).split(/\r?\n/);
         var tokens = lines[2].replace(/^\s+/, "").replace(/\s+/g, " ").split(
                 " ");
         var natoms = parseInt(tokens[0]);
@@ -28875,17 +28864,17 @@ $3Dmol.Parsers = (function() {
 
     };
 
-    var bondLength = function(elem) {
-        var bondTable = {
-            H :0.37,                                                                                                                                He:0.32,
-            Li:1.34,Be:0.90,                                                                                B :0.82,C :0.77,N :0.75,O :0.73,F :0.71,Ne:0.69,
-            Na:1.54,Mg:1.30,                                                                                Al:1.18,Si:1.11,P :1.06,S :1.02,Cl:0.99,Ar:0.97,
-            K :1.96,Ca:1.74,Sc:1.44,Ti:1.56,V :1.25,/* Cr */Mn:1.39,Fe:1.25,Co:1.26,Ni:1.21,Cu:1.38,Zn:1.31,Ga:1.26,Ge:1.22,/* As */Se:1.16,Br:1.14,Kr:1.10,
-            Rb:2.11,Sr:1.92,Y :1.62,Zr:1.48,Nb:1.37,Mo:1.45,Tc:1.56,Ru:1.26,Rh:1.35,Pd:1.31,Ag:1.53,Cd:1.48,In:1.44,Sn:1.41,Sb:1.38,Te:1.35,I :1.33,Xe:1.30,
-            Cs:2.25,Ba:1.98,Lu:1.60,Hf:1.50,Ta:1.38,W :1.46,Re:1.59,Os:1.44,Ir:1.37,Pt:1.28,Au:1.44,Hg:1.49,Tl:1.48,Pb:1.47,Bi:1.46,/* Po *//* At */Rn:1.45,
+	var bondTable = {
+		H :0.37,                                                                                                                                He:0.32,
+		Li:1.34,Be:0.90,                                                                                B :0.82,C :0.77,N :0.75,O :0.73,F :0.71,Ne:0.69,
+		Na:1.54,Mg:1.30,                                                                                Al:1.18,Si:1.11,P :1.06,S :1.02,Cl:0.99,Ar:0.97,
+		K :1.96,Ca:1.74,Sc:1.44,Ti:1.56,V :1.25,/* Cr */Mn:1.39,Fe:1.25,Co:1.26,Ni:1.21,Cu:1.38,Zn:1.31,Ga:1.26,Ge:1.22,/* As */Se:1.16,Br:1.14,Kr:1.10,
+		Rb:2.11,Sr:1.92,Y :1.62,Zr:1.48,Nb:1.37,Mo:1.45,Tc:1.56,Ru:1.26,Rh:1.35,Pd:1.31,Ag:1.53,Cd:1.48,In:1.44,Sn:1.41,Sb:1.38,Te:1.35,I :1.33,Xe:1.30,
+		Cs:2.25,Ba:1.98,Lu:1.60,Hf:1.50,Ta:1.38,W :1.46,Re:1.59,Os:1.44,Ir:1.37,Pt:1.28,Au:1.44,Hg:1.49,Tl:1.48,Pb:1.47,Bi:1.46,/* Po *//* At */Rn:1.45,
 
-            // None of the boottom row or any of the Lanthanides have bond lengths
-        }
+		// None of the boottom row or any of the Lanthanides have bond lengths
+	}
+    var bondLength = function(elem) {
         return bondTable[elem] || 1.6;
     }
     // return true if atom1 and atom2 are probably bonded to each other
@@ -28893,7 +28882,7 @@ $3Dmol.Parsers = (function() {
     var areConnected = function(atom1, atom2) {
         var maxsq = bondLength(atom1.elem) + bondLength(atom2.elem);
         maxsq *= maxsq;
-        maxsq *= 1.15; // fudge factor, especially important for md frames
+        maxsq *= 1.1; // fudge factor, especially important for md frames
 
         var xdiff = atom1.x - atom2.x;
         xdiff *= xdiff;
@@ -28986,7 +28975,7 @@ $3Dmol.Parsers = (function() {
                 }
             }
         }
-        else {
+        else if(copyMatrices.length > 1) {
             for (t = 0; t < atoms.length; t++) {
                 var symmetries = [];
                 for (l = 0; l < copyMatrices.length; l++) {
@@ -29023,8 +29012,6 @@ $3Dmol.Parsers = (function() {
         var noH = !options.keepH; // suppress hydrogens by default
         var computeStruct = !options.noSecondaryStructure;
         var noAssembly = !options.doAssembly; // don't assemble by default
-		  console.log('doAssembly = '+options.doAssembly);
-		  console.log('noAssembly = '+noAssembly);
         var copyMatrix = !options.duplicateAssemblyAtoms; //default true
         modelData.symmetries = [];
     
@@ -29037,7 +29024,7 @@ $3Dmol.Parsers = (function() {
 
         var hasStruct = false;
         var serialToIndex = []; // map from pdb serial to index in atoms
-        var lines = str.split("\n");
+        var lines = str.split(/\r?\n/);
         var i, j, k, line;
         for (i = 0; i < lines.length; i++) {
             line = lines[i].replace(/^\s*/, ''); // remove indent
@@ -29065,7 +29052,13 @@ $3Dmol.Parsers = (function() {
                         elem = 'H'; //workaround weird hydrogen names from MD, note mercury must use lowercase
                     }
                     if(elem.length > 1) {
-                        elem = elem[0].toUpperCase() + elem.substr(1).toLowerCase();                    
+                        elem = elem[0].toUpperCase() + elem.substr(1).toLowerCase();   
+						if(typeof(bondTable[elem]) === 'undefined') {
+							//not a known element, probably should just use first letter
+							elem = elem[0];
+						} else if(line[0] == 'A' && elem == 'Ca') { //alpha carbon, not calcium
+							elem = "C";
+						}
                     }
                 } else {
                     elem = elem[0].toUpperCase() + elem.substr(1).toLowerCase();                    
@@ -29258,7 +29251,7 @@ $3Dmol.Parsers = (function() {
         var computeStruct = !options.noSecondaryStructure;
 
         var serialToIndex = []; // map from pdb serial to index in atoms
-        var lines = str.split("\n");
+        var lines = str.split(/\r?\n/);
         var i, j, k, line;
         for (i = 0; i < lines.length; i++) {
             line = lines[i].replace(/^\s*/, ''); // remove indent
