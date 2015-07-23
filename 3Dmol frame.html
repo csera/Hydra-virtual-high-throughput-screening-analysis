@@ -8,12 +8,17 @@
 	<script src="codebase/3Dmol.js"></script>
 
 <style>
-head, body {
-	margin: 0;
-	border: 0;
-	padding: 0;
-	max-height: 100vh
-}
+	head, body {
+		margin: 0;
+		border: 0;
+		padding: 0;
+		max-height: 100vh
+	}
+	.text{
+		color:white;
+		font-size:100%;
+		background-color: rgba(0, 0, 0, 0.65);
+	}
 </style>
 </head>
 <body>
@@ -142,7 +147,8 @@ head, body {
 		glviewer.zoomTo();
 		glviewer.render();
 		
-		//Fires when mouse button is pressed (before release) on anything within <html></html>
+		//Fires when mouse button is pressed (before release) on anything within the 'root'
+		//(topmost) tags: <html></html> in this case
 		//Calls iframeClicked(...) in the Hydra UI to make this element selected
 		$(':root').mousedown(function(){
 			window.parent.iframeClicked($('#webixID').text(), getViewMode());
@@ -150,10 +156,15 @@ head, body {
 	});
 	</script>
 	
-	<div id="gldiv" style="width: 100%; height: 80vh; margin: 0; padding: 0; border: 0;"></div>
-
-	<hr style="margin: 0;">
-
+	<div id="gldiv" style="width: 100%; height: 100vh; margin: 0; padding: 0; border: 0;"></div>
+	
+	<div id="webixID" class='text' style="position:absolute; left:0; bottom:0;"></div>
+	
+	<input type="button" value="Recenter" class='text' style='position:absolute; right:10px; bottom:10px;'
+			 onclick="glviewer.zoomTo();"></input>
+	
+	<!--<hr style="margin: 0;">
+	
 	<br>
 	<input type="button" value="Stick"
 		onclick="glviewer.setStyle({},{stick:{}}); glviewer.render();"></input>
@@ -164,14 +175,17 @@ head, body {
 	<input type="button" value="Sphere"
 		onclick="glviewer.setStyle({},{sphere:{}}); glviewer.render();"></input>
 	<input type="button" value="Cartoon"
-		onclick="glviewer.setStyle({hetflag:false},{cartoon:{color: 'spectrum'}}); glviewer.render();"></input>
+		onclick="glviewer.setStyle({hetflag:false},{cartoon:{color: 'spectrum'}});
+		glviewer.render();"></input>
 	<input type="button" value="Label alpha C's"
 		onclick="addLabels(glviewer); glviewer.render();"></input>
 	<br>
 	<input type="button" value="Surface1"
-		onclick="surf1 = glviewer.addSurface($3Dmol.SurfaceType.VDW, {}, {hetflag:false,chain:'A'},{hetflag:false,chain:'A'});"></input>
+		onclick="surf1 = glviewer.addSurface($3Dmol.SurfaceType.VDW, {}, {hetflag:false,chain:'A'},
+														 {hetflag:false,chain:'A'});"></input>
 	<input type="button" value="Surface2"
-		onclick="surf2 = glviewer.addSurface($3Dmol.SurfaceType.MS, {map:{prop:'partialCharge',scheme:new $3Dmol.Gradient.RWB(-.6,.6)}, opacity:0.85}, {chain:'B'},{chain:'B'});"></input>
+		onclick="surf2 = glviewer.addSurface($3Dmol.SurfaceType.MS, {map:{prop:'partialCharge',
+			scheme:new $3Dmol.Gradient.RWB(-.6,.6)}, opacity:0.85}, {chain:'B'},{chain:'B'});"></input>
 	<input type="button" value="RM Surface1"
 		onclick="glviewer.removeSurface(surf1), lastsurfstyle = 1;"></input>
 	<input type="button" value="RM Surface2"
@@ -181,10 +195,9 @@ head, body {
 	<br>
 	<input id="pdbid" value="1UBQ" size=4>
 	<button
-		onclick="glviewer.clear(); m = $3Dmol.download('pdb:' + $('#pdbid').val(), glviewer, {doAssembly:true});">Download</button>
-	
-   <div id="webixID" style="position:absolute; left:0; bottom: 0; color: white;
-		background-color: rgba(0, 0, 0, 0.65); font-size:100%"></div>
+		onclick="glviewer.clear(); m = $3Dmol.download('pdb:' + $('#pdbid').val(), glviewer,
+		{doAssembly:true});">Download</button>
+	-->
 
 	<textarea style="display: none;" id="moldata_pdb_large">
 		HEADER    COMPLEX (ONCOGENE PROTEIN/PEPTIDE)      30-SEP-96   1YCR              
