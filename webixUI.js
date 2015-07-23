@@ -110,32 +110,13 @@ hydraUI = webix.ui({
                      {id:'structCross', value:'Cross'},
                      ],
                      on:{
-                        onChange: function(){ var coord = $$('activeCoord').getValue();
-                        if (coord) {
-                           var glviewer = $$('viewer'+coord).getWindow().glviewer;
-                           var itemID = this.getValue();
-                           var itemVal = this.getPopup().getList().getItem(itemID).value;
-                           //var styleType = itemVal.toLowerCase();
+                        'onChange': function(){
+                           var coord = $$('activeCoord').getValue();
                            
-                           //glviewer.setStyle({},{styleType});
-                           
-                           //Ugly method. Try getting the variable method to work later...
-                           if (itemVal == 'Cartoon')
-                              glviewer.setStyle({hetflag:false},{cartoon:{color: 'spectrum'}});
-                           else if (itemVal == 'Sphere')
-                              glviewer.setStyle({},{sphere:{}});
-                           else if (itemVal == 'Stick')
-                              glviewer.setStyle({},{stick:{}});
-                           else if (itemVal == 'Line')
-                              glviewer.setStyle({},{line:{}});
-                           else if (itemVal == 'Cross')
-                              glviewer.setStyle({},{cross:{linewidth:5}});
-                           
-                           glviewer.render();
-                           
-                           //Store new setting in iframe
-                           $$('viewer'+coord).getWindow().compDisplay[0] = itemVal;
-                        }}
+                           if (coord) {
+                              setStruct(coord,this,0);
+                           }
+                        }
                      }
                   
                   },
@@ -147,43 +128,15 @@ hydraUI = webix.ui({
                      {id:'surfSES', value:'Solvent Excluded'},
                      ],
                      on:{
-                        onChange: function(){ var coord = $$('activeCoord').getValue();
-                        if (coord) {
-                           var iViewer = $$('viewer'+coord).getWindow();
-                           var glviewer = iViewer.glviewer;
-                           var itemID = this.getValue();
-                           var itemVal = this.getPopup().getList().getItem(itemID).value;
+                        onChange: function(){
+                           var coord = $$('activeCoord').getValue();
                            
-                           if ((itemVal == 'None') && iViewer.surfaces[0] != null) {
-                              webix.message("hi");
-                              glviewer.removeSurface(iViewer.surfaces[0]),
-                              iViewer.lastsurfstyle = 1;
+                           if (coord){
+                              var opacSet = $$('surfOpacity').getValue()/100;
+                              
+                              setSurface(coord,this,0,opacSet);
                            }
-                           else if (itemVal == 'Van der Waals') {
-                              iViewer.surfaces[0] =
-                                 glviewer.addSurface(iViewer.$3Dmol.SurfaceType.VDW, {},
-                                 {hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
-                           }
-                           else if (itemVal == 'Molecular') {
-                              iViewer.surfaces[0] =
-                                 glviewer.addSurface(iViewer.$3Dmol.SurfaceType.MS, {},
-                                 {hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
-                           }
-                           else if (itemVal == 'Solvent Accessible') {
-                              iViewer.surfaces[0] =
-                                 glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SAS, {},
-                                 {hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
-                           }
-                           else if (itemVal == 'Solvent Excluded') {
-                              iViewer.surfaces[0] =
-                                 glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SES, {},
-                                 {hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
-                           }
-                           else
-                              return; //Eg set to 'None' and surfaces[0] = null
-                           
-                           iViewer.surfDisplay[0] = itemID;
-                        }}
+                        }
                      }
                   },
                   {id:'surfOpacity', view:'slider', level:'Opacity', label:'Opacity',
@@ -191,25 +144,29 @@ hydraUI = webix.ui({
                      //Gives opacity in percentage
                      //3Dmol requires decimal -> use this.getValue()/100
                      on:{
-                        onChange: function(){ var coord = $$('activeCoord').getValue();
-                        if (coord) {
-                           var glviewer = $$('viewer'+coord).getWindow().glviewer;
-                           var itemID = this.getValue();
-                           //var itemVal = this.getPopup().getList().getItem(itemID).value;
+                        onChange: function(){
+                           var coord = $$('activeCoord').getValue();
                            
-                        }}
+                           if (coord) {
+                              var opacSet = itemVal/100;
+                              
+                              setSurface(coord,$$('surfType'),0,opacSet);
+                           }
+                        }
                      }
                   },
                   {cols:[
                      {id:'alphaCs', view:'checkbox', label:"Show α C's",
                         on:{
-                           onChange: function(){ var coord = $$('activeCoord').getValue();
-                           if ($$('activeCoord').getValue()) {
-                              var glviewer = $$('viewer'+coord).getWindow().glviewer;
-                              var itemID = this.getValue();
-                              //var itemVal = this.getPopup().getList().getItem(itemID).value;
-                           
-                           }}
+                           onChange: function(){
+                              var coord = $$('activeCoord').getValue();
+                              
+                              if (coord) {
+                                 var itemVal = this.getValue(); //0 = not checked; 1 = checked
+                                 
+                                 setAlphaCs(coord, itemVal, 0);
+                              }
+                           }
                         }
                      },
                      {id:'ligand', view:'checkbox', label:'Set Ligand'}

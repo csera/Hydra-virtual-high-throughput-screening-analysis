@@ -60,6 +60,8 @@
 	   </div>
 			
 		<!--<script type="text/javascript" src="codebase/GLmol.js")></script>-->
+		<script src="webixUI.js" charset="utf-8"></script>
+		
 		<script type="text/javascript" charset="utf-8">
 		//Called by iframe if it is clicked, passed coordinates & view settings
 		function iframeClicked(activeCoord, viewSettings) {
@@ -79,11 +81,98 @@
 			webix.html.addCss($$('viewer'+activeCoord).$view, "activeViewer");
 			
 			$$('activeCoord').setValue(activeCoord);
-			//console.log($$('struct'+compDisplay[0]).getValue());
 			$$('structType').setValue('struct'+compDisplay[0]);
-			$$('surfType').setValue(surfDisplay[0]);
 			$$('surfOpacity').setValue(surfOpacity[0]);
+			$$('surfType').setValue(surfDisplay[0]);
+				//Because this references the value of surfOpacity when changed, it must be set
+				//only AFTER surfOpacity is set. Otherwise the default view:'slider' val
+				//pollutes the whole process
 			$$('alphaCs').setValue(showAlphaCs[0]);
+		}
+		
+		function setStruct(coord, listObj, structIndex){
+			var glviewer = $$('viewer'+coord).getWindow().glviewer;
+			var itemID = listObj.getValue();
+			var itemVal = listObj.getPopup().getList().getItem(itemID).value;
+			//var styleType = itemVal.toLowerCase();
+			
+			//glviewer.setStyle({},{styleType});
+			
+			//Ugly method. Try getting the variable method to work later...
+			if (itemVal == 'Cartoon')
+				glviewer.setStyle({hetflag:false},{cartoon:{color: 'spectrum'}});
+			else if (itemVal == 'Sphere')
+				glviewer.setStyle({},{sphere:{}});
+			else if (itemVal == 'Stick')
+				glviewer.setStyle({},{stick:{}});
+			else if (itemVal == 'Line')
+				glviewer.setStyle({},{line:{}});
+			else if (itemVal == 'Cross')
+				glviewer.setStyle({},{cross:{linewidth:5}});
+			
+			//NEED TO ALTER THIS TO WORK WITH HETATOMS/LIGANDS
+			
+			glviewer.render();
+			
+			//Store new setting in iframe
+			$$('viewer'+coord).getWindow().compDisplay[structIndex] = itemVal;
+		}
+		
+		function setSurface(coord, listObj, surfIndex, opacSet){
+			var iViewer = $$('viewer'+coord).getWindow();
+			var glviewer = iViewer.glviewer;
+			var itemID = listObj.getValue(); //ID of of the list item
+			var itemVal = listObj.getPopup().getList().getItem(itemID).value;
+				console.log(itemVal);
+				//What the list item actually displays
+				
+			if (iViewer.surfaces[surfIndex] != null) {
+				console.log('Removing surface');
+				glviewer.removeSurface(iViewer.surfaces[surfIndex]),
+				iViewer.lastsurfstyle = 1;
+			}
+			if (itemVal == 'Van der Waals') {
+				console.log('Adding VdW surface')
+				iViewer.surfaces[surfIndex] =
+					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.VDW, {opacity:opacSet},
+					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
+			}
+			else if (itemVal == 'Molecular') {
+				console.log('Adding molecular surface')
+				iViewer.surfaces[surfIndex] =
+					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.MS, {opacity:opacSet},
+					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
+			}
+			else if (itemVal == 'Solvent Accessible') {
+				console.log('Adding SA surface')
+				iViewer.surfaces[surfIndex] =
+					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SAS, {opacity:opacSet},
+					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
+			}
+			else if (itemVal == 'Solvent Excluded') {
+				console.log('Adding SE surface')
+				iViewer.surfaces[surfIndex] =
+					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SES, {opacity:opacSet},
+					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
+			}
+			
+			iViewer.surfDisplay[surfIndex] = itemID;
+			iViewer.surfOpacity[surfIndex] = opacSet*100; //surfOpacity stores values of the slider
+		}
+		
+		function setAlphaCs(coord, boxVal, index, dispOptns) {
+			var iViewer = $$('viewer'+coord).getWindow();
+			var glviewer = iViewer.glviewer;
+			
+			if (boxVal == 1){
+				iViewer.addLabels(glviewer);
+				glviewer.render();
+			}
+			else if (boxVal == 0) {
+				glviewer.removeAllLabels();
+			}
+			
+			iViewer.showAlphaCs[index] = boxVal;
 		}
 		
 		// script modified from http://www.amcharts.com/tutorials/loading-external-data/
@@ -219,6 +308,5 @@
 		
 		
       </script>
-		<script src="webixUI.js" charset="utf-8"></script>
 	</body>
 </html>
