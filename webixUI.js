@@ -127,6 +127,7 @@ hydraUI = webix.ui({
                      {id:'surfSAS', value:'Solvent Accessible'},
                      {id:'surfSES', value:'Solvent Excluded'},
                      ],
+                     value:'surfNone',
                      on:{
                         onChange: function(){
                            var coord = $$('activeCoord').getValue();
@@ -148,6 +149,7 @@ hydraUI = webix.ui({
                            var coord = $$('activeCoord').getValue();
                            
                            if (coord) {
+                              var itemVal = this.getValue();
                               var opacSet = itemVal/100;
                               
                               setSurface(coord,$$('surfType'),0,opacSet);
@@ -155,22 +157,6 @@ hydraUI = webix.ui({
                         }
                      }
                   },
-                  {cols:[
-                     {id:'alphaCs', view:'checkbox', label:"Show α C's",
-                        on:{
-                           onChange: function(){
-                              var coord = $$('activeCoord').getValue();
-                              
-                              if (coord) {
-                                 var itemVal = this.getValue(); //0 = not checked; 1 = checked
-                                 
-                                 setAlphaCs(coord, itemVal, 0);
-                              }
-                           }
-                        }
-                     },
-                     {id:'ligand', view:'checkbox', label:'Set Ligand'}
-                  ]},
                   //recenter control here? place this in the viewer?
                   
                   {} //Blank view needed to fix a related resizing issue

@@ -87,7 +87,6 @@
 				//Because this references the value of surfOpacity when changed, it must be set
 				//only AFTER surfOpacity is set. Otherwise the default view:'slider' val
 				//pollutes the whole process
-			$$('alphaCs').setValue(showAlphaCs[0]);
 		}
 		
 		function setStruct(coord, listObj, structIndex){
@@ -158,21 +157,6 @@
 			
 			iViewer.surfDisplay[surfIndex] = itemID;
 			iViewer.surfOpacity[surfIndex] = opacSet*100; //surfOpacity stores values of the slider
-		}
-		
-		function setAlphaCs(coord, boxVal, index, dispOptns) {
-			var iViewer = $$('viewer'+coord).getWindow();
-			var glviewer = iViewer.glviewer;
-			
-			if (boxVal == 1){
-				iViewer.addLabels(glviewer);
-				glviewer.render();
-			}
-			else if (boxVal == 0) {
-				glviewer.removeAllLabels();
-			}
-			
-			iViewer.showAlphaCs[index] = boxVal;
 		}
 		
 		// script modified from http://www.amcharts.com/tutorials/loading-external-data/
