@@ -152,27 +152,39 @@ hydraUI = webix.ui({
       // second row, main content of app goes here
       {cols:[{
          // left column has control panel, upload manager as accordioned components
-         view:"scrollview",
-         scroll:"y",
-         type:"line",
-         body:
-         {multi:true, view:"accordion", type:"line", 
-            rows:[
-            
-            // Upload compound list / DOCK data
-            uploadControls,
-            {view:'resizer'},
-            
-            //Webix bug: section below resizer expands when resizer moved up
-            //TEMP FIX: Need to nest the below sections in one row
-            
-            {rows:[
-            // "Grid Controls" - controls for resizing the grid
-            gridControls,
-            
-            viewerControls,
+         type:'clean', rows:[
+            //Panels that switch in the multiview: animation off, persistent views on.
+            {animate:false, keepViews:true, cells:[
+               {id:'files&grid', view:"scrollview",
+               scroll:"y", type:"line",
+               body:
+                  {multi:true, view:"accordion", type:"line", rows:[
+                     
+                     // Upload compound list / DOCK data
+                     uploadControls,
+                     {view:'resizer'},
+                     
+                     //Webix bug: section below resizer expands when resizer moved up
+                     //TEMP FIX: Need to nest the below sections in one row
+                     
+                     {rows:[
+                     // "Grid Controls" - controls for resizing the grid
+                        gridControls,
+                     ]}
+                  ]}
+               },
+               {id:'viewerCtrls', view:'scrollview', scroll:'y', body:
+                  {multi:true, view:'accordion', rows:[
+                     viewerControls
+                  ]}
+               }
+            ]},
+            {view:'tabbar', type:'bottom', selected:'files&grid',
+               multiview:true, options:[
+               {value:'Files & Grid', id:'files&grid'},
+               {value:'Viewer Controls', id:'viewerCtrls'}
             ]}
-         ]},
+         ]
       },
       
       // middle column contains central workspace with all of the visualization object
