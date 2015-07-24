@@ -231,54 +231,56 @@ hydraUI = webix.ui({
          },
          {view:"resizer"},
          // Details of selected compound not shown in list, such as scores
-         {header:"Compound Details", collapsed:false, body:
-            {view:"form", id:"comp_det", maxWidth:250, rows:[
-               { view:"text",name:"category",label:"Category" },
-               { view:"text",name:"compound",label:"Compound" },
-               { view:"text",name:"res",label:"# Residues" },
-               { view:"text",name:"bond",label:"# Bonds" },
-            ]}
-         },
-         
-         {view:"resizer",
-         container:"vendorDiv",
-         scroll: 'xy',
-         id:"all_vendors"},
-         // Details of selected compound not shown in list, such as scores
-         {  header:"Vendor List", collapsed:false, body:
-            { view:"datatable", 
-            id:"vendors",
-            select:true, 
-            multiselect:true, // want to make double click do an alert
-            drag:true, 
-            maxWidth:250, 
-            columns:[
-               {  template: "#compound# #vendor#",
-                  header:"Zinc ID : Vendor", 
-                  width:250, 
-                  height: 350,
-                  editor:"text",
-               }
-            ],
-            data:'',
-            on:{
-               onItemClick:function(){ 
-                  console.log(vendorCollect[0].website)
-                  alert(
-
-                     "Compound: " + vendorCollect[5].compound + "\n" +
-                     "Website: " + vendorCollect[5].website + "\n" +
-                     "Phone #: " + vendorCollect[5].phone + "\n" +
-                     "Fax #: " + vendorCollect[5].fax + "\n" +
-                     "Contact Email: " + vendorCollect[5].email + "\n" +
-                     "Directly order: " + vendorCollect[5].orderurl + "\n"
-
-                     );
-               }
-            }
+         {rows:[
+            {header:"Compound Details", collapsed:false, body:
+               {view:"form", id:"comp_det", maxWidth:250, rows:[
+                  { view:"text",name:"category",label:"Category" },
+                  { view:"text",name:"compound",label:"Compound" },
+                  { view:"text",name:"res",label:"# Residues" },
+                  { view:"text",name:"bond",label:"# Bonds" },
+               ]}
             },
-         },
-         
+            
+            {view:"resizer",
+               container:"vendorDiv",
+               scroll: 'xy',
+               id:"all_vendors"},
+               
+            // Details of selected compound not shown in list, such as scores
+            {header:"Vendor List", collapsed:false, body:
+               { view:"datatable", 
+               id:"vendors",
+               select:true, 
+               multiselect:true, // want to make double click do an alert
+               drag:true, 
+               maxWidth:250, 
+               columns:[
+                  {  template: "#compound# #vendor#",
+                     header:"Zinc ID : Vendor", 
+                     width:250, 
+                     height: 350,
+                     editor:"text",
+                  }
+               ],
+               data:'',
+               on:{
+                  onItemClick:function(){ 
+                     console.log(vendorCollect[0].website)
+                     alert(
+   
+                        "Compound: " + vendorCollect[5].compound + "\n" +
+                        "Website: " + vendorCollect[5].website + "\n" +
+                        "Phone #: " + vendorCollect[5].phone + "\n" +
+                        "Fax #: " + vendorCollect[5].fax + "\n" +
+                        "Contact Email: " + vendorCollect[5].email + "\n" +
+                        "Directly order: " + vendorCollect[5].orderurl + "\n"
+   
+                        );
+                  }
+               }
+               },
+            },
+         ]},
          //For debugging: Textarea to display contents of files
          /*{header:"File Value", collapsed:false, body:
             {view:"textarea", id:"file_dump", maxWidth:300}
