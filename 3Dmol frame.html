@@ -16,7 +16,6 @@
 	}
 	.text{
 		color:white;
-		font-size:100%;
 		background-color: rgba(0, 0, 0, 0.65);
 	}
 </style>
@@ -68,6 +67,18 @@
 		return viewSettings;
 	}
 	
+	function fileToViewer(fData, fType){
+		var title = '';
+		
+		$3Dmol.loadFile(fData,fType,glviewer,{doAssembly:true});
+		
+		try{
+			title = $3Dmol.Parsers.compoundTitle;
+			console.log('compoundTitle '+title);
+		}catch(e){
+			console.error("Failed to get compound title: "+e);
+		}
+	}
 	
 	var addLabels = function() {
 		var atoms = glviewer.getModel().selectedAtoms({
@@ -125,7 +136,7 @@
 	};
 
 	$(document).ready(function() {
-
+		
 		moldata = data = $("#moldata_pdb_large").val();
 		glviewer = $3Dmol.createViewer("gldiv", {
 			defaultcolors : $3Dmol.rasmolElementColors
@@ -134,7 +145,7 @@
 		glviewer.setBackgroundColor(0x000000);
 
 		receptorModel = m = glviewer.addModel(data, "pqr");
-
+		
 		atoms = m.selectedAtoms({});
 
 		for ( var i in atoms) {
@@ -156,12 +167,14 @@
 	});
 	</script>
 	
-	<div id="gldiv" style="width: 100%; height: 100vh; margin: 0; padding: 0; border: 0;"></div>
+	<div id="gldiv" style="width: 100%; height: 100vh;"></div>
 	
-	<div id="webixID" class='text' style="position:absolute; left:0; bottom:0;"></div>
+	<div id='compoundTitle' class='text' style="position:aboslute; left:0; top:0;"></div>
 	
-	<input type="button" value="Recenter" class='text' style='position:absolute; right:10px; bottom:10px;'
-			 onclick="glviewer.zoomTo();"></input>
+	<div id="webixID" class='text' style="font-size:80%; position:absolute; left:0; bottom:0;"></div>
+	
+	<input type="button" value="Recenter" class='text' style='position:absolute; right:10px;
+		bottom:10px;' onclick="glviewer.zoomTo();"></input>
 	
 	<!--<hr style="margin: 0;">
 	

@@ -215,9 +215,8 @@
 					console.log('Detected file type: '+fType);
 					
 					//Calls loading function for "viewer[x],[y]" defined in the iframe source html
-					//$$('viewer'+x+','+y).getWindow().loadFile(fData,false);
 					viewer.clear();
-					$$('viewer'+x+','+y).getWindow().$3Dmol.loadFile(fData,fType,viewer,{doAssembly:false});
+					$$('viewer'+x+','+y).getWindow().fileToViewer(fData,fType);
 					
 					//Clear old cell if the structure was loaded
 					if (origX!=0 && origY!=0) {
