@@ -210,9 +210,9 @@ hydraUI = webix.ui({
                view:"datatable",
                select:true, 
                columns:[
-                  // { id:"idNum", header:"ID", width:50}, 
-+                 { id:"compound", header:"Compound Name", width:135 },
-                  { id:"category", header:"Category", fillspace:1 },
+                  { id:"id", header:"ID", width:50}, 
+                  { id:"category", header:"Category", width:85}, 
+                  { id:"compname", header:"Compound Name", fillspace:1 },
                ], 
                data:'',
                minWidth:250,
@@ -234,50 +234,10 @@ hydraUI = webix.ui({
          {header:"Compound Details", collapsed:false, body:
             {view:"form", id:"comp_det", maxWidth:250, rows:[
                { view:"text",name:"category",label:"Category" },
-               { view:"text",name:"compound",label:"Compound" },
-               { view:"text",name:"res",label:"# Residues" },
-               { view:"text",name:"bond",label:"# Bonds" },
+               { view:"text",name:"compname",label:"Name" },
+               { view:"text",name:"pdb",label:"PDB #" },
+               { view:"text",name:"res",label:"Residues" },
             ]}
-         },
-         
-         {view:"resizer",
-            container:"vendorDiv",
-            scroll: 'xy',
-            id:"all_vendors"},
-            
-         // Details of selected compound not shown in list, such as scores
-         {  header:"Vendor List", collapsed:false, body:
-            { view:"datatable", 
-            id:"vendors",
-            select:true, 
-            multiselect:true, // want to make double click do an alert
-            drag:true, 
-            maxWidth:250, 
-            columns:[
-               {  template: "#compound# #vendor#",
-                  header:"Zinc ID : Vendor", 
-                  width:250, 
-                  height: 350,
-                  editor:"text",
-               }
-            ],
-            data:'',
-            on:{
-               onItemClick:function(){ 
-                  console.log(vendorCollect[0].website)
-                  alert(
-
-                     "Compound: " + vendorCollect[5].compound + "\n" +
-                     "Website: " + vendorCollect[5].website + "\n" +
-                     "Phone #: " + vendorCollect[5].phone + "\n" +
-                     "Fax #: " + vendorCollect[5].fax + "\n" +
-                     "Contact Email: " + vendorCollect[5].email + "\n" +
-                     "Directly order: " + vendorCollect[5].orderurl + "\n"
-
-                     );
-               }
-            }
-            },
          },
          
          //For debugging: Textarea to display contents of files
@@ -315,36 +275,6 @@ $$("uploader_1").attachEvent("onAfterFileAdd",function(){
       //Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
       //Added as a string rather than an actual file object
       
-      // Gets ZINC IDs from file; adds to array zincIds
-      fileText = reader.result;
-      var regex = /ZINC/gi, result, indices = [];
-      var zincIds = [],
-      bonds = [],
-      numRes = [];
-      while ( (result = regex.exec(fileText)) ) {
-          indices.push(result.index);
-          // 12 is the length of ZINC id
-          zincs = fileText.slice(result.index, result.index + 12);
-          zincIds.push(zincs)
-      }
-      lines = fileText.split("\n")
-      console.log(indices)
-      for(var x=0; x<indices.length;x++){
-         infoLine = lines.slice(indices[x] + 3, indices[x] + 4)
-         console.log(infoLine)
-         stringLine = infoLine.toString()
-         a1 = stringLine.search("\ ")+1
-         a2 = stringLine.slice(a1, stringLine.length).search("\ ")+1
-         atomInfo = stringLine.slice(a1, a2);
-         bondString = stringLine.slice(a2+1, stringLine.length)
-         b1 = bondString.search("\ ")
-         bondInfo = bondString.slice(0,b1);
-         bonds.push(bondInfo);
-         numRes.push(atomInfo);
-      }
-      compound_fxn(zincIds, numRes, bonds);
-      // compListDetails(zincIds, numRes, bonds);
-      console.log(numRes, bonds)
    };
    reader.onerror = function(e) {
       console.error("File could not be read. Code: "+e.target.error.code);
