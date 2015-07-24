@@ -1,6 +1,145 @@
 webix.ready(function(){
    //webix.ui.fullScreen(); //for fullscreen on mobile devices
+
+var uploadControls = 
+   {header:"Import Compounds", maxWidth:250, autoheight:true, collapsed:false, body:
+      {rows:[ //removed view:'form' to make this take up the whole width
+         { //Uploader element
+            id:"uploader_1", view:"uploader",
+            value:"Upload Files",
+            multiple:true, autosend:false,
+            //upload:"parser.php"
+         },
+         { //Table showing uploaded files
+            id:"uploadTable", view:"datatable",
+            select:true, multiselect:true, //ctrl+click & shift+click work
+            drag:true, //NEED TO MAKE THIS SYNC WITH COMPOUND LIST
+            editable:true, editaction:"dblclick",
+            maxHeight:400, minHeight:160,
+            leftSplit:2, //left 2 col's won't scroll horizontally
+            columns:[
+               {id:"col", header:"Col", width:40, editor:"text"},
+               {id:"oCol", header:"origCol", hidden:true},
+               {id:"row", header:"Row", width:45, editor:"text"},
+               {id:"oRow", header:"origRow", hidden:true},
+               {id:"fileName", header:"File Name", width:200},
+               {id:"fileData", header:"Data", hidden:true},
+            ],
+         },
+         {
+            cols:[
+               {
+                  view:"button",id:"load_click",value:"Update Data",type:"form",
+                  click:"load_fxn"
+               },
+               {
+                  view:"button",id:"clear_click",value:"Delete Data",type:"danger",
+                  click:"clear_fxn"
+               }
+            ]
+         }
+      ]}
+   };
    
+var gridControls =
+   {header:"Grid Controls", maxWidth:250, collapsed:false, body:
+      {view:"form", id:"grid_dim", elements:[
+         //{view:"text",value:"blarg",label:"test",name:"mg"},
+         {
+            view:"text",value:"1",label:"Columns:",name:"numCol",//specifies cols count
+         },
+         {
+            view:"text",value:"1",label:"Rows:",name:"numRow",//specifies rows count
+         },
+         /*{/* NOTE: feature not yet implemented --> dropdown menu to select
+          *the ID for each of the viewers in the central grid, as defined in the
+          *grid_dim form above; via this drop down menu, we can set and specify
+          *the docking file and legand to be shown in each viewer
+            view:"form", type:"space", rows:[
+               {
+                  view:"text",label:"Dock File:", id:"dock11var",
+               },
+               {
+                  view:"text",label:"Ligand File", id:"lig11var", 
+               },
+         ]},*/
+         {
+            view:"button",id:"update_grid",value:"Update Grid",inputWidth:"150",align:"center",
+            on:{
+               'onItemClick': updategridfxn
+               //function(){alert( $$('grid_dim').getValues().numRow )} //debug
+            }
+         }
+      ]}
+   };
+
+var viewerControls =
+   {header:"Viewer Controls", maxWidth:250, collapsed:false, body:
+      {rows:[ //Making this a form would give a cleaner look but would take up more space...
+         //Hidden element which keeps track of the active viewer. Avoids making global var
+         {id:'activeCoord', view:'text', hidden:true},
+         {id:'structType', view:'richselect', label:'Display as', options:[
+            {id:'structCartoon', value:'Cartoon'},
+            {id:'structSphere', value:'Sphere'},
+            {id:'structStick', value:'Stick'},
+            {id:'structLine', value:'Line'},
+            {id:'structCross', value:'Cross'},
+            ],
+            on:{
+               'onChange': function(){
+                  var coord = $$('activeCoord').getValue();
+                  
+                  if (coord) {
+                     setStruct(coord,this,0);
+                  }
+               }
+            }
+         
+         },
+         {id:'surfType', view:'richselect', label:'Surface', options:[
+            {id:'surfNone', value:'None'},
+            {id:'surfVDW', value:'Van der Waals'},
+            {id:'surfMS', value:'Molecular'},
+            {id:'surfSAS', value:'Solvent Accessible'},
+            {id:'surfSES', value:'Solvent Excluded'},
+            ],
+            value:'surfNone',
+            on:{
+               onChange: function(){
+                  var coord = $$('activeCoord').getValue();
+                  
+                  if (coord){
+                     var opacSet = $$('surfOpacity').getValue()/100;
+                     
+                     setSurface(coord,this,0,opacSet);
+                  }
+               }
+            }
+         },
+         {id:'surfOpacity', view:'slider', level:'Opacity', label:'Opacity',
+            value:'50', min:0, max:100,
+            //Gives opacity in percentage
+            //3Dmol requires decimal -> use this.getValue()/100
+            on:{
+               onChange: function(){
+                  var coord = $$('activeCoord').getValue();
+                  
+                  if (coord) {
+                     var itemVal = this.getValue();
+                     var opacSet = itemVal/100;
+                     
+                     setSurface(coord,$$('surfType'),0,opacSet);
+                  }
+               }
+            }
+         },
+         //recenter control here? place this in the viewer?
+         
+         {} //Blank view needed to fix a related resizing issue
+         //Webix thread: http://forum.webix.com/discussion/comment/4771
+      ]}
+   };
+
 hydraUI = webix.ui({
    container:"masterarea",
    type:"line",
@@ -21,44 +160,7 @@ hydraUI = webix.ui({
             rows:[
             
             // Upload compound list / DOCK data
-            {header:"Import Compounds", maxWidth:250, autoheight:true, collapsed:false, body:
-               {rows:[ //removed view:'form' to make this take up the whole width
-                  { //Uploader element
-                     id:"uploader_1", view:"uploader",
-                     value:"Upload Files",
-                     multiple:true, autosend:false,
-                     //upload:"parser.php"
-                  },
-                  { //Table showing uploaded files
-                     id:"uploadTable", view:"datatable",
-                     select:true, multiselect:true, //ctrl+click & shift+click work
-                     drag:true, //NEED TO MAKE THIS SYNC WITH COMPOUND LIST
-                     editable:true, editaction:"dblclick",
-                     maxHeight:400, minHeight:160,
-                     leftSplit:2, //left 2 col's won't scroll horizontally
-                     columns:[
-                        {id:"col", header:"Col", width:40, editor:"text"},
-                        {id:"oCol", header:"origCol", hidden:true},
-                        {id:"row", header:"Row", width:45, editor:"text"},
-                        {id:"oRow", header:"origRow", hidden:true},
-                        {id:"fileName", header:"File Name", width:200},
-                        {id:"fileData", header:"Data", hidden:true},
-                     ],
-                  },
-                  {
-                     cols:[
-                        {
-                           view:"button",id:"load_click",value:"Update Data",type:"form",
-                           click:"load_fxn"
-                        },
-                        {
-                           view:"button",id:"clear_click",value:"Delete Data",type:"danger",
-                           click:"clear_fxn"
-                        }
-                     ]
-                  }
-               ]}
-            },
+            uploadControls,
             {view:'resizer'},
             
             //Webix bug: section below resizer expands when resizer moved up
@@ -66,103 +168,9 @@ hydraUI = webix.ui({
             
             {rows:[
             // "Grid Controls" - controls for resizing the grid
-            {header:"Grid Controls", maxWidth:250, collapsed:false, body:
-               {view:"form", id:"grid_dim", elements:[
-                  //{view:"text",value:"blarg",label:"test",name:"mg"},
-                  {
-                     view:"text",value:"1",label:"Columns:",name:"numCol",//specifies cols count
-                  },
-                  {
-                     view:"text",value:"1",label:"Rows:",name:"numRow",//specifies rows count
-                  },
-                  /*{/* NOTE: feature not yet implemented --> dropdown menu to select
-                   *the ID for each of the viewers in the central grid, as defined in the
-                   *grid_dim form above; via this drop down menu, we can set and specify
-                   *the docking file and legand to be shown in each viewer
-                     view:"form", type:"space", rows:[
-                        {
-                           view:"text",label:"Dock File:", id:"dock11var",
-                        },
-                        {
-                           view:"text",label:"Ligand File", id:"lig11var", 
-                        },
-                  ]},*/
-                  {
-                     view:"button",id:"update_grid",value:"Update Grid",inputWidth:"150",align:"center",
-                     on:{
-                        'onItemClick': updategridfxn
-                        //function(){alert( $$('grid_dim').getValues().numRow )} //debug
-                     }
-                  },
-               ]},
-            },
+            gridControls,
             
-            
-            {header:"Viewer Controls", maxWidth:250, collapsed:false, body:
-               {rows:[ //Making this a form would give a cleaner look but would take up more space...
-                  //Hidden element which keeps track of the active viewer. Avoids making global var
-                  {id:'activeCoord', view:'text', hidden:true},
-                  {id:'structType', view:'richselect', label:'Display as', options:[
-                     {id:'structCartoon', value:'Cartoon'},
-                     {id:'structSphere', value:'Sphere'},
-                     {id:'structStick', value:'Stick'},
-                     {id:'structLine', value:'Line'},
-                     {id:'structCross', value:'Cross'},
-                     ],
-                     on:{
-                        'onChange': function(){
-                           var coord = $$('activeCoord').getValue();
-                           
-                           if (coord) {
-                              setStruct(coord,this,0);
-                           }
-                        }
-                     }
-                  
-                  },
-                  {id:'surfType', view:'richselect', label:'Surface', options:[
-                     {id:'surfNone', value:'None'},
-                     {id:'surfVDW', value:'Van der Waals'},
-                     {id:'surfMS', value:'Molecular'},
-                     {id:'surfSAS', value:'Solvent Accessible'},
-                     {id:'surfSES', value:'Solvent Excluded'},
-                     ],
-                     value:'surfNone',
-                     on:{
-                        onChange: function(){
-                           var coord = $$('activeCoord').getValue();
-                           
-                           if (coord){
-                              var opacSet = $$('surfOpacity').getValue()/100;
-                              
-                              setSurface(coord,this,0,opacSet);
-                           }
-                        }
-                     }
-                  },
-                  {id:'surfOpacity', view:'slider', level:'Opacity', label:'Opacity',
-                     value:'50', min:0, max:100,
-                     //Gives opacity in percentage
-                     //3Dmol requires decimal -> use this.getValue()/100
-                     on:{
-                        onChange: function(){
-                           var coord = $$('activeCoord').getValue();
-                           
-                           if (coord) {
-                              var itemVal = this.getValue();
-                              var opacSet = itemVal/100;
-                              
-                              setSurface(coord,$$('surfType'),0,opacSet);
-                           }
-                        }
-                     }
-                  },
-                  //recenter control here? place this in the viewer?
-                  
-                  {} //Blank view needed to fix a related resizing issue
-                  //Webix thread: http://forum.webix.com/discussion/comment/4771
-               ]}
-            },
+            viewerControls,
             ]}
          ]},
       },
