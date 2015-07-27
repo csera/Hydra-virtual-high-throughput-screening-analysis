@@ -75,7 +75,8 @@ function appendRows(newNumRows, origNumRows, newNumCols){
 	var numRowstoAdd = newNumRows - origNumRows;
    
    for(var y=1; y<=numRowstoAdd; y++){
-      $$('workLayout').addView({id:"workRow"+(origNumRows+y), type:'head', borderless:true, cols:[
+      $$('workLayout').addView({id:"workRow"+(origNumRows+y), type:'clean', css:'inactiveViewer',
+      borderless:true, cols:[
          {id:"viewer1,"+(origNumRows+y), view:'iframe', src:'3Dmol frame.html',
             minWidth:250, minHeight:250,
             on:{'onAfterLoad':setCoord_callback(1,(origNumRows+y))}

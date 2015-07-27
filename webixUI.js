@@ -194,8 +194,8 @@ hydraUI = webix.ui({
       //Framework for a resizable grid of GLmol instances
       //Viewers start at index of 1 with coordinates (x,y)
       //Eg "viewer2,1" is in the first row, second column from the left
-      body:{id:"workLayout", type:'head', borderless:true, rows:[{
-         id:"workRow"+"1", type:'head', borderless:true, cols:[{
+      body:{id:"workLayout", type:'clean', borderless:true, rows:[{
+         id:"workRow"+"1", type:'clean', borderless:true, css:'inactiveViewer', cols:[{
             view:"iframe",
             id:"viewer"+"1"+","+"1",
             src:"3Dmol frame.html",

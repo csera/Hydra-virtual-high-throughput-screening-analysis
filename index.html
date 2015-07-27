@@ -29,6 +29,14 @@
 			border-style: solid;
 			border-width: 10px;
 		}
+		.webix_view.inactiveViewer iframe{
+			border:2px solid white; /*Shorthand CSS property (ie not Webix unique)*/
+			box-sizing:border-box;
+		}
+		.webix_view.activeViewer iframe{
+			border:2px solid royalBlue;
+			box-sizing:border-box;
+		}
 	   </style>
 
        <title>Hydra α</title>
@@ -75,8 +83,11 @@
 			
 			//Removes colored border from previously active viewer (if any)
 			var prevActive = $$('activeCoord').getValue();
-			if (prevActive)
+			if (prevActive && prevActive!=activeCoord) {
+				console.log('blarg');
 				webix.html.removeCss($$('viewer'+prevActive).$view, "activeViewer");
+				webix.html.addCss($$('viewer'+prevActive).$view, 'inactiveViewer');
+			}
 			//Adds colored border to currently active viewer
 			webix.html.addCss($$('viewer'+activeCoord).$view, "activeViewer");
 			
