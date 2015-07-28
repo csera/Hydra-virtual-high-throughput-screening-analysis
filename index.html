@@ -76,15 +76,14 @@
 			//webix.message('You clicked viewer'+coordinates);
 			//console.log($$('viewer'+coordinates).getWindow().getViewMode());
 			//because JS is stupid and can't work with multidimensional arrays
-			var compDisplay = viewSettings[0];
+			//The data contained in these arrays is the actual value of the selected item's id
+			var structDisplay = viewSettings[0];
 			var surfDisplay = viewSettings[1];
 			var surfOpacity = viewSettings[2];
-			var showAlphaCs = viewSettings[3];
 			
-			//Removes colored border from previously active viewer (if any)
+			//Removes colored border from previously active viewer (if any and if it is different)
 			var prevActive = $$('activeCoord').getValue();
 			if (prevActive && prevActive!=activeCoord) {
-				console.log('blarg');
 				webix.html.removeCss($$('viewer'+prevActive).$view, "activeViewer");
 				webix.html.addCss($$('viewer'+prevActive).$view, 'inactiveViewer');
 			}
@@ -92,9 +91,9 @@
 			webix.html.addCss($$('viewer'+activeCoord).$view, "activeViewer");
 			
 			$$('activeCoord').setValue(activeCoord);
-			$$('structType').setValue('struct'+compDisplay[0]);
-			$$('surfOpacity').setValue(surfOpacity[0]);
-			$$('surfType').setValue(surfDisplay[0]);
+			$$('mStructType').setValue('struct'+structDisplay[0]);
+			$$('mSurfOpacity').setValue(surfOpacity[0]);
+			$$('mSurfType').setValue(surfDisplay[0]);
 				//Because this references the value of surfOpacity when changed, it must be set
 				//only AFTER surfOpacity is set. Otherwise the default view:'slider' val
 				//pollutes the whole process
@@ -125,42 +124,41 @@
 			glviewer.render();
 			
 			//Store new setting in iframe
-			$$('viewer'+coord).getWindow().compDisplay[structIndex] = itemVal;
+			$$('viewer'+coord).getWindow().structDisplay[structIndex] = itemVal;
 		}
 		
 		function setSurface(coord, listObj, surfIndex, opacSet){
 			var iViewer = $$('viewer'+coord).getWindow();
 			var glviewer = iViewer.glviewer;
-			var itemID = listObj.getValue(); //ID of of the list item
+			var itemID = listObj.getValue(); //ID of of the surface type list item
 			var itemVal = listObj.getPopup().getList().getItem(itemID).value;
-				console.log(itemVal);
 				//What the list item actually displays
 				
 			if (iViewer.surfaces[surfIndex] != null) {
-				console.log('Removing surface');
+				console.log('Removing surface for '+coord);
 				glviewer.removeSurface(iViewer.surfaces[surfIndex]),
 				iViewer.lastsurfstyle = 1;
 			}
 			if (itemVal == 'Van der Waals') {
-				console.log('Adding VdW surface')
+				console.log('Adding VdW surface for '+coord);
 				iViewer.surfaces[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.VDW, {opacity:opacSet},
 					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
 			}
 			else if (itemVal == 'Molecular') {
-				console.log('Adding molecular surface')
+				console.log('Adding molecular surface for '+coord);
 				iViewer.surfaces[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.MS, {opacity:opacSet},
 					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
 			}
 			else if (itemVal == 'Solvent Accessible') {
-				console.log('Adding SA surface')
+				console.log('Adding SA surface for '+coord);
 				iViewer.surfaces[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SAS, {opacity:opacSet},
 					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
 			}
 			else if (itemVal == 'Solvent Excluded') {
-				console.log('Adding SE surface')
+				console.log('Adding SE surface for '+coord);
 				iViewer.surfaces[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SES, {opacity:opacSet},
 					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
@@ -288,20 +286,24 @@
 				
 				//Only attempt load if the coordinates are valid AND the coordinates have been changed
 				if (validCoordinates(x,y) && (x!=origX || y!=origY)){
-					webix.message('refreshing viewer'+x+','+y);
-					var viewer = $$('viewer'+x+','+y).getWindow().glviewer;
+					webix.message('New compound in viewer'+x+','+y);
+					var viewer = $$('viewer'+x+','+y).getWindow();
 					
 					fType = getFileType(fID);
 					console.log('Detected file type: '+fType);
 					
 					//Calls loading function for "viewer[x],[y]" defined in the iframe source html
-					viewer.clear();
-					$$('viewer'+x+','+y).getWindow().fileToViewer(fData,fType);
+					viewer.glviewer.clear(); //REMOVE THIS COMMAND IF YOU WANT TO DISPLAY MULTIPLE FILES AT ONCE
+					viewer.toDefaultDisp(); //Resets the display tracking variables to the default
+					iframeClicked(x+','+y, viewer.getViewMode());
+					viewer.fileToViewer(fData,fType); //Sends file data for display
 					
 					//Clear old cell if the structure was loaded
 					if (origX!=0 && origY!=0) {
-						//$$('viewer'+origX+','+origY).getWindow().loadFile('',true);
-						$$('viewer'+origX+','+origY).getWindow().glviewer.clear();
+						var oldViewer = $$('viewer'+origX+','+origY).getWindow();
+						oldViewer.glviewer.clear();
+						//set default display values in the old viewer
+						oldViewer.toDefaultDisp();
 					}
 					
 					$$('uploadTable').getItem(fID).oCol = x;

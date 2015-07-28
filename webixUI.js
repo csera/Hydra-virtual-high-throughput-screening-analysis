@@ -73,12 +73,14 @@ var gridControls =
       ]}
    };
 
-var viewerControls =
-   {header:"Viewer Controls", maxWidth:250, collapsed:false, body:
-      {rows:[ //Making this a form would give a cleaner look but would take up more space...
+//Note that the following compound controls pass in an index into each display-setting fxn
+//0 = main compound; 1 = ligand
+var mainControls =
+   {header:"Main Compound", maxWidth:250, collapsed:false, body:
+      {rows:[
          //Hidden element which keeps track of the active viewer. Avoids making global var
          {id:'activeCoord', view:'text', hidden:true},
-         {id:'structType', view:'richselect', label:'Display as', options:[
+         {id:'mStructType', view:'richselect', label:'Display as', options:[
             {id:'structCartoon', value:'Cartoon'},
             {id:'structSphere', value:'Sphere'},
             {id:'structStick', value:'Stick'},
@@ -96,7 +98,7 @@ var viewerControls =
             }
          
          },
-         {id:'surfType', view:'richselect', label:'Surface', options:[
+         {id:'mSurfType', view:'richselect', label:'Surface', options:[
             {id:'surfNone', value:'None'},
             {id:'surfVDW', value:'Van der Waals'},
             {id:'surfMS', value:'Molecular'},
@@ -109,14 +111,23 @@ var viewerControls =
                   var coord = $$('activeCoord').getValue();
                   
                   if (coord){
-                     var opacSet = $$('surfOpacity').getValue()/100;
+                     var opacSet = $$('mSurfOpacity').getValue()/100;
                      
                      setSurface(coord,this,0,opacSet);
                   }
                }
             }
          },
-         {id:'surfOpacity', view:'slider', level:'Opacity', label:'Opacity',
+         
+         //if time permits: add color setting option for surface and for actual model
+         //https://github.com/dkoes/3Dmol.js/issues/88 &
+         //https://github.com/dkoes/3Dmol.js/commit/2973a4eebf4ee32972fc13a19d9c0188a89e9efc
+         /*{id:'mSurfColor', view:'richselect', label:'Surface Color', options:[
+            {id:'mSElement', value:'By Element'},
+            {id:'mSCharge', value:'By Charge'}
+         ]},*/
+         
+         {id:'mSurfOpacity', view:'slider', level:'Opacity', label:'Opacity',
             value:'50', min:0, max:100,
             //Gives opacity in percentage
             //3Dmol requires decimal -> use this.getValue()/100
@@ -128,15 +139,80 @@ var viewerControls =
                      var itemVal = this.getValue();
                      var opacSet = itemVal/100;
                      
-                     setSurface(coord,$$('surfType'),0,opacSet);
+                     setSurface(coord,$$('mSurfType'),0,opacSet);
                   }
                }
             }
          },
-         //recenter control here? place this in the viewer?
          
          {} //Blank view needed to fix a related resizing issue
          //Webix thread: http://forum.webix.com/discussion/comment/4771
+      ]}
+   };
+
+var ligandControls =
+   {header:'Ligand', maxWidth:250, collapsed:false, body:
+      {rows:[
+         {id:'lStructType', view:'richselect', label:'Display as', options:[
+            {id:'structCartoon', value:'Cartoon'},
+            {id:'structSphere', value:'Sphere'},
+            {id:'structStick', value:'Stick'},
+            {id:'structLine', value:'Line'},
+            {id:'structCross', value:'Cross'},
+            ],
+            on:{
+               'onChange': function(){
+                  var coord = $$('activeCoord').getValue();
+                  
+                  if (coord) {
+                     setStruct(coord,this,1);
+                  }
+               }
+            }
+         
+         },
+         {id:'lSurfType', view:'richselect', label:'Surface', options:[
+            {id:'surfNone', value:'None'},
+            {id:'surfVDW', value:'Van der Waals'},
+            {id:'surfMS', value:'Molecular'},
+            {id:'surfSAS', value:'Solvent Accessible'},
+            {id:'surfSES', value:'Solvent Excluded'},
+            ],
+            value:'surfNone',
+            on:{
+               onChange: function(){
+                  var coord = $$('activeCoord').getValue();
+                  
+                  if (coord){
+                     var opacSet = $$('lSurfOpacity').getValue()/100;
+                     
+                     setSurface(coord,this,1,opacSet);
+                  }
+               }
+            }
+         },
+         
+         //again, add color settings if time permits
+         
+         {id:'lSurfOpacity', view:'slider', level:'Opacity', label:'Opacity',
+            value:'50', min:0, max:100,
+            //Gives opacity in percentage
+            //3Dmol requires decimal -> use this.getValue()/100
+            on:{
+               onChange: function(){
+                  var coord = $$('activeCoord').getValue();
+                  
+                  if (coord) {
+                     var itemVal = this.getValue();
+                     var opacSet = itemVal/100;
+                     
+                     setSurface(coord,$$('lSurfType'),1,opacSet);
+                  }
+               }
+            }
+         },
+         
+         {} //Blank view needed to fix a related resizing 
       ]}
    };
 
@@ -175,7 +251,7 @@ hydraUI = webix.ui({
                },
                {id:'viewerCtrls', view:'scrollview', scroll:'y', body:
                   {multi:true, view:'accordion', rows:[
-                     viewerControls
+                     mainControls
                   ]}
                }
             ]},

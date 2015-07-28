@@ -1,101 +1,65 @@
 Hydra is a browser-based tool for high-throughput screening still under development.
-
-It currently impelments GLmol for the molecular viewers and uses the Webix code 
-library for general GUI generation and interactivity.
+It is an open-source project which makes use of 3Dmol.js for displaying molecules
+and the Webix code library for general GUI generation and functionality.
 
 This README will be updated as development proceeds.
 
 -------------------------------------------------------------
+== Completed Features ==
+- Display of up to 18 different compounds at once in an adjustable grid of 3Dmol
+  instances
+  - Grid may be resized in terms of number of viewers and in terms of raw pixels
+  - Exact number of simultaneous instances may fluctuate.  It is usually ~16
+- Structural representations
+  - Cartoon, line (double/triple bonds supported), ball & stick, cross, sphere
+- Surface representations
+  - Van der Waals, molecular, solvent accessible, solvent excluded
+- Fetching of compound information for compounds in the ZINC database
 
-GLmol - Molecular Viewer on WebGL/Javascript
+- Please see 3Dmol.js's documentation for more extensive detail on the following:
+- Tranlations, rotation, and zoom with mouse and touchscreen
+- Non-exhaustive list of supported filetypes:
+  - .mol2, .pdb, .cif, .sdf
 
-== About GLmol ==
 
-GLmol is a 3D molecular viewer based on WebGL and Javascript. You can
-embed molecular models in Web pages without using Java or
-plugins. GLmol is open-source software licensed under LGPL3 or MIT license.
+== Basic Usage ==
+- Upload files into Hydra via the "Upload Files" button
+  - Multiple files may be uploaded at once via shift+click and ctrl+click
+  - Uploaded files will appear in the file list
+- Items in the file list may be reorded via drag and drop
+  - Multiple items can be selected at once and removed via "Delete Data"
+- Uploaded files may be sent to a viewer by entering the corresponding viewer's
+  coordinates in the "Col" and "Row" fields via double-click
+  - The viewer coordinates are displayed in Col,Row format in the bottom left of
+    each 3Dmol instance
+  - Once all desired coordinates have been set, press the "Upload Data" button
+  - Please note that changing the coordinates of an already loaded molecule will 
+    clear it from its original viewer and reload it with the default display 
+    settings in the new viewer
+- The number of viewers in the grid may be resized via the "Grid Controls" pane
+- To change the display settings of a given compound, navigate to the "Viewer Controls"
+  panel which can be accessed via the multiview tab-bar on the bottom left
+  - Select a viewer to make "active" by simply clicking on it. It will be highlighted
+    whilst "active"
+  - Display mode may only be altered for the ACTIVE VIEWER
+  - New display modes will be applied soon as a change in the settings is detected
 
-== Features ==
-
-Currently GLmol has following features. More is coming...
-
-* Read PDB file
-* Read SDF/MOL file
-* Load local files (File API is used; Safari is not supported)
-* Load PDB files directly from RCSB PDB server 
-* Rotate/Translate/Zoom model with mouse (touchpanel support is under development) 
-* Fog & Slab
-* Representations
-    - Line (depiction of double/triple bonds is supported for SDF/MOL file)
-    - Stick
-    - Sphere(van der Waals radius or fixed radius)
-    - Star
-    - Alpha carbon trace
-    - Strand
-    - Ribbon
-    - Thick ribbon
-    - Cylinder & Plate
-    - Tube with radius reflecting B factor
-    - Combination of above
-* Smoothing of beta sheets
-* Special representations for Nucleic acid bases
-    - Stick
-    - Ladder
-    - Line
-* Coloring
-    - By chain
-    - By secondary structure (when defined in SHEET/HELIX records)
-    - By Elements
-    - Gradation (a.k.a chainbow)
-    - Polar/Nonpolar
-    - B factor
-    - Custom
-* Crystallography
-    - Display unit cell
-    - Show crystal packing (when defined in REMARK section)
-* Display biological assembly (when defined in REMARK section)
-* Perspective or Orthographic projection
-* Take screenshot
 
 == System requirements ==
 
-GLmol runs on newer versions of Firefox, Chrome, Safari or
-Opera. Internet Explorer is not supported because IE doesn't implement
-WebGL. Safari users have to enable WebGL manually (see below). Some
-old video cards are blacklisted by browsers due to insufficient
-compatibility. You can still force enable WebGL as shown below, but
-GLmol might not work. 
+Hydra has been developed largely on Firefox and Chrome, but it should also work
+in most other browsers as long as they support WebGL and Javascript.
+It also works well on mobile devices and has been tested on Chrome for Android.
 
-GLmol runs on Sony Ericsson's Android devices
-which support WebGL. Support for Firefox Mobile is currently
-underway. Reportedly, GLmol also runs on WebGL enabled safari in iOS.
+While it may still work, Internet Explorer is unfortunately not supported at this time.
+
 
 == Troubleshooting ==
 
-If you see only black screen and you are using
-
- Internet Explorer: sorry. IE doesn't support WebGL.
- Firefox (version 4 or later): try force enable WebGL. 
-   https://wiki.mozilla.org/Blocklisting/Blocked_Graphics_Drivers#How_to_force-enable_blocked_graphics_features
- Chrome: try force enable WebGL.
-   http://www.google.com/support/forum/p/Chrome/thread?tid=4b9244822aa2f2e0&hl=en
- Safari: enable WebGL.
-   https://discussions.apple.com/thread/3300585?start=0&tstart=0
-
-== How to embed ==
-
-Currently, documentation is not ready.
-Please examine the source code of "embedding-examplesEN.html"
-If it is not clear, don't hesitate to ask me.
-
-Please note that Same-Origin-Policy applies to XmlHttpRequest so that
-GLmol can load PDB files only from the same server as the program or
-RCSB PDB. You can also embed whole PDB file in a HTML file.
- (see triiodotyrosine example)
-
-== Contact ==
-
-Project website is located at http://webglmol.sourceforge.jp/
-
-Comments and suggestions are welcome at http://sourceforge.jp/projects/webglmol/forums/ or 
-biochem_fan@users.sourceforge.jp 
+Why won't my file load?
+If you are running Hydra locally, please note that some browsers (eg Google Chrome)
+have strict security settings which block uploading local files to a locally run 
+instance as a Same-Origin-Policy violation (null source and null destination).
+Please run this on a server or from a different browser (eg Firefox)
+If you are running into a different problem, please verify that your filetype is 
+supported by 3Dmol.js.

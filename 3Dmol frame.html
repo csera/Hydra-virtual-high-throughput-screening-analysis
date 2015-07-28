@@ -28,10 +28,9 @@
 	var surfaces = []; //0 index will be for main comp; 1 will be for any ligand
 	
 	//Display settings variables. Follow same indexing scheme as surfaces[]
-	var compDisplay = [];
+	var structDisplay = [];
 	var surfDisplay = [];
 	var surfOpacity = [];
-	var showAlphaCs = [];
 	
 	toDefaultDisp(); //Set initial values of the setting vars
 	
@@ -44,25 +43,21 @@
 	//Set the default display settings for the viewer
 	//Eventually make a button to restore default settings -> call this
 	function toDefaultDisp() {
-		compDisplay[0] = 'Line';
-		compDisplay[1] = 'Line';
+		structDisplay[0] = 'Line';
+		structDisplay[1] = 'Line';
 		
 		surfDisplay[0] = 'surfNone';
 		surfDisplay[1] = 'surfNone';
 		
-		surfOpacity[0] = 95; //90% opaque by default (90% transparent)
+		surfOpacity[0] = 95; //95% opaque by default (95% transparent)
 		surfOpacity[1] = 95;
-		
-		showAlphaCs[0]=0; //Webix checkboxes: 0->not checked, 1->checked. Not booleans
-		showAlphaCs[1]=0;
 	}
 	
 	function getViewMode() {
 		var viewSettings = []; //Pseudo 2D array for exporting viewer's settings
-			viewSettings[0] = compDisplay;
+			viewSettings[0] = structDisplay;
 			viewSettings[1] = surfDisplay;
 			viewSettings[2] = surfOpacity;
-			viewSettings[3] = showAlphaCs;
 		
 		return viewSettings;
 	}
