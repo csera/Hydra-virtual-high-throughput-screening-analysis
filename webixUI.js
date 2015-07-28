@@ -109,11 +109,12 @@ var mainControls =
             on:{
                onChange: function(){
                   var coord = $$('activeCoord').getValue();
+                  var surfID = this.getValue();
                   
-                  if (coord){
+                  if (coord && surfID!=$$('viewer'+coord).getWindow().surfType[0]){
                      var opacSet = $$('mSurfOpacity').getValue()/100;
-                     
-                     setSurface(coord,this,0,opacSet);
+                     console.log('change in surf type detected');
+                     setSurface(coord,surfID,0,opacSet);
                   }
                }
             }
@@ -134,12 +135,12 @@ var mainControls =
             on:{
                onChange: function(){
                   var coord = $$('activeCoord').getValue();
+                  var itemVal = this.getValue();
                   
-                  if (coord) {
-                     var itemVal = this.getValue();
+                  if (coord && itemVal!=$$('viewer'+coord).getWindow().surfOpacity[0]) {
                      var opacSet = itemVal/100;
-                     
-                     setSurface(coord,$$('mSurfType'),0,opacSet);
+                     console.log('change detected in surfOpac');
+                     setSurface(coord,$$('mSurfType').getValue(),0,opacSet);
                   }
                }
             }
@@ -182,11 +183,12 @@ var ligandControls =
             on:{
                onChange: function(){
                   var coord = $$('activeCoord').getValue();
+                  var surfID = this.getValue();
                   
-                  if (coord){
+                  if (coord && surfID!=$$('viewer'+coord).getWindow().surfType[1]){
                      var opacSet = $$('lSurfOpacity').getValue()/100;
                      
-                     setSurface(coord,this,1,opacSet);
+                     setSurface(coord,surfID,1,opacSet);
                   }
                }
             }
@@ -201,12 +203,12 @@ var ligandControls =
             on:{
                onChange: function(){
                   var coord = $$('activeCoord').getValue();
+                  var itemVal = this.getValue();
                   
-                  if (coord) {
-                     var itemVal = this.getValue();
+                  if (coord && itemVal!=$$('viewer'+coord).getWindow().surfOpacity[1]) {
                      var opacSet = itemVal/100;
                      
-                     setSurface(coord,$$('lSurfType'),1,opacSet);
+                     setSurface(coord,$$('lSurfType').getValue(),1,opacSet);
                   }
                }
             }

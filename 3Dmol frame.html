@@ -28,8 +28,8 @@
 	var surfaces = []; //0 index will be for main comp; 1 will be for any ligand
 	
 	//Display settings variables. Follow same indexing scheme as surfaces[]
-	var structDisplay = [];
-	var surfDisplay = [];
+	var structType = [];
+	var surfType = [];
 	var surfOpacity = [];
 	
 	toDefaultDisp(); //Set initial values of the setting vars
@@ -43,11 +43,11 @@
 	//Set the default display settings for the viewer
 	//Eventually make a button to restore default settings -> call this
 	function toDefaultDisp() {
-		structDisplay[0] = 'Line';
-		structDisplay[1] = 'Line';
+		structType[0] = 'Line';
+		structType[1] = 'Line';
 		
-		surfDisplay[0] = 'surfNone';
-		surfDisplay[1] = 'surfNone';
+		surfType[0] = 'surfNone';
+		surfType[1] = 'surfNone';
 		
 		surfOpacity[0] = 95; //95% opaque by default (95% transparent)
 		surfOpacity[1] = 95;
@@ -55,8 +55,8 @@
 	
 	function getViewMode() {
 		var viewSettings = []; //Pseudo 2D array for exporting viewer's settings
-			viewSettings[0] = structDisplay;
-			viewSettings[1] = surfDisplay;
+			viewSettings[0] = structType;
+			viewSettings[1] = surfType;
 			viewSettings[2] = surfOpacity;
 		
 		return viewSettings;
