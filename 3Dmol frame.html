@@ -43,6 +43,9 @@
 	//Set the default display settings for the viewer
 	//Eventually make a button to restore default settings -> call this
 	function toDefaultDisp() {
+		delete surfaceObjs[0];
+		delete surfaceObjs[1];
+		
 		structType[0] = 'Line';
 		structType[1] = 'Line';
 		
