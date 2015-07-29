@@ -42,7 +42,7 @@ var uploadControls =
    };
    
 var gridControls =
-   {header:"Grid Controls", maxWidth:250, collapsed:false, body:
+   {header:"Grid Size", maxWidth:250, collapsed:false, body:
       {view:"form", id:"grid_dim", elements:[
          //{view:"text",value:"blarg",label:"test",name:"mg"},
          {
@@ -92,6 +92,7 @@ var mainControls =
                   var coord = $$('activeCoord').getValue();
                   
                   if (coord) {
+                     console.log('repainting structure');
                      setStruct(coord,this,0);
                   }
                }
@@ -232,6 +233,11 @@ hydraUI = webix.ui({
          // left column has control panel, upload manager as accordioned components
          type:'clean', rows:[
             //Panels that switch in the multiview: animation off, persistent views on.
+            {view:'tabbar', selected:'files&grid',
+               multiview:true, options:[
+               {value:'Files & Grid', id:'files&grid'},
+               {value:'Viewer Controls', id:'viewerCtrls'}
+            ]},
             {animate:false, keepViews:true, cells:[
                {id:'files&grid', view:"scrollview",
                scroll:"y", type:"line",
@@ -244,7 +250,6 @@ hydraUI = webix.ui({
                      
                      //Webix bug: section below resizer expands when resizer moved up
                      //TEMP FIX: Need to nest the below sections in one row
-                     
                      {rows:[
                      // "Grid Controls" - controls for resizing the grid
                         gridControls,
@@ -257,11 +262,6 @@ hydraUI = webix.ui({
                   ]}
                }
             ]},
-            {view:'tabbar', type:'bottom', selected:'files&grid',
-               multiview:true, options:[
-               {value:'Files & Grid', id:'files&grid'},
-               {value:'Viewer Controls', id:'viewerCtrls'}
-            ]}
          ]
       },
       

@@ -133,36 +133,43 @@
 			//var surfID = listObj.getValue(); //ID of of the surface type list item
 			//var surfType = listObj.getPopup().getList().getItem(itemID).value;
 				//What the list item actually displays
-				
-			if (iViewer.surfaces[surfIndex] != null) {
+			console.log(glviewer.getSurfaces);
+			if (iViewer.surfaceObjs[surfIndex] != null) {
 				console.log('Removing surface for '+coord);
-				glviewer.removeSurface(iViewer.surfaces[surfIndex]),
+				glviewer.removeSurface(iViewer.surfaceObjs[surfIndex]),
 				iViewer.lastsurfstyle = 1;
 			}
 			
+			//Note: This can be set to work with specific chains (as in the 3Dmol example.html),
+			//but this has not been implemented since this is a nonstandard way of including
+			//ligands in files that would be complicated to work with.
 			if (surfID == 'surfVDW') {
 				console.log('Adding VdW surface for '+coord);
-				iViewer.surfaces[surfIndex] =
+				iViewer.surfaceObjs[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.VDW, {opacity:opacSet},
-					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
+					{hetflag:false},{hetflag:false});
 			}
 			else if (surfID == 'surfMS') {
 				console.log('Adding molecular surface for '+coord);
-				iViewer.surfaces[surfIndex] =
+				iViewer.surfaceObjs[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.MS, {opacity:opacSet},
-					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
+					{hetflag:false},{hetflag:false});
 			}
 			else if (surfID == 'surfSAS') {
 				console.log('Adding SA surface for '+coord);
-				iViewer.surfaces[surfIndex] =
+				iViewer.surfaceObjs[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SAS, {opacity:opacSet},
-					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
+					{hetflag:false},{hetflag:false});
 			}
 			else if (surfID == 'surfSES') {
 				console.log('Adding SE surface for '+coord);
-				iViewer.surfaces[surfIndex] =
+				iViewer.surfaceObjs[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SES, {opacity:opacSet},
-					{hetflag:false,chain:'A'},{hetflag:false,chain:'A'});
+					{hetflag:false},{hetflag:false});
+			}
+			
+			for(x=0; x<iViewer.surfaceObjs.length; x++){
+				console.log('surfaces['+x+']='+iViewer.surfaceObjs);
 			}
 			
 			iViewer.surfType[surfIndex] = surfID; //surfType stores ID of applied surf type
