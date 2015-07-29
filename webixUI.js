@@ -156,7 +156,8 @@ var ligandControls =
    {header:'Ligand', maxWidth:250, collapsed:false, body:
       {rows:[
          {id:'lStructType', view:'richselect', label:'Display as', options:[
-            {id:'structCartoon', value:'Cartoon'},
+            //Note: 'cartoon 'isn't meant to be used like this, but it does hide HETATMS
+            {id:'structCartoon', value:'Hide'},
             {id:'structSphere', value:'Sphere'},
             {id:'structStick', value:'Stick'},
             {id:'structLine', value:'Line'},
@@ -258,7 +259,8 @@ hydraUI = webix.ui({
                },
                {id:'viewerCtrls', view:'scrollview', scroll:'y', body:
                   {multi:true, view:'accordion', rows:[
-                     mainControls
+                     mainControls,
+                     ligandControls
                   ]}
                }
             ]},

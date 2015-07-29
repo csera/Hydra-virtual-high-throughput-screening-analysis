@@ -52,8 +52,9 @@
 		surfType[0] = 'surfNone';
 		surfType[1] = 'surfNone';
 		
-		surfOpacity[0] = 95; //95% opaque by default (95% transparent)
-		surfOpacity[1] = 95;
+		//Note that 100% and 0% opacity are the least computationally intensive
+		surfOpacity[0] = 100; //100% opaque by default (0% transparent)
+		surfOpacity[1] = 100;
 	}
 	
 	function getViewMode() {

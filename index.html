@@ -91,35 +91,41 @@
 			webix.html.addCss($$('viewer'+activeCoord).$view, "activeViewer");
 			
 			$$('activeCoord').setValue(activeCoord);
+			
 			$$('mStructType').setValue('struct'+structType[0]);
 			$$('mSurfOpacity').setValue(surfOpacity[0]);
 			$$('mSurfType').setValue(surfType[0]);
 				//Because this references the value of surfOpacity when changed, it must be set
 				//only AFTER surfOpacity is set. Otherwise the default view:'slider' val
 				//pollutes the whole process
+			
+			$$('lStructType').setValue('struct'+structType[1]);
+			$$('lSurfOpacity').setValue(surfOpacity[1]);
+			$$('lSurfType').setValue(surfType[1]);
 		}
 		
 		function setStruct(coord, listObj, structIndex){
 			var glviewer = $$('viewer'+coord).getWindow().glviewer;
 			var itemID = listObj.getValue();
 			var itemVal = listObj.getPopup().getList().getItem(itemID).value;
-			//var styleType = itemVal.toLowerCase();
+			var setHetAtms;
 			
-			//glviewer.setStyle({},{styleType});
+			if (structIndex == 0)
+				setHetAtms = false;
+			else
+				setHetAtms = true;
 			
 			//Ugly method. Try getting the variable method to work later...
-			if (itemVal == 'Cartoon')
-				glviewer.setStyle({hetflag:false},{cartoon:{color: 'spectrum'}});
+			if (itemVal == 'Cartoon') //set hetflag to false to disable hiding hetatms
+				glviewer.setStyle({hetflag:setHetAtms},{cartoon:{color: 'spectrum'}});
 			else if (itemVal == 'Sphere')
-				glviewer.setStyle({},{sphere:{}});
+				glviewer.setStyle({hetflag:setHetAtms},{sphere:{}});
 			else if (itemVal == 'Stick')
-				glviewer.setStyle({},{stick:{}});
+				glviewer.setStyle({hetflag:setHetAtms},{stick:{}});
 			else if (itemVal == 'Line')
-				glviewer.setStyle({},{line:{}});
+				glviewer.setStyle({hetflag:setHetAtms},{line:{}});
 			else if (itemVal == 'Cross')
-				glviewer.setStyle({},{cross:{linewidth:5}});
-			
-			//NEED TO ALTER THIS TO WORK WITH HETATOMS/LIGANDS
+				glviewer.setStyle({hetflag:setHetAtms},{cross:{linewidth:5}});
 			
 			glviewer.render();
 			
@@ -130,9 +136,15 @@
 		function setSurface(coord, surfID, surfIndex, opacSet){
 			var iViewer = $$('viewer'+coord).getWindow();
 			var glviewer = iViewer.glviewer;
+			var setHetAtms;
 			//var surfID = listObj.getValue(); //ID of of the surface type list item
 			//var surfType = listObj.getPopup().getList().getItem(itemID).value;
 				//What the list item actually displays
+			
+			if (surfIndex == 0)
+				setHetAtms = false;
+			else
+				setHetAtms = true;
 			
 			if (iViewer.surfaceObjs[surfIndex] != null) {
 				console.log('Removing surface for '+coord);
@@ -148,25 +160,25 @@
 				console.log('Adding VdW surface for '+coord);
 				iViewer.surfaceObjs[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.VDW, {opacity:opacSet},
-					{hetflag:false},{hetflag:false});
+					{hetflag:setHetAtms},{hetflag:setHetAtms});
 			}
 			else if (surfID == 'surfMS') {
 				console.log('Adding molecular surface for '+coord);
 				iViewer.surfaceObjs[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.MS, {opacity:opacSet},
-					{hetflag:false},{hetflag:false});
+					{hetflag:setHetAtms},{hetflag:setHetAtms});
 			}
 			else if (surfID == 'surfSAS') {
 				console.log('Adding SA surface for '+coord);
 				iViewer.surfaceObjs[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SAS, {opacity:opacSet},
-					{hetflag:false},{hetflag:false});
+					{hetflag:setHetAtms},{hetflag:setHetAtms});
 			}
 			else if (surfID == 'surfSES') {
 				console.log('Adding SE surface for '+coord);
 				iViewer.surfaceObjs[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SES, {opacity:opacSet},
-					{hetflag:false},{hetflag:false});
+					{hetflag:setHetAtms},{hetflag:setHetAtms});
 			}
 			
 			iViewer.surfType[surfIndex] = surfID; //surfType stores ID of applied surf type
@@ -198,7 +210,11 @@
 		}
 		// end
 		
-		// Allows access to database file
+		/* Allows access to database file
+		 * @author smatlock
+		 * @param {file} rawFile (database) to be parsed
+		 * @returns {String} Plaintext of a rawFile
+		 */
 		function readTextFile(file){
 			txt = "";
 		    var rawFile = new XMLHttpRequest();
@@ -218,7 +234,9 @@
 		    return txt;
 		}
 
-		// Gets information from database regarding input Zinc IDs
+		/* Gets information from database regarding input Zinc IDs
+		 * @author smatlock
+		 */
 		function searchData(zincArr, searchableData){
 			// validation = searchableData.indexOf("ZINC");
 			vendorCollect = new Array();
@@ -239,7 +257,9 @@
 			return vendorCollect;
 		}
 
-		// Gets information for compound list and details
+		/* Gets information for compound list and details
+		 * @author smatlock
+		 */
 		function zincRequests(arr1, arr2, arr3){
 			basicInfo = new Array();
 			for(var i=0;i<arr1.length;i++){
@@ -250,7 +270,9 @@
 			return basicInfo
 		};
 
-		//Change this fxn to update what's displayed in the viewers and compound list coordinates
+		/* Change this fxn to update what's displayed in the viewers and compound list coordinates
+		 * @author smatlock
+		 */
 		function compound_fxn(arr1, arr2, arr3){
 			var smallDatabase = readTextFile("codebase/3_purch.xls"),
 			compInfo = zincRequests(arr1, arr2, arr3),
@@ -267,20 +289,7 @@
 			$$("vendors").refresh();
 		}
 		
-		//Change this fxn to update what's displayed in the viewers and compound list coordinates
 		function load_fxn(){
-			// loads uploaded.js to overwrite compound_data var with uploaded data
-			//delete compound_data;
-					
-			/*loadCSV("uploads/uploaded.txt");
-			//parseCSV(compound_data)
-			webix.message('loading');
-			// refreshes the compounds list id comp_table via .refresh()
-			$$("comp_table").define("data",compound_data);
-			$$("comp_table").refresh();
-			// displays message noting data loaded
-			//webix.message('Compound List has been updated with the latest data.');
-			webix.message('New compounds have been loaded.');*/
 			var fID, fData, fType, x, y, origX, origY;
 			
 			for(var index=0; index<$$('uploadTable').count(); index++){
@@ -354,9 +363,9 @@
 				var fType = getFileType(IDs[a]);
 				
 				if (validCoordinates(x,y)){
-					var viewer = $$('viewer'+x+','+y).getWindow().glviewer;
-					//$$('viewer'+x+','+y).getWindow().$3Dmol.loadFile('',fType,viewer,{doAssembly:true});
-					viewer.clear();
+					var viewer = $$('viewer'+x+','+y).getWindow();
+					viewer.glviewer.clear();
+					viewer.toDefaultDisp();
 				}
 			}
 			
