@@ -26778,7 +26778,7 @@ $3Dmol.GLViewer = (function() {
                     modelGroup.remove(surfArr[i].lastGL); // remove from scene
                 }
             }
-            delete surfaces[surf];
+            surfaces.splice(surf,1);
             show();
         };
         
@@ -26796,7 +26796,7 @@ $3Dmol.GLViewer = (function() {
                         modelGroup.remove(surfArr[i].lastGL); // remove from scene
                     }
                 }
-                delete surfaces[n];
+                surfaces.splice(n,1);
             }
             show();
             

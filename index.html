@@ -133,7 +133,10 @@
 			//var surfID = listObj.getValue(); //ID of of the surface type list item
 			//var surfType = listObj.getPopup().getList().getItem(itemID).value;
 				//What the list item actually displays
-			console.log(glviewer.getSurfaces);
+			
+			console.log(glviewer.surfaces);
+			console.log(iViewer.$3Dmol.GLViewer.surfaces);
+			
 			if (iViewer.surfaceObjs[surfIndex] != null) {
 				console.log('Removing surface for '+coord);
 				glviewer.removeSurface(iViewer.surfaceObjs[surfIndex]),
@@ -166,10 +169,6 @@
 				iViewer.surfaceObjs[surfIndex] =
 					glviewer.addSurface(iViewer.$3Dmol.SurfaceType.SES, {opacity:opacSet},
 					{hetflag:false},{hetflag:false});
-			}
-			
-			for(x=0; x<iViewer.surfaceObjs.length; x++){
-				console.log('surfaces['+x+']='+iViewer.surfaceObjs);
 			}
 			
 			iViewer.surfType[surfIndex] = surfID; //surfType stores ID of applied surf type
