@@ -134,13 +134,11 @@
 			//var surfType = listObj.getPopup().getList().getItem(itemID).value;
 				//What the list item actually displays
 			
-			console.log(glviewer.surfaces);
-			console.log(iViewer.$3Dmol.GLViewer.surfaces);
-			
 			if (iViewer.surfaceObjs[surfIndex] != null) {
 				console.log('Removing surface for '+coord);
 				glviewer.removeSurface(iViewer.surfaceObjs[surfIndex]),
-				iViewer.lastsurfstyle = 1;
+					iViewer.lastsurfstyle = 1;
+				delete iViewer.surfaceObjs[surfIndex];
 			}
 			
 			//Note: This can be set to work with specific chains (as in the 3Dmol example.html),
