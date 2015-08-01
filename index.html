@@ -24,11 +24,6 @@
 	   	position: absolute; top: 0; left: 0;
 			overflow: auto;
 	   }
-		.activeViewer{
-			border-color: #69A5FA;
-			border-style: solid;
-			border-width: 10px;
-		}
 		.webix_view.inactiveViewer iframe{
 			border:3px solid white; /*Shorthand CSS property (ie not Webix unique)*/
 			box-sizing:border-box;
@@ -381,7 +376,7 @@
 				return true;
 			}
 			else{
-				console.error('Invalid coordinates');
+				console.warn('Invalid coordinates');
 				return false;
 			}
 		}

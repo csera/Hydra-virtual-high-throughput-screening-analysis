@@ -26768,17 +26768,20 @@ $3Dmol.GLViewer = (function() {
          * @param {number} surf - surface id
          */
         this.removeSurface = function(surf) {
-            var surfArr = surfaces[surf];
-            for (var i = 0; i < surfArr.length; i++) {
-                if (surfArr[i] && surfArr[i].lastGL) {
-                    if (surfArr[i].geo !== undefined)
-                        surfArr[i].geo.dispose();
-                    if (surfArr[i].mat !== undefined)
-                        surfArr[i].mat.dispose();
-                    modelGroup.remove(surfArr[i].lastGL); // remove from scene
-                }
-            }
-            surfaces.splice(surf,1);
+				if (surfaces[surf]) {
+					var surfArr = surfaces[surf];
+					for (var i = 0; i < surfArr.length; i++) {
+						 if (surfArr[i] && surfArr[i].lastGL) {
+							  if (surfArr[i].geo !== undefined)
+									surfArr[i].geo.dispose();
+							  if (surfArr[i].mat !== undefined)
+									surfArr[i].mat.dispose();
+							  modelGroup.remove(surfArr[i].lastGL); // remove from scene
+						 }
+					}
+				}
+            //surfaces.splice(surf,1);
+				delete surfaces[surf];
             show();
         };
         
@@ -26786,17 +26789,20 @@ $3Dmol.GLViewer = (function() {
          * @function $3Dmol.GLViewer#removeAllSurfaces */
         this.removeAllSurfaces = function() {
             for (var n = 0; n < surfaces.length; n++) {
-                var surfArr = surfaces[n];
-                for(var i = 0; i < surfArr.length; i++) {
-                    if (surfArr[i] && surfArr[i].lastGL) {
-                        if (surfArr[i].geo !== undefined)
-                            surfArr[i].geo.dispose();
-                        if (surfArr[i].mat !== undefined)
-                            surfArr[i].mat.dispose();
-                        modelGroup.remove(surfArr[i].lastGL); // remove from scene
-                    }
-                }
-                surfaces.splice(n,1);
+					 if (surfaces[n]) {
+						var surfArr = surfaces[n];
+						for(var i = 0; i < surfArr.length; i++) {
+							 if (surfArr[i] && surfArr[i].lastGL) {
+								  if (surfArr[i].geo !== undefined)
+										surfArr[i].geo.dispose();
+								  if (surfArr[i].mat !== undefined)
+										surfArr[i].mat.dispose();
+								  modelGroup.remove(surfArr[i].lastGL); // remove from scene
+							 }
+						}
+					 }
+                //surfaces.splice(n,1);
+					 delete surfaces[n];
             }
             show();
             
