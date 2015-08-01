@@ -263,9 +263,14 @@ hydraUI = webix.ui({
                   uploadControls,
                   {view:'resizer'},
                   
-                  gridControls,
+                  //Webix bug: section below resizer expands when resizer moved up
+                  //TEMP FIX: Need to nest the below sections in one row
+                  {rows:[
+                  // "Grid Controls" - controls for resizing the grid
+                     gridControls,
+                     {}
+                  ]},
                   
-                  {},
                   {
                      view:"button", id:"toVC", type:"next", label:'To Compound Controls',
                      click:function(){$$('compoundCtrls').show();}
