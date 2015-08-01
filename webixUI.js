@@ -15,8 +15,8 @@ var uploadControls =
             select:true, multiselect:true, //ctrl+click & shift+click work
             drag:true, //NEED TO MAKE THIS SYNC WITH COMPOUND LIST
             editable:true, editaction:"dblclick",
-            maxHeight:400, minHeight:160,
-            leftSplit:2, //left 2 col's won't scroll horizontally
+            minHeight:160,
+            leftSplit:2, //so left 2 col's won't scroll horizontally
             columns:[
                {id:"col", header:"Col", width:40, editor:"text"},
                {id:"oCol", header:"origCol", hidden:true},
@@ -51,23 +51,10 @@ var gridControls =
          {
             view:"text",value:"1",label:"Rows:",name:"numRow",//specifies rows count
          },
-         /*{/* NOTE: feature not yet implemented --> dropdown menu to select
-          *the ID for each of the viewers in the central grid, as defined in the
-          *grid_dim form above; via this drop down menu, we can set and specify
-          *the docking file and legand to be shown in each viewer
-            view:"form", type:"space", rows:[
-               {
-                  view:"text",label:"Dock File:", id:"dock11var",
-               },
-               {
-                  view:"text",label:"Ligand File", id:"lig11var", 
-               },
-         ]},*/
          {
             view:"button",id:"update_grid",value:"Update Grid",inputWidth:"150",align:"center",
             on:{
                'onItemClick': updategridfxn
-               //function(){alert( $$('grid_dim').getValues().numRow )} //debug
             }
          }
       ]}
@@ -230,16 +217,16 @@ hydraUI = webix.ui({
       {template:"html->titlebar", height:1 },
       
       // second row, main content of app goes here
-      {cols:[{
+      {cols:[{id:'leftCol',
          // left column has control panel, upload manager as accordioned components
-         type:'clean', rows:[
+         /*type:'clean', rows:[
             //Panels that switch in the multiview: animation off, persistent views on.
             {view:'tabbar', selected:'files&grid',
                multiview:true, options:[
                {value:'Files & Grid', id:'files&grid'},
                {value:'Viewer Controls', id:'viewerCtrls'}
             ]},
-            {animate:false, keepViews:true, cells:[
+            {animate:true, keepViews:true, cells:[
                {id:'files&grid', view:"scrollview",
                scroll:"y", type:"line",
                body:
@@ -254,6 +241,7 @@ hydraUI = webix.ui({
                      {rows:[
                      // "Grid Controls" - controls for resizing the grid
                         gridControls,
+                        {}
                      ]}
                   ]}
                },
@@ -264,12 +252,43 @@ hydraUI = webix.ui({
                   ]}
                }
             ]},
+         ]*/
+         cells:[
+            {id:'files&grid', view:"scrollview",
+            scroll:"y",
+            body:
+               {rows:[
+                  
+                  // Upload compound list / DOCK data
+                  uploadControls,
+                  {view:'resizer'},
+                  
+                  gridControls,
+                  
+                  {},
+                  {
+                     view:"button", id:"toVC", type:"next", label:'To Compound Controls',
+                     click:function(){$$('compoundCtrls').show();}
+                  }
+               ]}
+            },
+            {id:'compoundCtrls', view:'scrollview', scroll:'y', body:
+               {rows:[
+                  mainControls,
+                  ligandControls,
+                  {},
+                  {
+                     id:"toF&G",  view:"button", type:"prev", label:'To File & Grid Controls',
+                     click:function(){$$('files&grid').show();}
+                  },
+               ]}
+            }
          ]
       },
       
       // middle column contains central workspace with all of the visualization object
       {id:"workspace", view:"scrollview", container:"central_workspace",type:"clean",
-      scroll:"xy", //Enables horizontal (x) and vertical (y) scrolling
+         scroll:"xy", //Enables horizontal (x) and vertical (y) scrolling
       
       //Framework for a resizable grid of GLmol instances
       //Viewers start at index of 1 with coordinates (x,y)
