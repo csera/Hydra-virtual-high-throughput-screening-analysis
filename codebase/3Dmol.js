@@ -13515,10 +13515,10 @@ $3Dmol.download = function(query, viewer, options, callback) {
    
    return m;
 };
-  
+
 /**
  * Load a local file passed by the container into the viewer.
- * -Author: csera
+ * @author: csera
  * @function $3Dmol.loadFile
  * @param {string} The parsed data read from the file
  * @param {string} Detected file type
@@ -13537,7 +13537,7 @@ $3Dmol.loadFile = function(data, type, viewer, options, callback){
 		callback(m);
 	
 	return m;
-};     
+};
 
 /**
  * $3Dmol surface types
@@ -14839,14 +14839,13 @@ $3Dmol.Ray.prototype = {
         
     },
     
-    distanceToPoint : function() {
+    distanceToPoint : function(point) {
         
         var v1 = new $3Dmol.Vector3();
         
         return function(point) {
             var directionDistance = v1.subVectors(point, this.origin).dot(this.direction);
             v1.copy(this.direction).multiplyScalar(directionDistance).add(this.origin);
-            
             return v1.distanceTo(point);
         };
         
@@ -14857,7 +14856,6 @@ $3Dmol.Ray.prototype = {
     },
     
     isIntersectionSphere : function(sphere) {
-       
        return (this.distanceToPoint(sphere.center) <= sphere.radius);
           
     },
@@ -15395,14 +15393,6 @@ $3Dmol.Object3D.prototype = {
         
         return object;
         
-    },
-    
-    setVisible: function(val) { //recursively set visibility
-        this.visible = val;
-        for (var i = 0; i < this.children.length; i++) {
-            var child = this.children[i];
-            child.setVisible(val);
-        }
     }
     
 };
@@ -15424,6 +15414,7 @@ $3Dmol.Geometry = (function() {
         this.colorArray = null;
         this.normalArray = null;
         this.faceArray = null;
+        //this.adjFaceArray=null;
         this.lineArray = null;
         this.vertices = 0;
         this.faceidx = 0;
@@ -15543,7 +15534,7 @@ $3Dmol.Geometry = (function() {
         if (mesh) {
             this.normalArray = normalArr.subarray(0,this.vertices*3);
             this.faceArray = faceArr.subarray(0,this.faceidx); 
-
+            
             if(this.lineidx > 0) //not always set so reclaim memory
                 this.lineArray = lineArr.subarray(0,this.lineidx); 
             else
@@ -15752,7 +15743,7 @@ $3Dmol.Raycaster = (function() {
         matrixPosition.getPositionFromMatrix(group.matrixWorld);
         
         if ((clickable.clickable !== true) || (clickable.intersectionShape === undefined))
-            return intersects;
+            return intersects;       
         var intersectionShape = clickable.intersectionShape;
         var precision = raycaster.linePrecision;
         precision *= group.matrixWorld.getMaxScaleOnAxis();
@@ -15761,11 +15752,11 @@ $3Dmol.Raycaster = (function() {
         //Check for intersection with clickable's bounding sphere, if it exists
         if (clickable.boundingSphere !== undefined && clickable.boundingSphere instanceof $3Dmol.Sphere) {
             sphere.copy(clickable.boundingSphere);
-            sphere.applyMatrix4(group.matrixWorld);
-            if (!raycaster.ray.isIntersectionSphere(sphere)) {
-               return intersects;
+            sphere.applyMatrix4(group.matrixWorld);          
+            if (!raycaster.ray.isIntersectionSphere(sphere)) {             
+				return intersects;
             }
-        }
+        }      
         //Iterate through intersection objects
         var i, il,
             norm, normProj, cylProj, rayProj,
@@ -15816,12 +15807,12 @@ $3Dmol.Raycaster = (function() {
                 if ( (s < 0 || s > 1) || s + t > 1)
                     continue;
                     
-                else
+                else{
                     intersects.push({clickable : clickable,
-                                     distance : distance});  
+                                     distance : distance});
+				}  
             }
-        }
-
+        }    
         //cylinders
         for (i = 0, il = intersectionShape.cylinder.length; i < il; i++) {
             
@@ -15886,8 +15877,7 @@ $3Dmol.Raycaster = (function() {
                 
             }
             
-        }
-
+        }       
         //lines
         for (i = 0, il = intersectionShape.line.length; i < il; i += 2) {
             
@@ -15926,7 +15916,6 @@ $3Dmol.Raycaster = (function() {
                                 });
             
         }
-
         for (i = 0, il = intersectionShape.sphere.length; i < il; i++) {
             //sphere
             if (intersectionShape.sphere[i] instanceof $3Dmol.Sphere) {
@@ -15959,7 +15948,6 @@ $3Dmol.Raycaster = (function() {
     
                     intersects.push({clickable : clickable, 
                                      distance : distance});
-
                     return intersects;
                 }
             }        
@@ -16411,6 +16399,8 @@ $3Dmol.Material = function () {
 
     this.depthTest = true;
     this.depthWrite = true;
+    
+    this.stencilTest = true;
 
     this.polygonOffset = false;
     this.polygonOffsetFactor = 0;
@@ -16481,6 +16471,7 @@ $3Dmol.Material.prototype.clone = function ( material ) {
 
     material.depthTest = this.depthTest;
     material.depthWrite = this.depthWrite;
+    material.stencilTest = this.stencilTest;
 
     material.polygonOffset = this.polygonOffset;
     material.polygonOffsetFactor = this.polygonOffsetFactor;
@@ -16532,7 +16523,7 @@ $3Dmol.LineBasicMaterial.prototype.clone = function() {
     
     $3Dmol.Material.prototype.clone.call(this, material);
     
-    material.color.copy();
+    material.color.copy(this.color);
     return material;
 };
 
@@ -16638,6 +16629,31 @@ $3Dmol.MeshDoubleLambertMaterial.prototype.clone = function() {
         
     return material;
     
+};
+
+//Outlined Mesh Lamert material
+/** @constructor */
+$3Dmol.MeshOutlineMaterial = function(parameters) {
+    $3Dmol.Material.call(this);
+    parameters = parameters || {};
+    this.fog = true;
+    this.shaderID = "outline";
+    this.wireframe=false;
+    this.outlineColor= parameters.color || new $3Dmol.Color(0.0,0.0,0.0);
+    this.outlineWidth= parameters.width || 0.1;
+    this.outlinePushback= parameters.pushback || 1.0;
+    
+};
+
+$3Dmol.MeshOutlineMaterial.prototype = Object.create($3Dmol.Material.prototype);
+
+$3Dmol.MeshOutlineMaterial.prototype.clone = function(material) {
+    if ( typeof material === "undefined" ) material = new $3Dmol.MeshOutlineMaterial();
+    $3Dmol.Material.prototype.clone.call(this, material);
+    material.fog = this.fog;
+    material.shaderID = this.shaderID;
+    material.wireframe = this.wireframe;
+    return material;
 };
 
 
@@ -16916,7 +16932,8 @@ $3Dmol.LinearMipMapLinearFilter = 1008;
 $3Dmol.UnsignedByteType = 1009;
 
 //Pixel formats
-$3Dmol.RGBAFormat = 1021;/* 
+$3Dmol.RGBAFormat = 1021;
+/* 
  * $3Dmol Mesh and Line objects
  */
 
@@ -17014,31 +17031,31 @@ $3Dmol.Sprite.prototype.clone = function(object) {
     
 };
 /**
-Simplified webGL renderer 
+ * Simplified webGL renderer
  */
 
-$3Dmol.Renderer = function ( parameters ) {
-    
+$3Dmol.Renderer = function(parameters) {
+
     parameters = parameters || {};
-    
-    var _canvas = parameters.canvas !== undefined ? parameters.canvas : document.createElement( 'canvas' ),
 
-    _precision = parameters.precision !== undefined ? parameters.precision : 'highp',
+    var _canvas = parameters.canvas !== undefined ? parameters.canvas
+            : document.createElement('canvas'),
 
-    _alpha = parameters.alpha !== undefined ? parameters.alpha : true,
-    _premultipliedAlpha = parameters.premultipliedAlpha !== undefined ? parameters.premultipliedAlpha : true,
+    _precision = parameters.precision !== undefined ? parameters.precision
+            : 'highp',
+    _alpha = parameters.alpha !== undefined ? parameters.alpha : true, 
+    _premultipliedAlpha = parameters.premultipliedAlpha !== undefined ? parameters.premultipliedAlpha : true, 
     _antialias = parameters.antialias !== undefined ? parameters.antialias : false,
-    _stencil = parameters.stencil !== undefined ? parameters.stencil : true,
+    _stencil = parameters.stencil !== undefined ? parameters.stencil : true, 
     _preserveDrawingBuffer = parameters.preserveDrawingBuffer !== undefined ? parameters.preserveDrawingBuffer : false,
+    _clearColor = parameters.clearColor !== undefined ? new $3Dmol.Color(parameters.clearColor) : new $3Dmol.Color(0x000000), 
+    _clearAlpha = parameters.clearAlpha !== undefined ? parameters.clearAlpha : 0, 
+    _outlineMaterial = parameters.outline !== undefined ? new $3Dmol.MeshOutlineMaterial(parameters.outline) : null;
 
-    _clearColor = parameters.clearColor !== undefined ? new $3Dmol.Color( parameters.clearColor ) : new $3Dmol.Color( 0x000000 ),
-    _clearAlpha = parameters.clearAlpha !== undefined ? parameters.clearAlpha : 0;
-    
     this.domElement = _canvas;
     this.context = null;
-    this.devicePixelRatio = parameters.devicePixelRatio !== undefined ? 
-    parameters.devicePixelRatio : (self.devicePixelRatio !== undefined) ? 
-                                   self.devicePixelRatio : 1;
+    this.devicePixelRatio = parameters.devicePixelRatio !== undefined ? parameters.devicePixelRatio
+            : (self.devicePixelRatio !== undefined) ? self.devicePixelRatio : 1;
 
     // clearing
 
@@ -17053,28 +17070,28 @@ $3Dmol.Renderer = function ( parameters ) {
 
     this.autoUpdateObjects = true;
     this.autoUpdateScene = true;
-    
+
     this.renderPluginsPost = [];
-    
+
     // info
 
     this.info = {
 
-        memory: {
-    
-        programs: 0,
-        geometries: 0,
-        textures: 0
-    
+        memory : {
+
+            programs : 0,
+            geometries : 0,
+            textures : 0
+
         },
-    
-        render: {
-    
-        calls: 0,
-        vertices: 0,
-        faces: 0,
-        points: 0
-    
+
+        render : {
+
+            calls : 0,
+            vertices : 0,
+            faces : 0,
+            points : 0
+
         }
 
     };
@@ -17083,50 +17100,33 @@ $3Dmol.Renderer = function ( parameters ) {
 
     var _this = this,
 
-    _programs = [],
-    _programs_counter = 0,
+    _programs = [], _programs_counter = 0,
 
     // internal state cache
 
-    _currentProgram = null,
-    _currentFramebuffer = null,
-    _currentMaterialId = -1,
-    _currentGeometryGroupHash = null,
-    _currentCamera = null,
-    _geometryGroupCounter = 0,
+    _currentProgram = null, _currentFramebuffer = null, _currentMaterialId = -1, _currentGeometryGroupHash = null, _currentCamera = null, _geometryGroupCounter = 0,
 
     _usedTextureUnits = 0,
 
     // GL state cache
 
-    _oldDoubleSided = -1,
-    _oldFlipSided = -1,
+    _oldDoubleSided = -1, _oldFlipSided = -1,
 
     _oldBlending = -1,
 
-    _oldBlendEquation = -1,
-    _oldBlendSrc = -1,
-    _oldBlendDst = -1,
+    _oldBlendEquation = -1, _oldBlendSrc = -1, _oldBlendDst = -1,
 
-    _oldDepthTest = -1,
-    _oldDepthWrite = -1,
+    _oldDepthTest = -1, _oldDepthWrite = -1,
 
-    _oldPolygonOffset = null,
-    _oldPolygonOffsetFactor = null,
-    _oldPolygonOffsetUnits = null,
+    _oldPolygonOffset = null, _oldPolygonOffsetFactor = null, _oldPolygonOffsetUnits = null,
 
     _oldLineWidth = null,
 
-    _viewportX = 0,
-    _viewportY = 0,
-    _viewportWidth = 0,
-    _viewportHeight = 0,
-    _currentWidth = 0,
-    _currentHeight = 0,
+    _viewportX = 0, _viewportY = 0, _viewportWidth = 0, _viewportHeight = 0, _currentWidth = 0, _currentHeight = 0,
 
     _enabledAttributes = {},
 
-     // camera matrices cache
+    // camera matrices cache
 
     _projScreenMatrix = new $3Dmol.Matrix4(),
 
@@ -17140,11 +17140,33 @@ $3Dmol.Renderer = function ( parameters ) {
 
     _lights = {
 
-            ambient: [0,0,0],
-            directional: { length: 0, colors: [], positions: [] },
-            point: { length: 0, colors: [], positions: [], distances: [] },
-            spot: { length: 0, colors: [], positions: [], distances: [], directions: [], anglesCos: [], exponents: [] },
-            hemi: { length: 0, skyColors: [], groundColors: [], positions: [] }
+        ambient : [ 0, 0, 0 ],
+        directional : {
+            length : 0,
+            colors : [],
+            positions : []
+        },
+        point : {
+            length : 0,
+            colors : [],
+            positions : [],
+            distances : []
+        },
+        spot : {
+            length : 0,
+            colors : [],
+            positions : [],
+            distances : [],
+            directions : [],
+            anglesCos : [],
+            exponents : []
+        },
+        hemi : {
+            length : 0,
+            skyColors : [],
+            groundColors : [],
+            positions : []
+        }
 
     };
 
@@ -17156,160 +17178,173 @@ $3Dmol.Renderer = function ( parameters ) {
 
     setDefaultGLState();
 
-    this.context = _gl;    
+    this.context = _gl;
 
     // API
 
-    this.getContext = function () {
+    this.getContext = function() {
 
-            return _gl;
-
-    };
-
-    this.getPrecision = function () {
-
-            return _precision;
-
-    };
-    
-    this.setClearColorHex = function ( hex, alpha ) {
-
-            _clearColor.setHex( hex );
-            _clearAlpha = alpha;
-
-            _gl.clearColor( _clearColor.r, _clearColor.g, _clearColor.b, _clearAlpha );
+        return _gl;
 
     };
 
-    this.setSize = function ( width, height ) {
+    this.getPrecision = function() {
 
-            _canvas.width = width * this.devicePixelRatio;
-            _canvas.height = height * this.devicePixelRatio;
-
-            _canvas.style.width = width + 'px';
-            _canvas.style.height = height + 'px';
-
-            this.setViewport( 0, 0, _canvas.width, _canvas.height );
+        return _precision;
 
     };
 
-    this.setViewport = function ( x, y, width, height ) {
+    this.setClearColorHex = function(hex, alpha) {
 
-            _viewportX = x !== undefined ? x : 0;
-            _viewportY = y !== undefined ? y : 0;
+        _clearColor.setHex(hex);
+        _clearAlpha = alpha;
 
-            _viewportWidth = width !== undefined ? width : _canvas.width;
-            _viewportHeight = height !== undefined ? height : _canvas.height;
-
-            _gl.viewport( _viewportX, _viewportY, _viewportWidth, _viewportHeight );
-
-    };
-
-    this.clear = function ( color, depth, stencil ) {
-
-            var bits = 0;
-
-            if ( color === undefined || color ) bits |= _gl.COLOR_BUFFER_BIT;
-            if ( depth === undefined || depth ) bits |= _gl.DEPTH_BUFFER_BIT;
-            if ( stencil === undefined || stencil ) bits |= _gl.STENCIL_BUFFER_BIT;
-            _gl.clear( bits );
+        _gl
+                .clearColor(_clearColor.r, _clearColor.g, _clearColor.b,
+                        _clearAlpha);
 
     };
 
-    this.clearTarget = function ( color, depth, stencil ) {
-            
-            this.clear( color, depth, stencil );
+    this.enableOutline = function(parameters) {
+        _outlineMaterial = new $3Dmol.MeshOutlineMaterial(parameters);
+    }
+
+    this.disableOutline = function() {
+        _outlineMaterial = null;
+    }
+
+    this.setSize = function(width, height) {
+
+        _canvas.width = width * this.devicePixelRatio;
+        _canvas.height = height * this.devicePixelRatio;
+
+        _canvas.style.width = width + 'px';
+        _canvas.style.height = height + 'px';
+
+        this.setViewport(0, 0, _canvas.width, _canvas.height);
 
     };
 
-    this.setMaterialFaces = function ( material ) {
+    this.setViewport = function(x, y, width, height) {
 
-            var doubleSided = material.side === $3Dmol.DoubleSide;
-            var flipSided = material.side === $3Dmol.BackSide;
+        _viewportX = x !== undefined ? x : 0;
+        _viewportY = y !== undefined ? y : 0;
 
-            if ( _oldDoubleSided !== doubleSided ) {
+        _viewportWidth = width !== undefined ? width : _canvas.width;
+        _viewportHeight = height !== undefined ? height : _canvas.height;
 
-                if ( doubleSided ) {
+        _gl.viewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
 
-                    _gl.disable( _gl.CULL_FACE );
+    };
 
-                } else {
+    this.clear = function(color, depth, stencil) {
 
-                    _gl.enable( _gl.CULL_FACE );
+        var bits = 0;
 
-                }
+        if (color === undefined || color)
+            bits |= _gl.COLOR_BUFFER_BIT;
+        if (depth === undefined || depth)
+            bits |= _gl.DEPTH_BUFFER_BIT;
+        if (stencil === undefined || stencil)
+            bits |= _gl.STENCIL_BUFFER_BIT;
+        _gl.clear(bits);
 
-                _oldDoubleSided = doubleSided;
+    };
+
+    this.clearTarget = function(color, depth, stencil) {
+
+        this.clear(color, depth, stencil);
+
+    };
+
+    this.setMaterialFaces = function(material) {
+
+        var doubleSided = material.side === $3Dmol.DoubleSide;
+        var flipSided = material.side === $3Dmol.BackSide;
+
+        if (_oldDoubleSided !== doubleSided) {
+
+            if (doubleSided) {
+
+                _gl.disable(_gl.CULL_FACE);
+
+            } else {
+
+                _gl.enable(_gl.CULL_FACE);
 
             }
 
-            if ( _oldFlipSided !== flipSided ) {
+            _oldDoubleSided = doubleSided;
 
-                if ( flipSided ) {
+        }
 
-                    _gl.frontFace( _gl.CW );
+        if (_oldFlipSided !== flipSided) {
 
-                } else {
+            if (flipSided) {
 
-                    _gl.frontFace( _gl.CCW );
+                _gl.frontFace(_gl.CW);
 
-                }
+            } else {
 
-                _oldFlipSided = flipSided;
-
-            }    
-
-    };
-    
-    this.setDepthTest = function ( depthTest ) {
-
-            if ( _oldDepthTest !== depthTest ) {
-
-                if ( depthTest ) {
-
-                    _gl.enable( _gl.DEPTH_TEST );
-
-                } else {
-
-                    _gl.disable( _gl.DEPTH_TEST );
-
-                }
-
-                _oldDepthTest = depthTest;
+                _gl.frontFace(_gl.CCW);
 
             }
 
+            _oldFlipSided = flipSided;
+
+        }
+
     };
 
-    this.setDepthWrite = function ( depthWrite ) {
+    this.setDepthTest = function(depthTest) {
 
-            if ( _oldDepthWrite !== depthWrite ) {
+        if (_oldDepthTest !== depthTest) {
 
-                    _gl.depthMask( depthWrite );
-                    _oldDepthWrite = depthWrite;
+            if (depthTest) {
+
+                _gl.enable(_gl.DEPTH_TEST);
+
+            } else {
+
+                _gl.disable(_gl.DEPTH_TEST);
 
             }
 
+            _oldDepthTest = depthTest;
+
+        }
+
     };
 
-    this.setBlending = function( blending ) {
+    this.setDepthWrite = function(depthWrite) {
+
+        if (_oldDepthWrite !== depthWrite) {
+
+            _gl.depthMask(depthWrite);
+            _oldDepthWrite = depthWrite;
+
+        }
+
+    };
+
+    this.setBlending = function(blending) {
 
         if (!blending) {
-                _gl.disable( _gl.BLEND );
+            _gl.disable(_gl.BLEND);
 
-        } 
-        else {
-            _gl.enable( _gl.BLEND );
-            _gl.blendEquationSeparate( _gl.FUNC_ADD, _gl.FUNC_ADD );
-            _gl.blendFuncSeparate( _gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA, _gl.ONE, _gl.ONE_MINUS_SRC_ALPHA );
+        } else {
+            _gl.enable(_gl.BLEND);
+            _gl.blendEquationSeparate(_gl.FUNC_ADD, _gl.FUNC_ADD);
+            _gl.blendFuncSeparate(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA,
+                    _gl.ONE, _gl.ONE_MINUS_SRC_ALPHA);
 
         }
 
         _oldBlending = blending;
     };
-    
+
     // Plugins
-    
+
     this.addPostPlugin = function(plugin) {
 
         plugin.init(this);
@@ -17319,18 +17354,18 @@ $3Dmol.Renderer = function ( parameters ) {
 
     // Sorting
 
-    function numericalSort ( a, b ) {
+    function numericalSort(a, b) {
 
-            return b[ 0 ] - a[ 0 ];
+        return b[0] - a[0];
 
     }
 
-    function enableAttribute( attribute ) {
+    function enableAttribute(attribute) {
 
-        if ( ! _enabledAttributes[ attribute ] ) {
+        if (!_enabledAttributes[attribute]) {
 
-            _gl.enableVertexAttribArray( attribute );
-            _enabledAttributes[ attribute ] = true;
+            _gl.enableVertexAttribArray(attribute);
+            _enabledAttributes[attribute] = true;
 
         }
 
@@ -17338,50 +17373,50 @@ $3Dmol.Renderer = function ( parameters ) {
 
     function disableAttributes() {
 
-        for ( var attribute in _enabledAttributes ) {
+        for ( var attribute in _enabledAttributes) {
 
-            if ( _enabledAttributes[ attribute ] ) {
+            if (_enabledAttributes[attribute]) {
 
-                _gl.disableVertexAttribArray( attribute );
-                _enabledAttributes[ attribute ] = false;
+                _gl.disableVertexAttribArray(attribute);
+                _enabledAttributes[attribute] = false;
 
             }
 
         }
 
-    } 
+    }
 
-    function setPolygonOffset ( polygonOffset, factor, units) {
+    function setPolygonOffset(polygonOffset, factor, units) {
 
-        if ( _oldPolygonOffset !== polygonOffset ) {
+        if (_oldPolygonOffset !== polygonOffset) {
 
             if (polygonOffset)
-                _gl.enable( _gl.POLYGON_OFFSET_FILL );
+                _gl.enable(_gl.POLYGON_OFFSET_FILL);
             else
-                _gl.disable( _gl.POLYGON_OFFSET_FILL );
+                _gl.disable(_gl.POLYGON_OFFSET_FILL);
         }
     }
 
-    function setLineWidth ( width ) {
+    function setLineWidth(width) {
 
-        if ( width !== _oldLineWidth ) {
+        if (width !== _oldLineWidth) {
             _gl.lineWidth(width);
             _oldLineWidth = width;
         }
 
     }
-    
+
     var onGeometryDispose = function(event) {
-        
+
         var geometry = event.target;
         geometry.removeEventListener('dispose', onGeometryDispose);
-        
+
         deallocateGeometry(geometry);
-        
+
         _this.info.memory.geometries--;
-        
+
     };
-    
+
     var onTextureDispose = function(event) {
 
         var texture = event.target;
@@ -17392,32 +17427,31 @@ $3Dmol.Renderer = function ( parameters ) {
 
         _this.info.memory.textures--;
 
-
     };
-    
+
     var onMaterialDispose = function(event) {
-        
+
         var material = event.target;
         material.removeEventListener('dispose', onMaterialDispose);
-        
+
         deallocateMaterial(material);
-        
+
     };
-    
+
     var deallocateGeometry = function(geometry) {
-        
+
         geometry.__webglInit = undefined;
-        
+
         if (geometry.__webglVertexBuffer !== undefined)
             _gl.deleteBuffer(geometry.__webglVertexBuffer);
-        
+
         if (geometry.__webglColorBuffer !== undefined)
             _gl.deleteBuffer(geometry.__webglColorBuffer);
-        
+
         if (geometry.geometryGroups !== undefined) {
-            
-            for (var g = 0, gl = geometry.groups; g < gl; g++) {  
-                
+
+            for (var g = 0, gl = geometry.groups; g < gl; g++) {
+
                 var geometryGroup = geometry.geometryGroups[g];
 
                 if (geometryGroup.__webglVertexBuffer !== undefined)
@@ -17425,44 +17459,46 @@ $3Dmol.Renderer = function ( parameters ) {
 
                 if (geometryGroup.__webglColorBuffer !== undefined)
                     _gl.deleteBuffer(geometryGroup.__webglColorBuffer);
-                
+
                 if (geometryGroup.__webglNormalBuffer !== undefined)
-                    _gl.deleteBuffer(geometryGroup.__webglNormalBuffer);  
-                
+                    _gl.deleteBuffer(geometryGroup.__webglNormalBuffer);
+
                 if (geometryGroup.__webglFaceBuffer !== undefined)
                     _gl.deleteBuffer(geometryGroup.__webglFaceBuffer);
-                    
+
                 if (geometryGroup.__webglLineBuffer !== undefined)
                     _gl.deleteBuffer(geometryGroup.__webglLineBuffer);
-                    
+
             }
         }
     };
-    
-    var deallocateMaterial = function (material) {
+
+    var deallocateMaterial = function(material) {
 
         var program = material.program;
 
-        if ( program === undefined ) return;
+        if (program === undefined)
+            return;
 
         material.program = undefined;
 
         // only deallocate GL program if this was the last use of shared program
-        // assumed there is only single copy of any program in the _programs list
+        // assumed there is only single copy of any program in the _programs
+        // list
         // (that's how it's constructed)
 
         var i, il, programInfo;
         var deleteProgram = false;
 
-        for ( i = 0, il = _programs.length; i < il; i ++ ) {
+        for (i = 0, il = _programs.length; i < il; i++) {
 
-            programInfo = _programs[ i ];
+            programInfo = _programs[i];
 
-            if ( programInfo.program === program ) {
+            if (programInfo.program === program) {
 
-                programInfo.usedTimes --;
+                programInfo.usedTimes--;
 
-                if ( programInfo.usedTimes === 0 ) {
+                if (programInfo.usedTimes === 0) {
 
                     deleteProgram = true;
 
@@ -17474,19 +17510,20 @@ $3Dmol.Renderer = function ( parameters ) {
 
         }
 
-        if ( deleteProgram === true ) {
+        if (deleteProgram === true) {
 
-            // avoid using array.splice, this is costlier than creating new array from scratch
+            // avoid using array.splice, this is costlier than creating new
+            // array from scratch
 
             var newPrograms = [];
 
-            for ( i = 0, il = _programs.length; i < il; i ++ ) {
+            for (i = 0, il = _programs.length; i < il; i++) {
 
-                programInfo = _programs[ i ];
+                programInfo = _programs[i];
 
-                if ( programInfo.program !== program ) {
+                if (programInfo.program !== program) {
 
-                    newPrograms.push( programInfo );
+                    newPrograms.push(programInfo);
 
                 }
 
@@ -17494,14 +17531,14 @@ $3Dmol.Renderer = function ( parameters ) {
 
             _programs = newPrograms;
 
-            _gl.deleteProgram( program );
+            _gl.deleteProgram(program);
 
-            _this.info.memory.programs --;
+            _this.info.memory.programs--;
 
         }
 
     };
-    
+
     var deallocateTexture = function(texture) {
 
         if (texture.image && texture.image.__webglTextureCube) {
@@ -17510,35 +17547,36 @@ $3Dmol.Renderer = function ( parameters ) {
 
             _gl.deleteTexture(texture.image.__webglTextureCube);
 
-        } 
-        
+        }
+
         else {
 
             // 2D texture
 
-            if ( ! texture.__webglInit ) return;
+            if (!texture.__webglInit)
+                return;
 
             texture.__webglInit = false;
-            _gl.deleteTexture( texture.__webglTexture );
+            _gl.deleteTexture(texture.__webglTexture);
 
         }
 
     };
 
-    //Compile and return shader
-    function getShader (type, str) {
+    // Compile and return shader
+    function getShader(type, str) {
 
         var shader;
 
         if (type === "fragment")
-            shader = _gl.createShader( _gl.FRAGMENT_SHADER );
+            shader = _gl.createShader(_gl.FRAGMENT_SHADER);
         else if (type === "vertex")
-            shader = _gl.createShader( _gl.VERTEX_SHADER );
+            shader = _gl.createShader(_gl.VERTEX_SHADER);
 
         _gl.shaderSource(shader, str);
         _gl.compileShader(shader);
 
-        if ( ! _gl.getShaderParameter(shader, _gl.COMPILE_STATUS) ) {
+        if (!_gl.getShaderParameter(shader, _gl.COMPILE_STATUS)) {
 
             console.error(_gl.getShaderInfoLog(shader));
             console.error("could not initialize shader");
@@ -17548,10 +17586,10 @@ $3Dmol.Renderer = function ( parameters ) {
 
         return shader;
 
-    } 
+    }
 
-
-    //Compile appropriate shaders (if necessary) from source code and attach to gl program.
+    // Compile appropriate shaders (if necessary) from source code and attach to
+    // gl program.
     function buildProgram(fragmentShader, vertexShader, uniforms, parameters) {
 
         var p, pl, d, program, code;
@@ -17559,15 +17597,15 @@ $3Dmol.Renderer = function ( parameters ) {
 
         chunks.push(fragmentShader);
         chunks.push(vertexShader);
-        
+
         for (p in parameters) {
             chunks.push(p);
             chunks.push(parameters[p]);
         }
-        
+
         code = chunks.join();
 
-        //check if program has already been compiled
+        // check if program has already been compiled
 
         for (p = 0, pl = _programs.length; p < pl; p++) {
 
@@ -17581,24 +17619,22 @@ $3Dmol.Renderer = function ( parameters ) {
             }
         }
 
-        //Set up new program and compile shaders
+        // Set up new program and compile shaders
 
         program = _gl.createProgram();
-        
-        //set up precision
+
+        // set up precision
         var precision = _precision;
         var prefix = "precision " + precision + " float;";
-        
-        var prefix_vertex = [
-                             prefix
-                            ].join("\n");
-                            
-        var prefix_fragment = [                               
-                               parameters.wireframe ? "#define WIREFRAME 1" : "",
-                               prefix
-                              ].join("\n");
-        
-        var glFragmentShader = getShader("fragment", prefix_fragment + fragmentShader);
+
+        var prefix_vertex = [ prefix ].join("\n");
+
+        var prefix_fragment = [
+                parameters.wireframe ? "#define WIREFRAME 1" : "", prefix ]
+                .join("\n");
+
+        var glFragmentShader = getShader("fragment", prefix_fragment
+                + fragmentShader);
         var glVertexShader = getShader("vertex", prefix_vertex + vertexShader);
 
         _gl.attachShader(program, glVertexShader);
@@ -17606,56 +17642,62 @@ $3Dmol.Renderer = function ( parameters ) {
 
         _gl.linkProgram(program);
 
-        if (! _gl.getProgramParameter(program, _gl.LINK_STATUS) )
+        if (!_gl.getProgramParameter(program, _gl.LINK_STATUS))
             console.error("Could not initialize shader");
 
-        //gather and cache uniform variables and attributes
+        // gather and cache uniform variables and attributes
 
         program.uniforms = {};
         program.attributes = {};
 
         var identifiers, u, a, i;
 
-        //uniform vars
-        identifiers = 
-            [ 'viewMatrix', 'modelViewMatrix', 'projectionMatrix', 'normalMatrix', 'modelMatrix', 'cameraPosition' ];
+        // uniform vars
+        identifiers = [ 'viewMatrix', 'modelViewMatrix', 'projectionMatrix',
+                'normalMatrix', 'modelMatrix', 'cameraPosition' ];
 
-        //custom uniform vars
-        for (u in uniforms) 
+        // custom uniform vars
+        for (u in uniforms)
             identifiers.push(u);
 
         for (i = 0; i < identifiers.length; i++) {
 
             var uniformVar = identifiers[i];
-            program.uniforms[uniformVar] = _gl.getUniformLocation(program, uniformVar);
+            program.uniforms[uniformVar] = _gl.getUniformLocation(program,
+                    uniformVar);
 
         }
 
-        //attributes
-        identifiers = 
-            [ 'position', 'normal', 'color', 'lineDistance' ];
+        // attributes
+        identifiers = [ 'position', 'normal', 'color', 'lineDistance' ];
 
         /*
-        for (a in attributes)
-                identifiers.push(a);
-        */
+         * for (a in attributes) identifiers.push(a);
+         */
 
         for (i = 0; i < identifiers.length; i++) {
 
             var attributeVar = identifiers[i];
-            program.attributes[attributeVar] = _gl.getAttribLocation(program, attributeVar);
+            program.attributes[attributeVar] = _gl.getAttribLocation(program,
+                    attributeVar);
         }
 
         program.id = _programs_counter++;
-        _programs.push( {program: program, code: code, usedTimes: 1} );
+        _programs.push({
+            program : program,
+            code : code,
+            usedTimes : 1
+        });
         _this.info.memory.programs = _programs.length;
 
         return program;
     }
 
-    //TODO: need to set up shader attributes and uniforms as attributes on material object after attaching prgm
-    //We need to attach appropriate uniform variables to material after shaders have been chosen
-    this.initMaterial = function ( material, lights, fog, object ) {
+    // TODO: need to set up shader attributes and uniforms as attributes on
+    // material object after attaching prgm
+    // We need to attach appropriate uniform variables to material after shaders
+    // have been chosen
+    this.initMaterial = function(material, lights, fog, object) {
 
         material.addEventListener('dispose', onMaterialDispose);
 
@@ -17669,38 +17711,37 @@ $3Dmol.Renderer = function ( parameters ) {
             material.vertexShader = shader.vertexShader;
             material.fragmentShader = shader.fragmentShader;
             material.uniforms = $3Dmol.ShaderUtils.clone(shader.uniforms);
-            //TODO: set material uniforms to shader uniform variables
+            // TODO: set material uniforms to shader uniform variables
 
         }
-        
+
         parameters = {
-            wireframe: material.wireframe
+            wireframe : material.wireframe
         };
 
-        material.program = buildProgram(material.fragmentShader, material.vertexShader, material.uniforms, parameters);
+        material.program = buildProgram(material.fragmentShader,
+                material.vertexShader, material.uniforms, parameters);
 
     };
 
-    function setProgram( camera, lights, fog, material, object ) {
+    function setProgram(camera, lights, fog, material, object) {
 
-        if ( material.needsUpdate ) {
+        if (material.needsUpdate) {
 
             if (material.program)
                 deallocateMaterial(material);
 
-                _this.initMaterial( material, lights, fog, object );
-                material.needsUpdate = false;
+            _this.initMaterial(material, lights, fog, object);
+            material.needsUpdate = false;
         }
 
         var refreshMaterial = false;
 
-        //p_uniforms: uniformVarName => uniformLocation
-        //m_uniforms: uniformVarName => uniformJsVal
-        var program = material.program,
-            p_uniforms = program.uniforms,
-            m_uniforms = material.uniforms;
+        // p_uniforms: uniformVarName => uniformLocation
+        // m_uniforms: uniformVarName => uniformJsVal
+        var program = material.program, p_uniforms = program.uniforms, m_uniforms = material.uniforms;
 
-        if (program != _currentProgram) {   
+        if (program != _currentProgram) {
             _gl.useProgram(program);
             _currentProgram = program;
 
@@ -17712,57 +17753,64 @@ $3Dmol.Renderer = function ( parameters ) {
             refreshMaterial = true;
         }
 
-        if (camera != _currentCamera) {    
+        if (camera != _currentCamera) {
             _currentCamera = camera;
             refreshMaterial = true;
         }
-        
-        _gl.uniformMatrix4fv(p_uniforms.projectionMatrix, false, camera.projectionMatrix.elements);
-        _gl.uniformMatrix4fv(p_uniforms.modelViewMatrix, false, object._modelViewMatrix.elements);
-        _gl.uniformMatrix3fv(p_uniforms.normalMatrix, false, object._normalMatrix.elements);
-        
-        //Send projection matrix to uniform variable in shader
+
+        _gl.uniformMatrix4fv(p_uniforms.projectionMatrix, false,
+                camera.projectionMatrix.elements);
+        _gl.uniformMatrix4fv(p_uniforms.modelViewMatrix, false,
+                object._modelViewMatrix.elements);
+        _gl.uniformMatrix3fv(p_uniforms.normalMatrix, false,
+                object._normalMatrix.elements);
+
+        // Send projection matrix to uniform variable in shader
         if (refreshMaterial) {
 
-            //Load projection, model-view matrices for perspective
+            // Load projection, model-view matrices for perspective
 
-
-            //Set up correct fog uniform vals
+            // Set up correct fog uniform vals
             m_uniforms.fogColor.value = fog.color;
             m_uniforms.fogNear.value = fog.near;
             m_uniforms.fogFar.value = fog.far;
 
-            //Set up lights for lambert shader
-            if (material.shaderID.lastIndexOf("lambert",0) === 0) {
+            // Set up lights for lambert shader
+            if (material.shaderID.lastIndexOf("lambert", 0) === 0) {
 
-                //load view and normal matrices for directional and object lighting
-                _gl.uniformMatrix4fv(p_uniforms.viewMatrix, false, camera.matrixWorldInverse.elements);
-                //_gl.uniformMatrix4fv(p_uniforms.modelMatrix, false, object.matrixWorld.elements);
+                // load view and normal matrices for directional and object
+                // lighting
+                _gl.uniformMatrix4fv(p_uniforms.viewMatrix, false,
+                        camera.matrixWorldInverse.elements);
 
                 if (_lightsNeedUpdate) {
                     setupLights(program, lights);
                     _lightsNeedUpdate = false;
                 }
 
-                //Set up correct light uniform var vals
+                // Set up correct light uniform var vals
                 m_uniforms.ambientLightColor.value = _lights.ambient;
                 m_uniforms.directionalLightColor.value = _lights.directional.colors;
                 m_uniforms.directionalLightDirection.value = _lights.directional.positions;
                 m_uniforms.ambient.value = material.ambient;
                 m_uniforms.emissive.value = material.emissive;
 
+            } else if (material.shaderID === "outline") {
+                m_uniforms.outlineColor.value = material.outlineColor;
+                m_uniforms.outlineWidth.value = material.outlineWidth;
+                m_uniforms.outlinePushback.value = material.outlinePushback;
+            } else if (material.shaderID === "sphereimposter") {
+                _gl.uniformMatrix4fv(p_uniforms.viewMatrix, false,
+                        camera.matrixWorldInverse.elements);
+                _gl.uniformMatrix3fv(p_uniforms.normalMatrix, false,
+                        object._normalMatrix.elements);
             }
-            else if( material.shaderID === "sphereimposter") {
-                _gl.uniformMatrix4fv(p_uniforms.viewMatrix, false, camera.matrixWorldInverse.elements);
-                _gl.uniformMatrix3fv(p_uniforms.normalMatrix, false, object._normalMatrix.elements);
-            }
-                
 
-            //opacity, diffuse, emissive, etc
+            // opacity, diffuse, emissive, etc
             m_uniforms.opacity.value = material.opacity;
             m_uniforms.diffuse.value = material.color;
 
-            //Load any other material specific uniform variables to gl shaders
+            // Load any other material specific uniform variables to gl shaders
             loadMaterialUniforms(p_uniforms, m_uniforms);
 
         }
@@ -17775,127 +17823,138 @@ $3Dmol.Renderer = function ( parameters ) {
         var uniformVar, type, uniformVal, uniformLoc;
 
         for (uniformVar in m_uniforms) {
-            if (! p_uniforms[uniformVar])
+            if (!p_uniforms[uniformVar])
                 continue;
 
             type = m_uniforms[uniformVar].type;
             uniformVal = m_uniforms[uniformVar].value;
             uniformLoc = p_uniforms[uniformVar];
 
-            //single float
+            // single float
             if (type === 'f')
                 _gl.uniform1f(uniformLoc, uniformVal);
-            //array of floats
+            // array of floats
             else if (type === 'fv')
                 _gl.uniform3fv(uniformLoc, uniformVal);
-            //color - r,g,b floats
+            // color - r,g,b floats
             else if (type === 'c')
-                _gl.uniform3f(uniformLoc, uniformVal.r, uniformVal.g, uniformVal.b);
+                _gl.uniform3f(uniformLoc, uniformVal.r, uniformVal.g,
+                        uniformVal.b);
 
         }
 
     }
 
-    this.renderBuffer = function ( camera, lights, fog, material, geometryGroup, object ) {
+    this.renderBuffer = function(camera, lights, fog, material, geometryGroup,
+            object) {
 
-        if ( ! material.visible )
+        if (!material.visible)
             return;
 
         var program, attributes, linewidth, primitives, a, attribute, i, il;
 
-        //Sets up proper vertex and fragment shaders and attaches them to webGL program
-        //Also sets appropriate uniform variables 
+        // Sets up proper vertex and fragment shaders and attaches them to webGL
+        // program
+        // Also sets appropriate uniform variables
         program = setProgram(camera, lights, fog, material, object);
 
         attributes = program.attributes;
 
-        var updateBuffers = false,
-            wireframeBit = material.wireframe ? 1 : 0,
-            geometryGroupHash = (geometryGroup.id * 0xffffff) + (program.id * 2) + wireframeBit;
+        var updateBuffers = false, wireframeBit = material.wireframe ? 1 : 0, geometryGroupHash = (geometryGroup.id * 0xffffff)
+                + (program.id * 2) + wireframeBit;
 
         if (geometryGroupHash !== _currentGeometryGroupHash) {
             _currentGeometryGroupHash = geometryGroupHash;
             updateBuffers = true;
         }
 
-        //rebind shader attributes to appropriate (and already initialized) gl buffers
+        // rebind shader attributes to appropriate (and already initialized) gl
+        // buffers
         if (updateBuffers) {
 
             disableAttributes();
 
             // Vertices
-            if (attributes.position >= 0) {            
-                _gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglVertexBuffer );
-                enableAttribute( attributes.position );
-                _gl.vertexAttribPointer( attributes.position, 3, _gl.FLOAT, false, 0, 0 );    
+            if (attributes.position >= 0) {
+                _gl.bindBuffer(_gl.ARRAY_BUFFER,
+                        geometryGroup.__webglVertexBuffer);
+                enableAttribute(attributes.position);
+                _gl.vertexAttribPointer(attributes.position, 3, _gl.FLOAT,
+                        false, 0, 0);
             }
 
             // Colors
             if (attributes.color >= 0) {
-                _gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglColorBuffer);
-                enableAttribute( attributes.color );
-                _gl.vertexAttribPointer( attributes.color, 3, _gl.FLOAT, false, 0, 0 );
+                _gl.bindBuffer(_gl.ARRAY_BUFFER,
+                        geometryGroup.__webglColorBuffer);
+                enableAttribute(attributes.color);
+                _gl.vertexAttribPointer(attributes.color, 3, _gl.FLOAT, false,
+                        0, 0);
             }
 
             // Normals (lambert shader only)
-            if (attributes.normal >=0) {
-                _gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglNormalBuffer );
-                enableAttribute( attributes.normal );
-                _gl.vertexAttribPointer( attributes.normal, 3, _gl.FLOAT, false, 0, 0 );
+            if (attributes.normal >= 0) {
+                _gl.bindBuffer(_gl.ARRAY_BUFFER,
+                        geometryGroup.__webglNormalBuffer);
+                enableAttribute(attributes.normal);
+                _gl.vertexAttribPointer(attributes.normal, 3, _gl.FLOAT, false,
+                        0, 0);
             }
 
         }
 
-        //Render
+        // Render
         var faceCount, lineCount;
-        //lambert shaders - draw triangles
-        //TODO: make sure geometryGroup's face count is setup correctly
+        // lambert shaders - draw triangles
+        // TODO: make sure geometryGroup's face count is setup correctly
         if (object instanceof $3Dmol.Mesh) {
-            
+
             if (material.wireframe) {
                 lineCount = geometryGroup.lineidx;
                 setLineWidth(material.wireframeLinewidth);
-                
+
                 if (updateBuffers)
-                    _gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, geometryGroup.__webglLineBuffer );
-                
-                _gl.drawElements( _gl.LINES, lineCount, _gl.UNSIGNED_SHORT, 0 );
+                    _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER,
+                            geometryGroup.__webglLineBuffer);
+
+                _gl.drawElements(_gl.LINES, lineCount, _gl.UNSIGNED_SHORT, 0);
             }
-            
+
             else {
                 faceCount = geometryGroup.faceidx;
 
                 if (updateBuffers)
-                    _gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, geometryGroup.__webglFaceBuffer );
-                
-                _gl.drawElements( _gl.TRIANGLES, faceCount, _gl.UNSIGNED_SHORT, 0 );
-                
-            }
+                    _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER,
+                            geometryGroup.__webglFaceBuffer);
+                _gl.drawElements(_gl.TRIANGLES, faceCount, _gl.UNSIGNED_SHORT,
+                        0);
 
+            }
 
             _this.info.render.calls++;
             _this.info.render.vertices += faceCount;
             _this.info.render.faces += faceCount / 3;
         }
 
-        //basic shaders - draw lines
+        // basic shaders - draw lines
         else if (object instanceof $3Dmol.Line) {
             lineCount = geometryGroup.vertices;
 
             setLineWidth(material.linewidth);
-            _gl.drawArrays( _gl.LINES, 0, lineCount );
+            _gl.drawArrays(_gl.LINES, 0, lineCount);
 
             _this.info.render.calls++;
         }
 
     };
 
-    //rendering
-    function renderObjects ( renderList, reverse, materialType, camera, lights, fog, useBlending, overrideMaterial)  {
+    // rendering
+    function renderObjects(renderList, reverse, materialType, camera, lights,
+            fog, useBlending, overrideMaterial) {
 
         var webglObject, object, buffer, material, start, end, delta;
 
-        //Forward or backward render
+        // Forward or backward render
 
         if (reverse) {
             start = renderList.length - 1;
@@ -17919,7 +17978,7 @@ $3Dmol.Renderer = function ( parameters ) {
                 buffer = webglObject.buffer;
                 material = webglObject[materialType];
 
-                if ( ! material )
+                if (!material)
                     continue;
 
                 if (useBlending)
@@ -17927,32 +17986,40 @@ $3Dmol.Renderer = function ( parameters ) {
 
                 _this.setDepthTest(material.depthTest);
                 _this.setDepthWrite(material.depthWrite);
-                setPolygonOffset(material.polygonOffset, material.polygonOffsetFactor, material.polygonOffsetUnits);
+                setPolygonOffset(material.polygonOffset,
+                        material.polygonOffsetFactor,
+                        material.polygonOffsetUnits);
 
                 _this.setMaterialFaces(material);
 
-                _this.renderBuffer(camera, lights, fog, material, buffer, object);
+                _this.renderBuffer(camera, lights, fog, material, buffer,
+                        object);
+                if (_outlineMaterial && !material.wireframe
+                        && material.shaderID !== 'basic'
+                        && material.opacity !== 0.0) {
+                    _this.renderBuffer(camera, lights, fog, _outlineMaterial,
+                            buffer, object);
+                }
             }
         }
 
     }
-    
-    this.render = function ( scene, camera, forceClear ) {
 
-        if ( camera instanceof $3Dmol.Camera === false )  {
+    this.render = function(scene, camera, forceClear) {
 
-            console.error( '$3Dmol.Renderer.render: camera is not an instance of $3Dmol.Camera.' );
+        if (camera instanceof $3Dmol.Camera === false) {
+
+            console
+                    .error('$3Dmol.Renderer.render: camera is not an instance of $3Dmol.Camera.');
             return;
 
         }
 
         var i, il,
 
-        webglObject, object,
-        renderList,
+        webglObject, object, renderList,
 
-        lights = scene.__lights,
-        fog = scene.fog;
+        lights = scene.__lights, fog = scene.fog;
 
         // reset caching for this frame
 
@@ -17961,20 +18028,24 @@ $3Dmol.Renderer = function ( parameters ) {
 
         // update scene graph
 
-        if ( this.autoUpdateScene ) scene.updateMatrixWorld();
+        if (this.autoUpdateScene)
+            scene.updateMatrixWorld();
 
         // update camera matrices
-        //Pretty sure camera's parent is always going to be undefined for our purposes...
-        if ( camera.parent === undefined ) camera.updateMatrixWorld();
+        // Pretty sure camera's parent is always going to be undefined for our
+        // purposes...
+        if (camera.parent === undefined)
+            camera.updateMatrixWorld();
 
-        camera.matrixWorldInverse.getInverse( camera.matrixWorld );
+        camera.matrixWorldInverse.getInverse(camera.matrixWorld);
 
-        _projScreenMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse );
+        _projScreenMatrix.multiplyMatrices(camera.projectionMatrix,
+                camera.matrixWorldInverse);
 
         // update WebGL objects
 
-        if ( this.autoUpdateObjects ) this.initWebGLObjects( scene );
-
+        if (this.autoUpdateObjects)
+            this.initWebGLObjects(scene);
 
         _this.info.render.calls = 0;
         _this.info.render.vertices = 0;
@@ -17984,8 +18055,9 @@ $3Dmol.Renderer = function ( parameters ) {
         _currentWidth = _viewportWidth;
         _currentHeight = _viewportHeight;
 
-        if ( this.autoClear || forceClear ) {
-            this.clear( this.autoClearColor, this.autoClearDepth, this.autoClearStencil );
+        if (this.autoClear || forceClear) {
+            this.clear(this.autoClearColor, this.autoClearDepth,
+                    this.autoClearStencil);
 
         }
 
@@ -17993,16 +18065,16 @@ $3Dmol.Renderer = function ( parameters ) {
 
         renderList = scene.__webglObjects;
 
-        for ( i = 0, il = renderList.length; i < il; i ++ ) {
+        for (i = 0, il = renderList.length; i < il; i++) {
 
-            webglObject = renderList[ i ];
+            webglObject = renderList[i];
             object = webglObject.object;
 
             webglObject.render = false;
 
-            if ( object.visible ) {        
-                setupMatrices( object, camera );
-                unrollBufferMaterial( webglObject );
+            if (object.visible) {
+                setupMatrices(object, camera);
+                unrollBufferMaterial(webglObject);
                 webglObject.render = true;
             }
         }
@@ -18013,35 +18085,40 @@ $3Dmol.Renderer = function ( parameters ) {
 
         // opaque pass (front-to-back order)
 
-        this.setBlending( false );
+        this.setBlending(false);
 
-        renderObjects( scene.__webglObjects, true, "opaque", camera, lights, fog, false, material );
-        
-        //prime depth buffer
-        renderObjects( scene.__webglObjects, true, "blank", camera, lights, fog, true, material );
+        renderObjects(scene.__webglObjects, true, "opaque", camera, lights,
+                fog, false, material);
+
+        // prime depth buffer
+        renderObjects(scene.__webglObjects, true, "blank", camera, lights, fog,
+                true, material);
 
         // transparent pass (back-to-front order)
 
-        renderObjects( scene.__webglObjects, false, "transparent", camera, lights, fog, true, material );
+        renderObjects(scene.__webglObjects, false, "transparent", camera,
+                lights, fog, true, material);
 
         // Render plugins (e.g. sprites), and reset state
-        
+
         renderPlugins(this.renderPluginsPost, scene, camera);
 
-        // Ensure depth buffer writing is enabled so it can be cleared on next render
+        // Ensure depth buffer writing is enabled so it can be cleared on next
+        // render
 
-        this.setDepthTest( true );
-        this.setDepthWrite( true );
+        this.setDepthTest(true);
+        this.setDepthWrite(true);
 
-        //_gl.finish();
+        // _gl.finish();
 
     };
-    
+
     function renderPlugins(plugins, scene, camera) {
-        
-        //Reset state once regardless
-        //This should also fix cartoon render bug (after transparent surface render)
-        
+
+        // Reset state once regardless
+        // This should also fix cartoon render bug (after transparent surface
+        // render)
+
         _currentGeometryGroupHash = -1;
         _currentProgram = null;
         _currentCamera = null;
@@ -18051,18 +18128,17 @@ $3Dmol.Renderer = function ( parameters ) {
         _oldDoubleSided = -1;
         _currentMaterialId = -1;
         _oldFlipSided = -1;
-        
-        
+
         if (!plugins.length)
             return;
-        
+
         for (var i = 0, il = plugins.length; i < il; i++) {
-            
+
             _lightsNeedUpdate = true;
-            
+
             plugins[i].render(scene, camera, _currentWidth, _currentHeight);
-            
-            //Reset state after plugin render
+
+            // Reset state after plugin render
             _currentGeometryGroupHash = -1;
             _currentProgram = null;
             _currentCamera = null;
@@ -18071,15 +18147,15 @@ $3Dmol.Renderer = function ( parameters ) {
             _oldDepthTest = -1;
             _oldDoubleSided = -1;
             _currentMaterialId = -1;
-            _oldFlipSided = -1;       
-                
-        }  
-        
+            _oldFlipSided = -1;
+
+        }
+
     }
 
-    this.initWebGLObjects = function ( scene ) {
+    this.initWebGLObjects = function(scene) {
 
-        if ( !scene.__webglObjects ) {
+        if (!scene.__webglObjects) {
 
             scene.__webglObjects = [];
             scene.__webglObjectsImmediate = [];
@@ -18088,128 +18164,134 @@ $3Dmol.Renderer = function ( parameters ) {
 
         }
 
-        //Add objects; this sets up buffers for each geometryGroup
+        // Add objects; this sets up buffers for each geometryGroup
         if (scene.__objectsAdded.length) {
-            
-            while(scene.__objectsAdded.length){
+
+            while (scene.__objectsAdded.length) {
                 addObject(scene.__objectsAdded[0], scene);
                 scene.__objectsAdded.splice(0, 1);
             }
-            
-            //Force buffer update during render
-            //Hackish fix for initial cartoon-render-then-transparent-surface bug
+
+            // Force buffer update during render
+            // Hackish fix for initial cartoon-render-then-transparent-surface
+            // bug
             _currentGeometryGroupHash = -1;
-            
+
         }
 
         while (scene.__objectsRemoved.length) {
 
-            removeObject(scene.__objectsRemoved[ 0 ], scene);
+            removeObject(scene.__objectsRemoved[0], scene);
             scene.__objectsRemoved.splice(0, 1);
 
         }
 
         // update must be called after objects adding / removal
-        //This sends typed arrays to GL buffers for each geometryGroup
-        for ( var o = 0, ol = scene.__webglObjects.length; o < ol; o ++ ) {
+        // This sends typed arrays to GL buffers for each geometryGroup
+        for (var o = 0, ol = scene.__webglObjects.length; o < ol; o++) {
 
-            updateObject(scene.__webglObjects[ o ].object);
+            updateObject(scene.__webglObjects[o].object);
 
         }
 
     };
-    
+
     // Objects adding
 
-    function addObject (object, scene) {
+    function addObject(object, scene) {
 
         var g, gl, geometry, material, geometryGroup;
 
-        if ( !object.__webglInit ) {
+        if (!object.__webglInit) {
 
             object.__webglInit = true;
 
             object._modelViewMatrix = new $3Dmol.Matrix4();
             object._normalMatrix = new $3Dmol.Matrix3();
 
-            if (object.geometry !== undefined && object.geometry.__webglInit === undefined) {
+            if (object.geometry !== undefined
+                    && object.geometry.__webglInit === undefined) {
 
                 object.geometry.__webglInit = true;
                 object.geometry.addEventListener('dispose', onGeometryDispose);
 
             }
-            
+
             if (object instanceof $3Dmol.Mesh || object instanceof $3Dmol.Line) {
                 geometry = object.geometry;
-                material = object.material;           
-    
+                material = object.material;
+
                 for (g = 0, gl = geometry.geometryGroups.length; g < gl; g++) {
-    
-                    geometryGroup = geometry.geometryGroups[ g ];
-                    
+
+                    geometryGroup = geometry.geometryGroups[g];
+
                     geometryGroup.id = _geometryGroupCounter++;
 
                     // initialise VBO on the first access
 
-                    if ( !geometryGroup.__webglVertexBuffer ) {
-                            
+                    if (!geometryGroup.__webglVertexBuffer) {
+
                         if (object instanceof $3Dmol.Mesh) {
                             createMeshBuffers(geometryGroup);
                             geometry.elementsNeedUpdate = true;
                             geometry.normalsNeedUpdate = true;
                         }
-                            
+
                         else if (object instanceof $3Dmol.Line)
                             createLineBuffers(geometryGroup);
 
                         geometry.verticesNeedUpdate = true;
                         geometry.colorsNeedUpdate = true;
-                    }      
+
+                    }
+
                 }
+
             }
+
         }
-        
-        if ( ! object.__webglActive ) {
-            
+
+        if (!object.__webglActive) {
+
             if (object instanceof $3Dmol.Mesh || object instanceof $3Dmol.Line) {
-                
+
                 geometry = object.geometry;
 
-                for ( g = 0, gl = geometry.geometryGroups.length; g < gl; g++ ) {
+                for (g = 0, gl = geometry.geometryGroups.length; g < gl; g++) {
                     geometryGroup = geometry.geometryGroups[g];
 
                     addBuffer(scene.__webglObjects, geometryGroup, object);
                 }
-                
+
             }
-            
-            //Sprite
-            else if (object instanceof $3Dmol.Sprite) 
+
+            // Sprite
+            else if (object instanceof $3Dmol.Sprite)
                 scene.__webglSprites.push(object);
-         
-                     
+
             object.__webglActive = true;
-            
+
         }
 
     }
 
-    function updateObject ( object ) {
+    function updateObject(object) {
 
-        var geometry = object.geometry, material = object.material,
-                geometryGroup, customAttributesDirty;
-        
-        if ( object instanceof $3Dmol.Mesh || object instanceof $3Dmol.Line ) {
-            
+        var geometry = object.geometry, material = object.material, geometryGroup, customAttributesDirty;
+
+        if (object instanceof $3Dmol.Mesh || object instanceof $3Dmol.Line) {
+
             for (var g = 0, gl = geometry.geometryGroups.length; g < gl; g++) {
-                
-                geometryGroup = geometry.geometryGroups[ g ];
 
-                if ( geometry.verticesNeedUpdate || geometry.elementsNeedUpdate || geometry.colorsNeedUpdate || geometry.normalsNeedUpdate) {
-                    setBuffers( geometryGroup, _gl.STATIC_DRAW );
+                geometryGroup = geometry.geometryGroups[g];
+
+                if (geometry.verticesNeedUpdate || geometry.elementsNeedUpdate
+                        || geometry.colorsNeedUpdate
+                        || geometry.normalsNeedUpdate) {
+                    setBuffers(geometryGroup, _gl.STATIC_DRAW);
                 }
             }
-            
+
             geometry.verticesNeedUpdate = false;
             geometry.elementsNeedUpdate = false;
             geometry.normalsNeedUpdate = false;
@@ -18220,48 +18302,48 @@ $3Dmol.Renderer = function ( parameters ) {
         }
 
     }
-    
-    function removeObject( object, scene ) {
 
-        if (object instanceof $3Dmol.Mesh || object instanceof $3Dmol.Line )
+    function removeObject(object, scene) {
+
+        if (object instanceof $3Dmol.Mesh || object instanceof $3Dmol.Line)
             removeInstances(scene.__webglObjects, object);
 
         else if (object instanceof $3Dmol.Sprite)
             removeInstancesDirect(scene.__webglSprites, object);
-            
+
         object.__webglActive = false;
 
     }
 
-    function removeInstances( objList, object ) {
+    function removeInstances(objList, object) {
 
         for (var o = objList.length - 1; o >= 0; --o) {
 
-            if (objList[o].object === object) 
+            if (objList[o].object === object)
                 objList.splice(o, 1);
 
         }
     }
 
-    function removeInstancesDirect( objList, object ) {
+    function removeInstancesDirect(objList, object) {
 
         for (var o = objList.length - 1; o >= 0; --o) {
 
-            if (objList[o] === object) 
+            if (objList[o] === object)
                 objList.splice(o, 1);
 
         }
     }
 
-    function unrollBufferMaterial( globject ) {
+    function unrollBufferMaterial(globject) {
 
         var object = globject.object;
         var material = object.material;
 
-        if ( material.transparent) {                    
+        if (material.transparent) {
             globject.opaque = null;
             globject.transparent = material;
-            if(!material.wireframe){
+            if (!material.wireframe) {
                 var blankMaterial = material.clone();
                 blankMaterial.opacity = 0.0;
                 globject.blank = blankMaterial;
@@ -18271,53 +18353,58 @@ $3Dmol.Renderer = function ( parameters ) {
         else {
             globject.opaque = material;
             globject.transparent = null;
+
         }
 
     }
 
-    function setBuffers( geometryGroup, hint, line ) {
+    function setBuffers(geometryGroup, hint, line) {
 
         var vertexArray = geometryGroup.vertexArray;
         var colorArray = geometryGroup.colorArray;
-         
-        //vertex buffers
-        _gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglVertexBuffer );
-        _gl.bufferData( _gl.ARRAY_BUFFER, vertexArray, hint );        
 
-        //color buffers
-        _gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglColorBuffer );
-        _gl.bufferData( _gl.ARRAY_BUFFER, colorArray, hint );    
-              
-        
-        //normal buffers
-        if (geometryGroup.normalArray !== undefined && geometryGroup.__webglNormalBuffer !== undefined) {
+        // vertex buffers
+        _gl.bindBuffer(_gl.ARRAY_BUFFER, geometryGroup.__webglVertexBuffer);
+        _gl.bufferData(_gl.ARRAY_BUFFER, vertexArray, hint);
+
+        // color buffers
+        _gl.bindBuffer(_gl.ARRAY_BUFFER, geometryGroup.__webglColorBuffer);
+        _gl.bufferData(_gl.ARRAY_BUFFER, colorArray, hint);
+
+        // normal buffers
+        if (geometryGroup.normalArray !== undefined
+                && geometryGroup.__webglNormalBuffer !== undefined) {
             var normalArray = geometryGroup.normalArray;
-            _gl.bindBuffer( _gl.ARRAY_BUFFER, geometryGroup.__webglNormalBuffer );
-            _gl.bufferData( _gl.ARRAY_BUFFER, normalArray, hint );       
-             
+            _gl.bindBuffer(_gl.ARRAY_BUFFER, geometryGroup.__webglNormalBuffer);
+            _gl.bufferData(_gl.ARRAY_BUFFER, normalArray, hint);
+
         }
-        
-        //face (index) buffers
-        if (geometryGroup.faceArray !== undefined && geometryGroup.__webglFaceBuffer !== undefined) {
+
+        // face (index) buffers
+        if (geometryGroup.faceArray !== undefined
+                && geometryGroup.__webglFaceBuffer !== undefined) {
             var faceArray = geometryGroup.faceArray;
-            _gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, geometryGroup.__webglFaceBuffer );
-            _gl.bufferData( _gl.ELEMENT_ARRAY_BUFFER, faceArray, hint );  
-                      
+            _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER,
+                    geometryGroup.__webglFaceBuffer);
+            _gl.bufferData(_gl.ELEMENT_ARRAY_BUFFER, faceArray, hint);
+
         }
-        
-        //line (index) buffers (for wireframe)
-        if (geometryGroup.lineArray !== undefined && geometryGroup.__webglLineBuffer !== undefined) {
-            var lineArray = geometryGroup.lineArray;            
-            _gl.bindBuffer( _gl.ELEMENT_ARRAY_BUFFER, geometryGroup.__webglLineBuffer );
-            _gl.bufferData( _gl.ELEMENT_ARRAY_BUFFER, lineArray, hint );
+
+        // line (index) buffers (for wireframe)
+        if (geometryGroup.lineArray !== undefined
+                && geometryGroup.__webglLineBuffer !== undefined) {
+            var lineArray = geometryGroup.lineArray;
+            _gl.bindBuffer(_gl.ELEMENT_ARRAY_BUFFER,
+                    geometryGroup.__webglLineBuffer);
+            _gl.bufferData(_gl.ELEMENT_ARRAY_BUFFER, lineArray, hint);
         }
 
     }
-    
-    //Creates appropriate gl buffers for geometry chunk
-    //TODO: do we need line buffer for mesh objects?
-    //Also, can we integrate this with createLineBuffers?
-    function createMeshBuffers ( geometryGroup ) {
+
+    // Creates appropriate gl buffers for geometry chunk
+    // TODO: do we need line buffer for mesh objects?
+    // Also, can we integrate this with createLineBuffers?
+    function createMeshBuffers(geometryGroup) {
 
         geometryGroup.__webglVertexBuffer = _gl.createBuffer();
         geometryGroup.__webglNormalBuffer = _gl.createBuffer();
@@ -18328,78 +18415,85 @@ $3Dmol.Renderer = function ( parameters ) {
 
         _this.info.memory.geometries++;
     }
-    
-    function createLineBuffers ( geometry ) {
-        
+
+    function createLineBuffers(geometry) {
+
         geometry.__webglVertexBuffer = _gl.createBuffer();
         geometry.__webglColorBuffer = _gl.createBuffer();
-        
+
         _this.info.memory.geometries++;
     }
 
-    function addBuffer (objlist, buffer, object) {
+    function addBuffer(objlist, buffer, object) {
 
-        objlist.push(
-            {
-                buffer: buffer,
-                object: object,
-                opaque: null,
-                transparent: null
-            }
-        );
+        objlist.push({
+            buffer : buffer,
+            object : object,
+            opaque : null,
+            transparent : null
+        });
 
     }
 
-    function setupMatrices (object, camera) {
+    function setupMatrices(object, camera) {
 
-        object._modelViewMatrix.multiplyMatrices( camera.matrixWorldInverse, object.matrixWorld );
+        object._modelViewMatrix.multiplyMatrices(camera.matrixWorldInverse,
+                object.matrixWorld);
 
-        object._normalMatrix.getInverse( object._modelViewMatrix );
+        object._normalMatrix.getInverse(object._modelViewMatrix);
         object._normalMatrix.transpose();
 
     }
 
-    function isPowerOfTwo ( value ) {
+    function isPowerOfTwo(value) {
 
-        return ( value & ( value - 1 ) ) === 0;
+        return (value & (value - 1)) === 0;
 
     }
-    
+
     // Fallback filters for non-power-of-2 textures
 
-    function filterFallback ( f ) {
+    function filterFallback(f) {
 
         return _gl.LINEAR;
 
     }
 
-    function setTextureParameters ( textureType, texture, isImagePowerOfTwo ) {
+    function setTextureParameters(textureType, texture, isImagePowerOfTwo) {
 
-        if ( isImagePowerOfTwo ) {
+        if (isImagePowerOfTwo) {
 
-            _gl.texParameteri( textureType, _gl.TEXTURE_WRAP_S, paramToGL( texture.wrapS ) );
-            _gl.texParameteri( textureType, _gl.TEXTURE_WRAP_T, paramToGL( texture.wrapT ) );
+            _gl.texParameteri(textureType, _gl.TEXTURE_WRAP_S,
+                    paramToGL(texture.wrapS));
+            _gl.texParameteri(textureType, _gl.TEXTURE_WRAP_T,
+                    paramToGL(texture.wrapT));
 
-            _gl.texParameteri( textureType, _gl.TEXTURE_MAG_FILTER, paramToGL( texture.magFilter ) );
-            _gl.texParameteri( textureType, _gl.TEXTURE_MIN_FILTER, paramToGL( texture.minFilter ) );
+            _gl.texParameteri(textureType, _gl.TEXTURE_MAG_FILTER,
+                    paramToGL(texture.magFilter));
+            _gl.texParameteri(textureType, _gl.TEXTURE_MIN_FILTER,
+                    paramToGL(texture.minFilter));
 
         } else {
 
-            _gl.texParameteri( textureType, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE );
-            _gl.texParameteri( textureType, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE );
+            _gl.texParameteri(textureType, _gl.TEXTURE_WRAP_S,
+                    _gl.CLAMP_TO_EDGE);
+            _gl.texParameteri(textureType, _gl.TEXTURE_WRAP_T,
+                    _gl.CLAMP_TO_EDGE);
 
-            _gl.texParameteri( textureType, _gl.TEXTURE_MAG_FILTER, filterFallback( texture.magFilter ) );
-            _gl.texParameteri( textureType, _gl.TEXTURE_MIN_FILTER, filterFallback( texture.minFilter ) );
+            _gl.texParameteri(textureType, _gl.TEXTURE_MAG_FILTER,
+                    filterFallback(texture.magFilter));
+            _gl.texParameteri(textureType, _gl.TEXTURE_MIN_FILTER,
+                    filterFallback(texture.minFilter));
 
         }
 
     }
-    
-    this.setTexture = function (texture, slot) {
+
+    this.setTexture = function(texture, slot) {
 
         if (texture.needsUpdate) {
 
-            if ( !texture.__webglInit ) {
+            if (!texture.__webglInit) {
 
                 texture.__webglInit = true;
 
@@ -18415,13 +18509,12 @@ $3Dmol.Renderer = function ( parameters ) {
             _gl.bindTexture(_gl.TEXTURE_2D, texture.__webglTexture);
 
             _gl.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, texture.flipY);
-            _gl.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultiplyAlpha);
+            _gl.pixelStorei(_gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,
+                    texture.premultiplyAlpha);
             _gl.pixelStorei(_gl.UNPACK_ALIGNMENT, texture.unpackAlignment);
 
-            var image = texture.image,
-            isImagePowerOfTwo = isPowerOfTwo(image.width) && isPowerOfTwo(image.height),
-            glFormat = paramToGL(texture.format),
-            glType = paramToGL(texture.type);
+            var image = texture.image, isImagePowerOfTwo = isPowerOfTwo(image.width)
+                    && isPowerOfTwo(image.height), glFormat = paramToGL(texture.format), glType = paramToGL(texture.type);
 
             setTextureParameters(_gl.TEXTURE_2D, texture, isImagePowerOfTwo);
 
@@ -18431,85 +18524,84 @@ $3Dmol.Renderer = function ( parameters ) {
 
             // use manually created mipmaps if available
             // if there are no manual mipmaps
-            // set 0 level mipmap and then use GL to generate other mipmap levels
+            // set 0 level mipmap and then use GL to generate other mipmap
+            // levels
 
-            if ( mipmaps.length > 0 && isImagePowerOfTwo ) {
+            if (mipmaps.length > 0 && isImagePowerOfTwo) {
 
-                for ( var i = 0, il = mipmaps.length; i < il; i ++ ) {
-                    mipmap = mipmaps[ i ];
-                    _gl.texImage2D( _gl.TEXTURE_2D, i, glFormat, glFormat, glType, mipmap );
+                for (var i = 0, il = mipmaps.length; i < il; i++) {
+                    mipmap = mipmaps[i];
+                    _gl.texImage2D(_gl.TEXTURE_2D, i, glFormat, glFormat,
+                            glType, mipmap);
                 }
-                
-                texture.generateMipmaps = false;
-            } 
-            
-            else 
-                _gl.texImage2D( _gl.TEXTURE_2D, 0, glFormat, glFormat, glType, texture.image );
 
-            
-            if ( texture.generateMipmaps && isImagePowerOfTwo ) _gl.generateMipmap( _gl.TEXTURE_2D );
+                texture.generateMipmaps = false;
+            }
+
+            else
+                _gl.texImage2D(_gl.TEXTURE_2D, 0, glFormat, glFormat, glType,
+                        texture.image);
+
+            if (texture.generateMipmaps && isImagePowerOfTwo)
+                _gl.generateMipmap(_gl.TEXTURE_2D);
 
             texture.needsUpdate = false;
 
-            if ( texture.onUpdate ) texture.onUpdate();
+            if (texture.onUpdate)
+                texture.onUpdate();
 
         } else {
 
-            _gl.activeTexture( _gl.TEXTURE0 + slot );
-            _gl.bindTexture( _gl.TEXTURE_2D, texture.__webglTexture );
+            _gl.activeTexture(_gl.TEXTURE0 + slot);
+            _gl.bindTexture(_gl.TEXTURE_2D, texture.__webglTexture);
 
         }
 
     };
-    
+
     // Map constants to WebGL constants
 
-    function paramToGL ( p ) {
+    function paramToGL(p) {
 
-        if ( p === $3Dmol.UnsignedByteType ) return _gl.UNSIGNED_BYTE;
-        if ( p === $3Dmol.RGBAFormat ) return _gl.RGBA;
+        if (p === $3Dmol.UnsignedByteType)
+            return _gl.UNSIGNED_BYTE;
+        if (p === $3Dmol.RGBAFormat)
+            return _gl.RGBA;
 
         return 0;
 
     }
-    
-    function setupLights ( program, lights ) {
-        var l, ll, light, n,
-        r = 0, g = 0, b = 0,
-        color,
-        position,
-        intensity,
-        distance,
-        
+
+    function setupLights(program, lights) {
+        var l, ll, light, n, r = 0, g = 0, b = 0, color, position, intensity, distance,
+
         zlights = _lights,
-        
-        dirColors = zlights.directional.colors,
-        dirPositions = zlights.directional.positions,
-        
-        dirCount = 0,
-        dirLength = 0,
-        dirOffset = 0;
-        
-        for ( l = 0, ll = lights.length; l < ll; l++) {
-            
+
+        dirColors = zlights.directional.colors, dirPositions = zlights.directional.positions,
+
+        dirCount = 0, dirLength = 0, dirOffset = 0;
+
+        for (l = 0, ll = lights.length; l < ll; l++) {
+
             light = lights[l];
-            
+
             color = light.color;
             intensity = light.intensity;
             distance = light.distance;
-            
+
             if (light instanceof $3Dmol.Light) {
-                
+
                 dirCount++;
-                
+
                 _direction.getPositionFromMatrix(light.matrixWorld);
                 _vector3.getPositionFromMatrix(light.target.matrixWorld);
                 _direction.sub(_vector3);
                 _direction.normalize();
-                
-                if (_direction.x === 0 && _direction.y === 0 && _direction.z === 0)
+
+                if (_direction.x === 0 && _direction.y === 0
+                        && _direction.z === 0)
                     continue;
-                
+
                 dirPositions[dirOffset] = _direction.x;
                 dirPositions[dirOffset + 1] = _direction.y;
                 dirPositions[dirOffset + 2] = _direction.z;
@@ -18517,12 +18609,12 @@ $3Dmol.Renderer = function ( parameters ) {
                 dirColors[dirOffset] = color.r * intensity;
                 dirColors[dirOffset + 1] = color.g * intensity;
                 dirColors[dirOffset + 2] = color.b * intensity;
-                
+
                 dirOffset += 3;
-                
-                dirLength++;    
+
+                dirLength++;
             }
-        
+
         }
 
         zlights.ambient[0] = r;
@@ -18531,50 +18623,62 @@ $3Dmol.Renderer = function ( parameters ) {
         zlights.directional.length = dirLength;
     }
 
-    function initGL () {
+    function initGL() {
 
         try {
 
-            if ( ! ( _gl = _canvas.getContext( 'experimental-webgl', { alpha: _alpha, premultipliedAlpha: _premultipliedAlpha, antialias: _antialias, stencil: _stencil, preserveDrawingBuffer: _preserveDrawingBuffer } ) ) ) {
-                if ( ! ( _gl = _canvas.getContext( 'webgl', { alpha: _alpha, premultipliedAlpha: _premultipliedAlpha, antialias: _antialias, stencil: _stencil, preserveDrawingBuffer: _preserveDrawingBuffer } ) ) ) {
-                throw 'Error creating WebGL context.';
+            if (!(_gl = _canvas.getContext('experimental-webgl', {
+                alpha : _alpha,
+                premultipliedAlpha : _premultipliedAlpha,
+                antialias : _antialias,
+                stencil : _stencil,
+                preserveDrawingBuffer : _preserveDrawingBuffer
+            }))) {
+                if (!(_gl = _canvas.getContext('webgl', {
+                    alpha : _alpha,
+                    premultipliedAlpha : _premultipliedAlpha,
+                    antialias : _antialias,
+                    stencil : _stencil,
+                    preserveDrawingBuffer : _preserveDrawingBuffer
+                }))) {
+                    throw 'Error creating WebGL context.';
                 }
             }
 
-        } catch ( error ) {
+        } catch (error) {
 
-            console.error( error );
+            console.error(error);
         }
         var ext = _gl.getExtension('EXT_frag_depth');
     }
 
-    function setDefaultGLState () {
+    function setDefaultGLState() {
 
-        _gl.clearColor( 0, 0, 0, 1 );
-        _gl.clearDepth( 1 );
-        _gl.clearStencil( 0 );
+        _gl.clearColor(0, 0, 0, 1);
+        _gl.clearDepth(1);
+        _gl.clearStencil(0);
 
-        _gl.enable( _gl.DEPTH_TEST );
-        _gl.depthFunc( _gl.LEQUAL );
+        _gl.enable(_gl.DEPTH_TEST);
+        _gl.depthFunc(_gl.LEQUAL);
 
-        _gl.frontFace( _gl.CCW );
-        _gl.cullFace( _gl.BACK );
-        _gl.enable( _gl.CULL_FACE );
+        _gl.frontFace(_gl.CCW);
+        _gl.cullFace(_gl.BACK);
+        _gl.enable(_gl.CULL_FACE);
 
-        _gl.enable( _gl.BLEND );
-        _gl.blendEquation( _gl.FUNC_ADD );
-        _gl.blendFunc( _gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA );
+        _gl.enable(_gl.BLEND);
+        _gl.blendEquation(_gl.FUNC_ADD);
+        _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA);
 
-        _gl.clearColor( _clearColor.r, _clearColor.g, _clearColor.b, _clearAlpha );
+        _gl
+                .clearColor(_clearColor.r, _clearColor.g, _clearColor.b,
+                        _clearAlpha);
         var ext = _gl.getExtension('EXT_frag_depth');
 
-
     }
-    
-    this.addPostPlugin(new $3Dmol.SpritePlugin());
-        
-};
 
+    this.addPostPlugin(new $3Dmol.SpritePlugin());
+
+};
 /*
  * Scene class
  */
@@ -18955,6 +19059,61 @@ $3Dmol.ShaderLib = {
         }
 
     },
+ 
+//for outline
+     'outline' : { 
+        fragmentShader : [
+
+"uniform float opacity;",
+"uniform vec3 outlineColor;",
+"uniform vec3 fogColor;",
+"uniform float fogNear;",
+"uniform float fogFar;",
+
+"void main() {",
+    
+"    gl_FragColor = vec4( outlineColor, 1 );",
+"}"
+
+
+].join("\n"),
+       
+       vertexShader : [
+
+"uniform mat4 modelViewMatrix;",
+"uniform mat4 projectionMatrix;",
+"uniform float outlineWidth;",
+"uniform float outlinePushback;",
+
+"attribute vec3 position;",
+"attribute vec3 normal;",
+"attribute vec3 color;",
+
+"void main() {",
+
+"    vec4 norm = modelViewMatrix*vec4(normalize(normal),0.0);",
+"    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+"    mvPosition.xy += norm.xy*outlineWidth;",
+"    gl_Position = projectionMatrix * mvPosition;",
+"    mvPosition.z -= outlinePushback;", //go backwards in model space
+"    vec4 pushpos = projectionMatrix*mvPosition;", //project to get z in projection space, I'm probably missing some simple math to do the same thing..
+"    gl_Position.z = gl_Position.w*pushpos.z/pushpos.w;",
+"}"
+           
+].join("\n"),
+
+        uniforms : {
+            opacity: { type: 'f', value: 1.0 },
+            diffuse: { type: 'c', value: new $3Dmol.Color(1.0, 1.0, 1.0) },
+            outlineColor: { type: 'c', value: new $3Dmol.Color(0.0, 0.0, 0.0) },
+            fogColor: { type: 'c', value: new $3Dmol.Color(1.0, 1.0, 1.0) },
+            fogNear: { type: 'f', value: 1.0 },
+            fogFar: { type: 'f', value: 2000},           
+            outlineWidth: { type: 'f', value: 0.1 },
+            outlinePushback: { type: 'f', value: 1.0 },
+        }
+
+    },
     
     //for double sided lighting
     'lambertdouble' : { 
@@ -19161,7 +19320,8 @@ $3Dmol.ShaderLib = {
         
     }
     
-};/*  ProteinSurface.js by biochem_fan
+};
+/*  ProteinSurface.js by biochem_fan
 
 Ported and modified for Javascript based on EDTSurf,
   whose license is as follows.
@@ -20475,9 +20635,11 @@ var $3Dmol = $3Dmol || {};
 
 /**@typedef CartoonStyleSpec
  * @prop {ColorSpec} color - solid color, may specify as 'spectrum'
- * @prop {string} style - style of cartoon rendering (currently just default and trace)
+ * @prop {string} style - style of cartoon rendering (default, trace, oval, rectangle, parabola)
  * @prop {number} thickness - cartoon strand thickness, default is 0.4
- * @prop {number} opacity - set transparency; transparency is set per-chain according to value of last backbone atom
+ * @prop {number} width - cartoon strand width, default is secondary structure-dependent
+ * @prop {number} opacity - set opacity from 0-1; transparency is set per-chain with a warning outputted in the event of ambiguity
+ * @prop {}
  * In nucleic acids, the base cylinders obtain their color from the atom to which the cylinder is drawn, which
  * is 'N1' for purines (resn: 'A', 'G', 'DA', 'DG') and 'N3' for pyrimidines (resn: 'C', 'U', 'DC', 'DT').
  * The different nucleobases can therefore be distinguished as follows:
@@ -20496,11 +20658,10 @@ var $3Dmol = $3Dmol || {};
  */
 $3Dmol.drawCartoon = (function() {
 
-    var axisDIV = 5; // 3 still gives acceptable quality
-    var strandDIV = 6;
-    var nucleicAcidStrandDIV = 4;
-    var tubeDIV = 8;
-    var coilWidth = 0.3;
+    var defaultNum = 5; // for cross-sectional shape
+    var defaultDiv = 5; // for length-wise splicing
+
+    var coilWidth = 0.5;
     var helixSheetWidth = 1.3;
     var nucleicAcidWidth = 0.8;
     var defaultThickness = 0.4; 
@@ -20586,9 +20747,8 @@ $3Dmol.drawCartoon = (function() {
             vertexArray[vertoffset+4] = p2[i].y;
             vertexArray[vertoffset+5] = p2[i].z;
             
-            for (var j = 0; j < 6; ++j) {                
+            for (var j = 0; j < 6; ++j)
                 colorArray[vertoffset+3*j] = color.r; colorArray[vertoffset+1+3*j] = color.g; colorArray[vertoffset+2+3*j] = color.b;
-            }            
            
             if (i > 0) {
                 var faces = [offset, offset + 1, offset - 1, offset - 2];
@@ -20617,9 +20777,231 @@ $3Dmol.drawCartoon = (function() {
         group.add(mesh);
     };
 
-    var drawStrip = function(group, p1, p2, colors, div, thickness, opacity) {
-        if ((p1.length) < 2)
+    var drawShapeStrip = function(group, points, colors, div, thickness, opacity, shape) {
+
+        // points is a 2D array, dimensionality given by [num = cross-sectional resolution][len = length of strip]
+        var i, j, num, len;
+        num = points.length;
+        if (num < 2 || points[0].length < 2) return;
+
+        div = div || axisDIV;
+        for (i = 0; i < num; i++) { // spline to generate greater length-wise resolution
+            points[i] = subdivide(points[i], div)
+        }
+        len = points[0].length;
+
+        if (!thickness) // if thickness is 0, we can use a smaller geometry than this function generates
+            return drawThinStrip(group, points[0], points[num-1], colors, div);
+
+
+        var geo = new $3Dmol.Geometry(true);
+        var axis, cs_shape, cs_bottom, cs_top;
+
+        // cache the available cross-sectional shapes
+        var cs_ellipse = [], cs_rectangle = [], cs_parabola = [];
+        for (j=0; j < num; j++) {
+            cs_ellipse.push(0.25 + 1.5*Math.sqrt((num-1)*j - Math.pow(j, 2))/(num-1));
+            cs_rectangle.push(0.5);
+            cs_parabola.push(2*(Math.pow(j/num, 2) - j/num) + 0.6);
+        }
+
+        /* face_refs array is used to generate faces from vertexArray iteratively.
+           As we move through each cross-sectional segment of points, we draw lateral
+           faces backwards to the previous cross-sectional segment.
+
+           To correctly identify the points needed to make each face we use this
+           array as a lookup table for the relative indices of each needed point
+           in the vertices array.
+
+           4 points are used to create 2 faces.
+        */
+
+        var face_refs = [];
+        for (j = 0; j < num*2-1; j++) {
+            /* [curr vertex in curr cross-section,
+                next vertex in curr cross-section,
+                next vertex in prev cross-section,
+                curr vertex in prev cross-section] */
+            face_refs[j] = [j, j+1, j+1-2*num, j-2*num];
+        }
+        // last face is different. easier to conceptualize this by drawing a diagram
+        face_refs[num*2-1] = [j, j+1-2*num, j+1-4*num, j-2*num];
+
+                
+        var v_offset, va_offset, f_offset;
+        var color;
+        var geoGroup = geo.updateGeoGroup(2*num*len); // ensure vertex capacity
+        
+        for (i = 0; i < len; i++) {
+        
+            color = $3Dmol.CC.color(colors[Math.round(colors.length*i/len)]);
+            
+            cs_bottom = [];
+            cs_top = [];
+            axis = [];
+
+            if (points[0][i].atom !== undefined) // TODO better edge case handling
+            {
+                if (shape === "oval")
+                    cs_shape = cs_ellipse;
+                else if (shape === "rectangle")
+                    cs_shape = cs_rectangle;
+                else if (shape === "parabola")
+                    cs_shape = cs_parabola;
+            }
+            if (!cs_shape) cs_shape = cs_rectangle;
+
+            
+            // calculate thickness at each width point, from cross-sectional shape
+            var toNext, toSide;
+            for (j = 0; j < num; j++)
+            {
+                if (i < len-1)
+                    toNext = points[j][i+1].clone().sub(points[j][i]);
+                else
+                    toNext = points[j][i-1].clone().sub(points[j][i]).negate();
+
+                if (j < num-1)
+                    toSide = points[j+1][i].clone().sub(points[j][i]);
+                else
+                    toSide = points[j-1][i].clone().sub(points[j][i]).negate();
+
+                axis[j] = toSide.cross(toNext).normalize().multiplyScalar(thickness*cs_shape[j]);
+            }
+
+            // generate vertices by applying cross-sectional shape thickness to input points
+            for (j = 0; j < num; j++)
+                cs_bottom[j] = points[j][i].clone().add(axis[j].clone().negate());
+            for (j = 0; j < num; j++)
+                cs_top[j] = points[j][i].clone().add(axis[j]);
+            
+
+            /* Until this point the vertices have been dealt with as $3Dmol.Vector3() objects,
+               but we need to serialize them into the geoGroup.vertexArray, where every three
+               indices represents the next vertex. The colorArray is analogous.
+
+               In the following for-loops, j iterates through VERTICES so we need to index
+               them in vertexArray by 3*j + either 0, 1, or 2 for xyz or rgb component.
+            */
+
+            var vertexArray = geoGroup.vertexArray;
+            var colorArray = geoGroup.colorArray;
+            var faceArray = geoGroup.faceArray;
+            v_offset = geoGroup.vertices; va_offset = v_offset*3; // in case geoGroup already contains vertices
+
+            // bottom edge of cross-section, vertices [0, num)
+            for (j = 0; j < num; j++) {
+                vertexArray[va_offset + 3*j + 0] = cs_bottom[j].x;
+                vertexArray[va_offset + 3*j + 1] = cs_bottom[j].y;
+                vertexArray[va_offset + 3*j + 2] = cs_bottom[j].z;
+            }
+
+            // top edge of cross-section, vertices [num, 2*num)
+            // add these backwards, so that each cross-section's vertices are added sequentially to vertexArray
+            for (j = 0; j < num; j++) {
+                vertexArray[va_offset + 3*j + 0 + 3*num] = cs_top[num-1-j].x;
+                vertexArray[va_offset + 3*j + 1 + 3*num] = cs_top[num-1-j].y;
+                vertexArray[va_offset + 3*j + 2 + 3*num] = cs_top[num-1-j].z;
+            }
+            
+            for (j = 0; j < 2*num; ++j) {
+                colorArray[va_offset + 3*j + 0] = color.r;
+                colorArray[va_offset + 3*j + 1] = color.g;
+                colorArray[va_offset + 3*j + 2] = color.b;
+            }
+            
+            if (i > 0) {
+             
+                for (j = 0; j < num*2; j++) {
+                
+                    // get VERTEX indices of the 4 points of a rectangular face (as opposed to literal vertexArray indices)
+                    var face = [v_offset + face_refs[j][0],
+                                v_offset + face_refs[j][1],
+                                v_offset + face_refs[j][2],
+                                v_offset + face_refs[j][3]];
+                    
+                    f_offset = geoGroup.faceidx;    
+                    
+                    // need 2 triangles to draw a face between 4 points
+                    faceArray[f_offset]   = face[0];
+                    faceArray[f_offset+1] = face[1]; 
+                    faceArray[f_offset+2] = face[3];
+
+                    faceArray[f_offset+3] = face[1];
+                    faceArray[f_offset+4] = face[2];
+                    faceArray[f_offset+5] = face[3];
+                    
+                    geoGroup.faceidx += 6;
+                    
+                    // TODO implement clickable
+                }
+
+            }
+            
+            geoGroup.vertices += 2*num;
+        }
+
+        // for terminal faces
+        var vertexArray = geoGroup.vertexArray;
+        var colorArray = geoGroup.colorArray;
+        var faceArray = geoGroup.faceArray;
+        v_offset = geoGroup.vertices; va_offset = v_offset*3; f_offset = geoGroup.faceidx;
+
+        for (i = 0; i<num-1; i++) // "bottom" face
+        {
+            var face = [i, i+1, 2*num-2-i, 2*num-1-i];
+
+            f_offset = geoGroup.faceidx;
+
+            faceArray[f_offset]   = face[0];
+            faceArray[f_offset+1] = face[1]; 
+            faceArray[f_offset+2] = face[3];
+
+            faceArray[f_offset+3] = face[1];
+            faceArray[f_offset+4] = face[2];
+            faceArray[f_offset+5] = face[3];
+
+            geoGroup.faceidx += 6;
+        }
+
+        for (i = 0; i<num-1; i++) // "top" face
+        {
+            var face = [v_offset-1-i, v_offset-2-i, v_offset-2*num+i+1, v_offset-2*num+i];
+
+            f_offset = geoGroup.faceidx;
+
+            faceArray[f_offset]   = face[0];
+            faceArray[f_offset+1] = face[1]; 
+            faceArray[f_offset+2] = face[3];
+
+            faceArray[f_offset+3] = face[1];
+            faceArray[f_offset+4] = face[2];
+            faceArray[f_offset+5] = face[3];
+
+            geoGroup.faceidx += 6;
+        }
+        
+        geo.initTypedArrays();
+        geo.setUpNormals();
+        
+        var material = new $3Dmol.MeshDoubleLambertMaterial();
+        material.vertexColors = $3Dmol.FaceColors;
+        if (typeof(opacity) === 'number' && opacity >= 0 && opacity < 1) {
+            material.transparent = true;
+            material.opacity = opacity;
+        }
+        var mesh = new $3Dmol.Mesh(geo, material);
+        group.add(mesh);
+    };
+
+    var drawPlainStrip = function(group, points, colors, div, thickness, opacity) {
+        if ((points.length) < 2)
             return;
+
+        var p1, p2;
+        p1 = points[0];
+        p2 = points[points.length-1];
+
         div = div || axisDIV;
         p1 = subdivide(p1, div);
         p2 = subdivide(p2, div);
@@ -20629,11 +21011,13 @@ $3Dmol.drawCartoon = (function() {
         var geo = new $3Dmol.Geometry(true);
         
         //var vs = geo.vertices, fs = geo.faces;
-                var vs = [], fs = [];
+        var vs = [], fs = [];
         var axis, p1v, p2v, a1v, a2v;
         
-        var faces = [ [ 0, 2, -6, -8 ], [ -4, -2, 6, 4 ], [ 7, -1, -5, 3 ],
-                [ -3, 5, 1, -7 ] ];
+        var faces = [ [ 0, 2, -6, -8 ],
+                      [ -4, -2, 6, 4 ],
+                      [ 7, -1, -5, 3 ],
+                      [ -3, 5, 1, -7 ] ];
                 
         var offset, vertoffset, faceoffset;
         var color;
@@ -20644,12 +21028,12 @@ $3Dmol.drawCartoon = (function() {
         
         for (i = 0, lim = p1.length; i < lim; i++) {
         
-            color = $3Dmol.CC.color(colors[Math.round((i - 1) / div)]);
+            color = $3Dmol.CC.color(colors[Math.round(colors.length*i/lim)]);
             
             vs.push(p1v = p1[i]); // 0
-            vs.push(p1v); // 1
+            vs.push(p1v);         // 1
             vs.push(p2v = p2[i]); // 2
-            vs.push(p2v); // 3
+            vs.push(p2v);         // 3
             if (i < lim - 1) {
                 var toNext = p1[i + 1].clone().sub(p1[i]);
                 var toSide = p2[i].clone().sub(p1[i]);
@@ -20670,10 +21054,10 @@ $3Dmol.drawCartoon = (function() {
             var faceArray = geoGroup.faceArray;
             offset = geoGroup.vertices; vertoffset = offset*3;
             
-            vertexArray[vertoffset] = p1v.x; vertexArray[vertoffset+1] = p1v.y; vertexArray[vertoffset+2] = p1v.z;
-            vertexArray[vertoffset+3] = p1v.x; vertexArray[vertoffset+4] = p1v.y; vertexArray[vertoffset+5] = p1v.z;
-            vertexArray[vertoffset+6] = p2v.x; vertexArray[vertoffset+7] = p2v.y; vertexArray[vertoffset+8] = p2v.z;
-            vertexArray[vertoffset+9] = p2v.x; vertexArray[vertoffset+10] = p2v.y; vertexArray[vertoffset+11] = p2v.z;
+            vertexArray[vertoffset]    = p1v.x; vertexArray[vertoffset+1]  = p1v.y; vertexArray[vertoffset+2]  = p1v.z;
+            vertexArray[vertoffset+3]  = p1v.x; vertexArray[vertoffset+4]  = p1v.y; vertexArray[vertoffset+5]  = p1v.z;
+            vertexArray[vertoffset+6]  = p2v.x; vertexArray[vertoffset+7]  = p2v.y; vertexArray[vertoffset+8]  = p2v.z;
+            vertexArray[vertoffset+9]  = p2v.x; vertexArray[vertoffset+10] = p2v.y; vertexArray[vertoffset+11] = p2v.z;
             vertexArray[vertoffset+12] = a1v.x; vertexArray[vertoffset+13] = a1v.y; vertexArray[vertoffset+14] = a1v.z;
             vertexArray[vertoffset+15] = a1v.x; vertexArray[vertoffset+16] = a1v.y; vertexArray[vertoffset+17] = a1v.z;
             vertexArray[vertoffset+18] = a2v.x; vertexArray[vertoffset+19] = a2v.y; vertexArray[vertoffset+20] = a2v.z;
@@ -20816,6 +21200,103 @@ $3Dmol.drawCartoon = (function() {
         geo.initTypedArrays();
         geo.setUpNormals();
         
+                // HalfEdgeRec used to store adjacency info of mesh
+        var HalfEdge=function(vertIdx){
+            this.vert=vertIdx; // Vertex index at the end of this half-edge
+            this.twin=null;    // Oppositely oriented adjacent half-edge
+            this.next=null;    //Next half-edge around the face
+        };
+        
+        var computeAdjacency=function(faces,faceCount,vertCount){
+            //all pieces of the half-edge data structure
+            edges=[];
+            
+            // a hash table to hold the adjaceney info
+            // - Keys are pairs of vertex indices
+            // - Values are pointers to half-edge
+            var edgeTable={};
+            var len=0;
+            
+            //Plow through faces and fill all half-edge info except twin pointers:
+            for(var i=0;i<faceCount;i+=3){
+                var A=faces[i];
+                var B=faces[i+1];
+                var C=faces[i+2];
+               // console.log("A="+A+ " B="+ B+ " C="+C);
+                
+                //create the half-edge that goes from C to A
+                var CA=new HalfEdge(A);
+                edges.push(CA);
+                //create the half-edge that goes from A to B
+                var AB=new HalfEdge(B);
+                edges.push(AB);
+                //create the half-edge that goes from B to C
+                var BC=new HalfEdge(C);
+                edges.push(BC);
+                
+                CA.next=AB;
+                AB.next=BC;
+                BC.next=CA;
+                
+                edgeTable[C|(A<<16)]=CA; 
+                edgeTable[A|(B<<16)]=AB; 
+                edgeTable[B|(C<<16)]=BC;
+            }
+            
+            //varify that the mesh is clean
+            for(var key in edgeTable){
+                if(edgeTable.hasOwnProperty(key)){
+                    len++;
+                }
+            }
+            if(len!=faceCount*3){
+                console.warn("Bad mesh: duplicated edges or inconsistent winding.len="+len+" faceCount="+faceCount+" vertCount="+vertCount);
+            }
+            
+            //Populate the twin pointers by iterating over the hash table
+            var boundaryCount=0;
+            for(var key in edgeTable){
+                if(edgeTable.hasOwnProperty(key)){
+                    var twinKey=((key&0xffff)<<16)|(key>>16);
+                    if(edgeTable.hasOwnProperty(twinKey)){
+                        edgeTable[key].twin=edgeTable[twinKey];
+                        edgeTable[twinKey].twin=edgeTable[key];
+                    }else{
+                        boundaryCount+=1;
+                    }
+                }
+            }
+            
+            var ret=new Uint16Array(faceCount*6);
+            // Now that we have a half-edge structure, it's easy to create adjacency info for WebGL
+            if(boundaryCount>0){
+                console.log("Mesh is not watertight. Contains "+boundaryCount +" edges");
+                
+                for(var i=0;i<faceCount;i+=3){
+                    ret[i*2+0]=edges[i+2].vert;
+                    ret[i*2+1]=edges[i+0].twin==null?ret[i*2+0]:edges[i+0].twin.next.vert;
+                    ret[i*2+2]=edges[i+0].vert;
+                    ret[i*2+3]=edges[i+1].twin==null?ret[i*2+1]:edges[i+1].twin.next.vert;                  
+                    ret[i*2+4]=edges[i+1].vert;
+                    ret[i*2+5]=edges[i+2].twin==null?ret[i*2+2]:edges[i+2].twin.next.vert;
+                }
+            }
+            else{
+                for(var i=0;i<faceCount;i+=3){
+                    ret[i*2+0]=edges[i+2].vert;
+                    ret[i*2+1]=edges[i+0].twin.next.vert;
+                    ret[i*2+2]=edges[i+0].vert;
+                    ret[i*2+3]=edges[i+1].twin.next.vert;                   
+                    ret[i*2+4]=edges[i+1].vert;
+                    ret[i*2+5]=edges[i+2].twin.next.vert;
+                } 
+            }
+            
+            return ret;
+        };
+        
+        //geoGroup.adjFaceArray = computeAdjacency(faceArray,faceArray.length,offset);
+        
         var material = new $3Dmol.MeshDoubleLambertMaterial();
         material.vertexColors = $3Dmol.FaceColors;
         if(typeof(opacity) === 'number' && opacity >= 0 && opacity < 1) {
@@ -20823,8 +21304,7 @@ $3Dmol.drawCartoon = (function() {
             material.opacity = opacity;
         }
         var mesh = new $3Dmol.Mesh(geo, material);
-        group.add(mesh);
-        
+        group.add(mesh);   
     };
 
     //TODO: Need to update this (will we ever use this?)
@@ -20852,10 +21332,18 @@ $3Dmol.drawCartoon = (function() {
         group.add(line);
     };
 
-    var drawStrand = function(group, atomList, num, div, fill, coilWidth, helixSheetWidth, doNotSmoothen, gradientScheme, geo)
+    var drawStrip = function(group, points, colors, div, thickness, opacity, shape)
     {
-        num = num || strandDIV;
-        div = div || axisDIV;
+        if (!shape || shape === "default")
+            drawPlainStrip(group, points, colors, div, thickness, opacity);
+        else
+            drawShapeStrip(group, points, colors, div, thickness, opacity, shape);
+    }
+
+    var drawStrand = function(group, atomList, geo, gradientScheme, fill, doNotSmoothen, num, div)
+    {
+        var num = num || defaultNum;
+        var div = div || defaultDiv;
         doNotSmoothen = !!(doNotSmoothen);
 
                         //  proteins    na backbone  na terminus                  nucleobases
@@ -20863,7 +21351,7 @@ $3Dmol.drawCartoon = (function() {
         var purResns = ["DA", "DG", "A", "G"];
         var pyrResns = ["DT", "DC", "U", "C"];
 
-        var cartoon, curr, next, currColor, nextColor, thickness, i;
+        var cartoon, curr, next, currColor, nextColor, thickness, i, nextResAtom, arrow;
         var backbonePt, orientPt, prevOrientPt, terminalPt, termOrientPt, baseStartPt, baseEndPt;
         var traceGeo = null;
         var colors = [];
@@ -20920,7 +21408,33 @@ $3Dmol.drawCartoon = (function() {
                             var color2 = $3Dmol.CC.color(nextColor);
                             $3Dmol.GLDraw.drawCylinder(traceGeo, curr, midpoint, thickness, color1, true, false);
                             $3Dmol.GLDraw.drawCylinder(traceGeo, midpoint, next, thickness, color2, false, true);
-                        } // note that an atom object can be duck-typed as a 3-vector in this case
+                        } // note that an atom object can be duck-typed as a $3Dmol.Vector3 in this case
+                    }
+
+                    if (curr && traceGeo && (curr.style.cartoon && curr.style.cartoon.style != "trace"
+                        || curr.chain != next.chain))
+                    {
+                        var traceMaterial = new $3Dmol.MeshDoubleLambertMaterial();
+                        traceMaterial.vertexColors = $3Dmol.FaceColors;
+                        if ( typeof(traceGeo.opacity) === "number" && traceGeo.opacity >= 0 && traceGeo.opacity < 1) {
+                            traceMaterial.transparent = true;
+                            traceMaterial.opacity = traceGeo.opacity;
+                            delete traceGeo.opacity;
+                        }
+                        var traceMesh = new $3Dmol.Mesh(traceGeo, traceMaterial);
+                        group.add(traceMesh);
+                        traceGeo = null;
+                    } else if (curr) // make sure whole chain is same opacity
+                    {
+                        if (traceGeo.opacity)
+                        {
+                            if (traceGeo.opacity != curr.style.cartoon.opacity)
+                            {
+                                console.log("Warning: a cartoon-style chain's opacity is ambiguous");
+                                traceGeo.opacity = 1;
+                            }
+                        }
+                        else traceGeo.opacity = parseFloat(curr.style.cartoon.opacity) || 1;
                     }
 
                     curr = next;
@@ -20934,8 +21448,8 @@ $3Dmol.drawCartoon = (function() {
                 if (next.atom === "CA" || next.atom === "P" || next.atom === "O5'")
                 {
                     // end of a chain of connected residues
-                    if (curr != undefined && (curr.chain != next.chain || !(curr.resi === next.resi || curr.resi + 1 === next.resi)
-                        || curr.reschain != next.reschain))
+                    if (curr && (curr.chain != next.chain || !(curr.resi === next.resi || curr.resi + 1 === next.resi)
+                        || curr.reschain != next.reschain || curr.style.cartoon.style !== next.style.cartoon.style))
                     { 
 
                         if (baseEndPt) // draw the last base if it's a NA chain
@@ -20946,8 +21460,9 @@ $3Dmol.drawCartoon = (function() {
                                 baseStartPt = new $3Dmol.Vector3(curr.x, curr.y, curr.z);
 
                             $3Dmol.GLDraw.drawCylinder(geo, baseStartPt, baseEndPt, 0.4, $3Dmol.CC.color(baseEndPt.color), false, true);
-                            addBackbonePoints(points, num, !doNotSmoothen, terminalPt, termOrientPt, prevOrientPt, curr);
+                            arrow = addBackbonePoints(points, num, !doNotSmoothen, terminalPt, termOrientPt, prevOrientPt, curr, atomList, i);
                             colors.push(nextColor);
+                            if (arrow) colors.push(nextColor);
                             
                             baseStartPt = null;
                             baseEndPt = null;
@@ -20955,9 +21470,9 @@ $3Dmol.drawCartoon = (function() {
 
                         // draw accumulated strand points
                         for (i = 0; !thickness && i < num; i++)
-                            drawSmoothCurve(group, points[i], 1, colors, div, curr.style.cartoon.opacity);
+                            drawSmoothCurve(group, points[i], 1, colors, div, points.opacity);
                         if (fill)
-                            drawStrip(group, points[0], points[num - 1], colors, div, thickness, curr.style.cartoon.opacity);
+                            drawStrip(group, points, colors, div, thickness, points.opacity, curr.style.cartoon.style);
 
                         // clear arrays for points and colors
                         points = [];
@@ -20966,15 +21481,16 @@ $3Dmol.drawCartoon = (function() {
                         colors = [];
                     }
 
-                    // backbone atom of next residue
+                    // reached next residue
                     if (curr === undefined || curr.resi != next.resi)
                     {
                         if (baseEndPt) // draw last NA residue's base
                         {
                             // start the cylinder at the midpoint between consecutive backbone atoms
                             baseStartPt = new $3Dmol.Vector3().addVectors(curr, next).multiplyScalar(0.5);
-                            //var startFix = baseStartPt.clone().sub(baseEndPt).multiplyScalar(0.04);
-                            //baseStartPt.add(startFix);
+                            var startFix = baseStartPt.clone().sub(baseEndPt).multiplyScalar(0.02); //TODO: apply this as function of thickness
+                            baseStartPt.add(startFix);
+
                             $3Dmol.GLDraw.drawCylinder(geo, baseStartPt, baseEndPt, 0.4, $3Dmol.CC.color(baseEndPt.color), false, true);
                             baseStartPt = null;
                             baseEndPt = null;   
@@ -20991,7 +21507,9 @@ $3Dmol.drawCartoon = (function() {
                         else
                             thickness = defaultThickness;
 
-                        curr = next; // advance pointer
+                        
+                        curr = next; // advance backbone
+                        //nextResAtom = atomList[parseInt(i) + resSize[curr.resn]];
                         backbonePt = new $3Dmol.Vector3(curr.x, curr.y, curr.z);
                         backbonePt.resi = curr.resi;
                         currColor = nextColor; // used for NA bases
@@ -21032,12 +21550,14 @@ $3Dmol.drawCartoon = (function() {
                 // when we have a backbone point and orientation point in the same residue, accumulate strand points
                 if (orientPt && backbonePt && orientPt.resi === backbonePt.resi)
                 {
-                    addBackbonePoints(points, num, !doNotSmoothen, backbonePt, orientPt, prevOrientPt, curr);
+                    arrow = addBackbonePoints(points, num, !doNotSmoothen, backbonePt, orientPt, prevOrientPt, curr, atomList, i);
                     prevOrientPt = orientPt;
                     backbonePt = null;
                     orientPt = null;
+                    colors.push(nextColor);
+                    if (arrow) colors.push(nextColor);
                 }
-            }  
+            }
         }
 
         if (baseEndPt) // draw last NA base if needed
@@ -21048,64 +21568,133 @@ $3Dmol.drawCartoon = (function() {
                 baseStartPt = new $3Dmol.Vector3(curr.x, curr.y, curr.z);
 
             $3Dmol.GLDraw.drawCylinder(geo, baseStartPt, baseEndPt, 0.4, $3Dmol.CC.color(baseEndPt.color), false, true);
-            addBackbonePoints(points, num, !doNotSmoothen, terminalPt, termOrientPt, prevOrientPt, curr);
+            arrow = addBackbonePoints(points, num, !doNotSmoothen, terminalPt, termOrientPt, prevOrientPt, curr, atomList, i);
             colors.push(nextColor);
+            if (arrow) colors.push(nextColor);
         }
 
         // for default style, draw the last strand
         for (i = 0; !thickness && i < num; i++)
-            drawSmoothCurve(group, points[i], 1, colors, div, curr.style.cartoon.opacity);
+            drawSmoothCurve(group, points[i], 1, colors, div, points.opacity);
         if (fill)
-            drawStrip(group, points[0], points[num - 1], colors, div, thickness, curr.style.cartoon.opacity);
+            drawStrip(group, points, colors, div, thickness, points.opacity, curr.style.cartoon.style);
 
-        if (traceGeo) // generate mesh for trace geometry
+        if (traceGeo != null) // generate last mesh for trace geometry
         {
             var traceMaterial = new $3Dmol.MeshDoubleLambertMaterial();
             traceMaterial.vertexColors = $3Dmol.FaceColors;
+            if (typeof(traceGeo.opacity) === "number" && traceGeo.opacity >= 0 && traceGeo.opacity < 1) {
+                traceMaterial.transparent = true;
+                traceMaterial.opacity = traceGeo.opacity;
+                delete traceGeo.opacity;
+            }
             var traceMesh = new $3Dmol.Mesh(traceGeo, traceMaterial);
             group.add(traceMesh);
         }
     };
 
-    //TODO document me
-    var addBackbonePoints = function(pointsArray, num, smoothen, backbonePt, orientPt, prevOrientPt, backboneAtom)
+    var addBackbonePoints = function(points, num, smoothen, backbonePt, orientPt, prevOrientPt, backboneAtom, atomList, atomi)
     {
-        var widthScalar, i, delta, v;
+        var widthScalar, i, delta, v, addArrowPoints, testOpacity;
+        
+        // kind of hacky...
+        var resSize = {ALA: 5, ARG: 11, ASN:8, ASP:8, CYS:6, GLN:9, GLU: 9, GLY:4, HIS:10, ILE:8, LEU: 8, LYS: 9, MET:8, PHE:11, PRO:7, SER:6, THR:7, TRP:14, TYR:12, VAL:7}
+        var nextBBAtom, nextnextBBAtom;
+        nextBBAtom = atomList[parseInt(atomi) + resSize[backboneAtom.resn]];
+        if (nextBBAtom) nextnextBBAtom = atomList[parseInt(atomi) + resSize[backboneAtom.resn] + resSize[nextBBAtom.resn]];
+
+        // the orientation vector is the normed difference from backbone atom to orientation atom
         orientPt.sub(backbonePt);
         orientPt.normalize();
-        if (backboneAtom.ss === "c")
-        {
-            if (backboneAtom.atom === "P")
-                widthScalar = nucleicAcidWidth;
-            else
-                widthScalar = coilWidth;
-        } else
-            widthScalar = helixSheetWidth;
-        orientPt.multiplyScalar(widthScalar);
 
+        // depending on secondary structure, multiply the orientation vector by some scalar
+        if (!backboneAtom.style.cartoon.width)
+        {
+            if (backboneAtom.ss === "c")
+            {
+                if (backboneAtom.atom === "P")
+                    widthScalar = nucleicAcidWidth;
+                else
+                    widthScalar = coilWidth;
+            } else if (backboneAtom.ss === "arrowtip")
+                widthScalar = 0.3;
+            else
+                widthScalar = helixSheetWidth;
+        }
+        else widthScalar = backboneAtom.style.cartoon.width;
+
+        // if 2 residues up is no longer a beta-sheet, this is where the arrowhead goes
+        if (backboneAtom.ss === "s" && backboneAtom.style.cartoon.arrows && nextnextBBAtom && nextnextBBAtom.ss != "s")
+        {
+            addArrowPoints = true;
+
+            for (i = atomi; i < atomList.length; i++)
+            {
+                if (atomList[i].resi === nextBBAtom.resi && atomList[i].atom === "CA")
+                {
+                    atomList[i].ss = "arrowtip"
+                }
+            }
+        }     
+
+        // if the angle between the previous orientation vector and current is greater than 90 degrees,
         if (prevOrientPt != null && orientPt.dot(prevOrientPt) < 0)
         {
-            orientPt.negate();
+            orientPt.negate(); // negate the orientation vector (ie. add 180 degrees)
         }
+        // this ensures that the strand never twists more than 90 degrees between consecutive backbone atoms
 
+        orientPt.multiplyScalar(widthScalar);        
         for (i = 0; i < num; i++)
         {
-            delta = -1 + i * 2 /(num - 1); // produces num increments from -1 to 1
+            // produces NUM incremental points from backbone atom minus orientation vector
+            //  to backbone atom plus orientation vector
+            delta = -1 + i * 2/(num - 1); // -1 to 1 incrementing by num
             v = new $3Dmol.Vector3(backbonePt.x + delta * orientPt.x,
                                    backbonePt.y + delta * orientPt.y,
                                    backbonePt.z + delta * orientPt.z);
             v.atom = backboneAtom;
             if (smoothen && backboneAtom.ss === "s") 
                 v.smoothen = true;
-            pointsArray[i].push(v);
+            points[i].push(v); // a num-length array of arrays, where each inner array contains length-wise points
+                               // along the backbone offset by some constant pertaining to its cell in the outer array
         }
+
+        if (addArrowPoints)
+        {
+            orientPt.multiplyScalar(2);
+            for (i = 0; addArrowPoints && i < num; i++)
+            {
+                delta = -1 + i * 2/(num - 1); // -1 to 1 incrementing by num
+                v = new $3Dmol.Vector3(backbonePt.x + delta * orientPt.x,
+                                       backbonePt.y + delta * orientPt.y,
+                                       backbonePt.z + delta * orientPt.z);
+                v.atom = backboneAtom;
+                points[i].push(v);
+            }
+        }
+
+        // make sure chain is all the same opacity
+        testOpacity = parseFloat(backboneAtom.style.cartoon.opacity) || 1;
+        if (points.opacity)
+        {
+            if (points.opacity != testOpacity)
+            {
+                console.log("Warning: a cartoon-style chain's opacity is ambiguous");
+                points.opacity = 1;
+            }
+
+        } else points.opacity = testOpacity;
+
+        if (backboneAtom.ss === "arrowtip") backboneAtom.ss = "s";
+        return addArrowPoints;
     }
 
     // actual function call
-    var drawCartoon = function(group, atomlist, geo, gradientscheme) {
-        
-        drawStrand(group, atomlist, 2, undefined, true, coilWidth, helixSheetWidth,
-                false, gradientscheme, geo);
+    var drawCartoon = function(group, atomlist, laddergeo, gradientscheme) {
+                                                       //fill  doNotSmoothen
+        drawStrand(group, atomlist, laddergeo, gradientscheme, true, false);        
+
     };
 
     return drawCartoon;
@@ -22113,7 +22702,7 @@ $3Dmol.GLModel = (function() {
         "resi", // Residue number 
         "icode",
         "rescode",
-        "serial", // Atom's serial id number
+        "serial", // Atom's serial id numbermodels
         "atom", // Atom name; may be more specific than 'elem' (e.g 'CA' for alpha carbon)
         "bonds", // Array of atom ids this atom is bonded to
         "ss", // Secondary structure identifier (for cartoon render; e.g. 'h' for helix)
@@ -22896,7 +23485,6 @@ $3Dmol.GLModel = (function() {
         /** param {AtomSpec[]} atoms */
         var createMolObj = function(atoms) {
 
-            //console.log("creating for "+id);
             var ret = new $3Dmol.Object3D();
             var cartoonAtoms = [];
             var lineGeometries = {};
@@ -22905,29 +23493,57 @@ $3Dmol.GLModel = (function() {
             var imposterGeometry = new $3Dmol.Geometry(true);                                                         
             var stickGeometry = new $3Dmol.Geometry(true);
             var cartoonGeometry = new $3Dmol.Geometry(true);
-            var i, n;
+            var i, j, n, testOpacities;
+            var opacities = {};
             var range = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
             for (i = 0, n = atoms.length; i < n; i++) {
                 var atom = atoms[i];
                 // recreate gl info for each atom as necessary
                 // set up appropriate intersection spheres for clickable atoms
+
                 if (atom && atom.style) {
+
                     if (atom.clickable && atom.intersectionShape === undefined)
-                        atom.intersectionShape = {sphere: [], cylinder: [], line: [], triangle : []};                    
+                        atom.intersectionShape = {sphere: [], cylinder: [], line: [], triangle : []};
+
+                    testOpacities = {line:undefined, cross:undefined, stick:undefined, sphere:undefined};
+                    for (j in testOpacities)
+                    {
+                        if (atom.style[j])
+                        {
+                            if (atom.style[j].opacity)
+                                testOpacities[j] = parseFloat(atom.style[j].opacity);
+                            else
+                                testOpacities[j] = 1;
+
+                        } else testOpacities[j] = undefined;
+
+                        if (opacities[j])
+                        {
+                            if (testOpacities[j] != undefined && opacities[j] != testOpacities[j])
+                            {
+                                console.log("Warning: " + j + " opacity is ambiguous");
+                                opacities[j] = 1;
+                            }
+
+                        } else opacities[j] = testOpacities[j];
+                    }
+                    
                     drawAtomSphere(atom, sphereGeometry);
                     drawAtomImposter(atom, imposterGeometry);
                     drawAtomCross(atom, crossGeometries);
                     drawBondLines(atom, atoms, lineGeometries);
                     drawBondSticks(atom, atoms, stickGeometry);
+
                     if (typeof (atom.style.cartoon) !== "undefined" && !atom.style.cartoon.hidden) {
                         //gradient color scheme range
-                        if (atom.style.cartoon.color === 'spectrum' && typeof(atom.resi) === "number") {                            
+                        if (atom.style.cartoon.color === "spectrum" && typeof(atom.resi) === "number") {                            
                             if (atom.resi < range[0])
                                 range[0] = atom.resi;
                             if (atom.resi > range[1])
                                 range[1] = atom.resi;
                         }
-                        
+
                         cartoonAtoms.push(atom);
                     }                   
                 }
@@ -22940,7 +23556,7 @@ $3Dmol.GLModel = (function() {
                     gradientscheme = new $3Dmol.Gradient.Sinebow(range[0], range[1]);
 
                 $3Dmol.drawCartoon(ret, cartoonAtoms, cartoonGeometry, gradientscheme);
-                
+
             }
 
             // add sphere geometry
@@ -22950,14 +23566,19 @@ $3Dmol.GLModel = (function() {
                     vertexColors : true,
                     reflectivity : 0,
                 });
+                if (opacities.sphere < 1 && opacities.sphere >= 0)
+                {
+                    sphereMaterial.transparent = true;
+                    sphereMaterial.opacity = opacities.sphere;
+                }
                 
                 //Initialize buffers in geometry                
-                sphereGeometry.initTypedArrays();
-                
+                sphereGeometry.initTypedArrays();   
+				
                 var sphere = new $3Dmol.Mesh(sphereGeometry, sphereMaterial);
                 ret.add(sphere);
             }
-            
+
             // add imposter geometry
             if (imposterGeometry.vertices > 0) {
                 var imposterMaterial = new $3Dmol.ImposterMaterial({
@@ -22970,8 +23591,7 @@ $3Dmol.GLModel = (function() {
                 imposterGeometry.initTypedArrays();
                 
                 var spherei = new $3Dmol.Mesh(imposterGeometry, imposterMaterial);
-                console
-                        .log("spherei geometry " + imposterGeometry.vertices.length);
+                console.log("spherei geometry " + imposterGeometry.vertices.length);
 
                 ret.add(spherei);
             }
@@ -22983,19 +23603,24 @@ $3Dmol.GLModel = (function() {
                     ambient : 0x000000,
                     reflectivity : 0
                 });
+                if (opacities.stick < 1 && opacities.stick >= 0)
+                {
+                    cylinderMaterial.transparent = true;
+                    cylinderMaterial.opacity = opacities.stick;
+                }
 
                 //Initialize buffers in geometry                
                 stickGeometry.initTypedArrays();
                 
                 if (cylinderMaterial.wireframe)
                     stickGeometry.setUpWireframe();
-                
+            
                 var sticks = new $3Dmol.Mesh(stickGeometry, cylinderMaterial);
                 ret.add(sticks);
             }
 
             // This is only for DNA ladder rendering right now
-            if (cartoonGeometry.vertices > 0) {
+            if (cartoonGeometry.vertices > 0 && false) { // TODO: move ladder drawing to glcartoon.js
                 var cylinderMaterial = new $3Dmol.MeshLambertMaterial({
                     vertexColors : true,
                     ambient : 0x000000,
@@ -23020,6 +23645,11 @@ $3Dmol.GLModel = (function() {
                         linewidth : linewidth,
                         vertexColors : true
                     });
+                    if (opacities.line < 1 && opacities.line >= 0)
+                    {
+                        lineMaterial.transparent = true;
+                        lineMaterial.opacity = opacities.line;
+                    }
                     
                     lineGeometries[i].initTypedArrays();
                     
@@ -23038,6 +23668,11 @@ $3Dmol.GLModel = (function() {
                         linewidth : linewidth,
                         vertexColors : true
                     });
+                    if (opacities.cross < 1 && opacities.cross >= 0)
+                    {
+                        crossMaterial.transparent = true;
+                        crossMaterial.opacity = opacities.cross;
+                    }
 
                     crossGeometries[i].initTypedArrays();
                     
@@ -23265,6 +23900,7 @@ $3Dmol.GLModel = (function() {
             if (sel.hasOwnProperty("expand")) {
 
                 // get atoms in expanded bounding box
+
                 var expand = expandAtomList(ret, parseFloat(sel.expand));
                 var retlen = ret.length;
                 for (var i = 0; i < expand.length; i++) {
@@ -24114,6 +24750,7 @@ $3Dmol.GLShape = (function() {
             }
             center.divideScalar(cnt);
             
+            
             updateBoundingFromPoints(shape.boundingSphere, {centroid: center}, vertexArray);
         }
 
@@ -24140,44 +24777,7 @@ $3Dmol.GLShape = (function() {
         geoGroup.lineidx = geoGroup.lineArray.length;
     };
     
-    var MAXVERT = 64000; //webgl only supports 2^16 elements, leave a little breathing room (require at least 2)
-    //peel off 64k vertices rsvh into their own mesh
-    //duplicating vertices and normals as necessary to preserve faces and lines
-    var splitMesh = function(mesh) {
-        if(mesh.vertexArr < MAXVERT) return [mesh]; //typical case
-        
-        var nverts = mesh.vertexArr.length;
-        var slices = [{vertexArr: [], normalArr: [], faceArr: []}];
-        var vertSlice = []; //indexed by original vertex to get current slice
-        var vertIndex =[]; //indexed by original vertex to get index within slice
-        var currentSlice = 0;
-        
-        //for each face, make sure all three vertices (or copies) are in the same slice
-        var faces = mesh.faceArr;
-        var vs = [0,0,0];
-        for(var i = 0, nf = faces.length; i < nf; i += 3) {
-            var slice = slices[currentSlice];
-            for(var j = 0; j < 3; j++) {
-                //process each vertex to make sure it is assigned a slice
-                //all vertices of a face must belong to the same slice
-                var v = faces[i+j];
-                if(vertSlice[v] !== currentSlice) { //true if undefined
-                    vertSlice[v] = currentSlice;
-                    vertIndex[v] = slice.vertexArr.length;
-                    slice.vertexArr.push(mesh.vertexArr[v]);
-                    if(mesh.normalArr[v]) slice.normalArr.push(mesh.normalArr[v]);
-                }
-                slice.faceArr.push(vertIndex[v]);
-            }
-            
-            if(slice.vertexArr.length >= MAXVERT) {
-                //new slice
-                slices.push({vertexArr: [], normalArr: [], faceArr: []});
-                currentSlice++;
-            }
-        }
-        return slices;
-    }
+
     
     // handles custom shape generation from user supplied arrays
     // May need to generate normal and/or line indices
@@ -24205,7 +24805,7 @@ $3Dmol.GLShape = (function() {
         color =  $3Dmol.CC.color(color);
 
         //var firstgeo = geo.geometryGroups.length;
-        var splits = splitMesh(mesh);
+        var splits = $3Dmol.splitMesh(mesh);
         for(var i = 0, n = splits.length; i < n; i++) {
             addCustomGeo(shape, geo, splits[i], color, customSpec.clickable);
         } 
@@ -24679,6 +25279,47 @@ $3Dmol.GLShape = (function() {
 }());
 
 $3Dmol.ShapeIDCount = 0;
+
+
+$3Dmol.splitMesh = function(mesh) {
+	    var MAXVERT = 64000; //webgl only supports 2^16 elements, leave a little breathing room (require at least 2)
+    //peel off 64k vertices rsvh into their own mesh
+    //duplicating vertices and normals as necessary to preserve faces and lines
+	
+        if(mesh.vertexArr.length < MAXVERT) return [mesh]; //typical case
+        
+        var nverts = mesh.vertexArr.length;
+        var slices = [{vertexArr: [], normalArr: [], faceArr: []}];
+        var vertSlice = []; //indexed by original vertex to get current slice
+        var vertIndex =[]; //indexed by original vertex to get index within slice
+        var currentSlice = 0;
+        
+        //for each face, make sure all three vertices (or copies) are in the same slice
+        var faces = mesh.faceArr;
+        var vs = [0,0,0];
+        for(var i = 0, nf = faces.length; i < nf; i += 3) {
+            var slice = slices[currentSlice];
+            for(var j = 0; j < 3; j++) {
+                //process each vertex to make sure it is assigned a slice
+                //all vertices of a face must belong to the same slice
+                var v = faces[i+j];
+                if(vertSlice[v] !== currentSlice) { //true if undefined
+                    vertSlice[v] = currentSlice;
+                    vertIndex[v] = slice.vertexArr.length;
+                    slice.vertexArr.push(mesh.vertexArr[v]);
+                    if(mesh.normalArr && mesh.normalArr[v]) slice.normalArr.push(mesh.normalArr[v]);
+                }
+                slice.faceArr.push(vertIndex[v]);
+            }
+            
+            if(slice.vertexArr.length >= MAXVERT) {
+                //new slice
+                slices.push({vertexArr: [], normalArr: [], faceArr: []});
+                currentSlice++;
+            }
+        }
+        return slices;
+    }
 //a molecular viewer based on GLMol
 
 
@@ -24695,7 +25336,7 @@ $3Dmol.ShapeIDCount = 0;
 $3Dmol.GLViewer = (function() {
     // private class variables
     var numWorkers = 4; // number of threads for surface generation
-    var maxVolume = 56000; // how much to break up surface calculations
+    var maxVolume = 64000; // how much to break up surface calculations
 
     // private class helper functions
 
@@ -24717,7 +25358,8 @@ $3Dmol.GLViewer = (function() {
         var id = container.id;
 
         var models = []; // atomistic molecular models
-        var surfaces = [];
+        var surfaces = {};
+        var nextSurfID = 0;
         var shapes = []; // Generic shapes
         var labels = [];
         var clickables = []; //things you can click on
@@ -24737,7 +25379,7 @@ $3Dmol.GLViewer = (function() {
         var renderer = new $3Dmol.Renderer({
             antialias : true,
             preserveDrawingBuffer: true, //so we can export images
-            premultipliedAlpha : false /* more traditional compositing with background */
+            premultipliedAlpha : false/* more traditional compositing with background */
         });
 
         renderer.domElement.style.width = "100%";
@@ -24745,6 +25387,7 @@ $3Dmol.GLViewer = (function() {
         renderer.domElement.style.padding = "0";
         renderer.domElement.style.position = "absolute"; //TODO: get rid of this
         renderer.domElement.style.top = "0px";
+        renderer.domElement.style.left = "0px";
         renderer.domElement.style.zIndex = "0";
 
         var camera = new $3Dmol.Camera(fov, ASPECT, NEAR, FAR);
@@ -25149,6 +25792,29 @@ $3Dmol.GLViewer = (function() {
             renderer.setClearColorHex(c.getHex(), a);
             show();
         };
+        
+        /**
+         * Enable outline 
+         * @function $eDmol.GLViewer#outline
+         * 
+         * @example
+         * myviewer.outline()
+         * 
+         */
+         this.setViewStyle = function(parameters) {
+            if (parameters["style"] === "outline") {
+                var params = {};
+                if(parameters.color) params.color =  $3Dmol.CC.color(parameters.color);
+                if(parameters.width) params.width = parameters.width;
+                renderer.enableOutline(params);
+            } else {
+                renderer.disableOutline();
+            }
+        }
+         
+         if(config.style) { //enable setting style in constructor
+             this.setViewStyle(config.style);
+         }
 
         /**
          * Set viewer width
@@ -25306,7 +25972,8 @@ $3Dmol.GLViewer = (function() {
                 }
             }
             
-            for (i in surfaces) { // this is an array with possible holes
+            for (i in surfaces) { // this is an object with possible holes
+                if(!surfaces.hasOwnProperty(i)) continue;
                 var surfArr = surfaces[i];
                 for (n = 0; n < surfArr.length; n++) {
                     if (surfArr.hasOwnProperty(n)) {
@@ -26487,7 +27154,7 @@ $3Dmol.GLViewer = (function() {
                 done : true,
                 finished : false //the rendered finishes surfaces when they are done
             };
-            var surfid = surfaces.length;
+            var surfid = nextSurfID++;
             surfaces[surfid] = surfobj;
             return surfid;
         }
@@ -26665,10 +27332,16 @@ $3Dmol.GLViewer = (function() {
                     var cnt = 0;
 
                     var rfunction = function(event) {
-                        var VandF = event.data;
-                        var mesh = generateSurfaceMesh(atomlist, VandF, mat);
-                        $3Dmol.mergeGeos(surfobj.geo, mesh);
-                        _viewer.render();
+                        var VandFs = $3Dmol.splitMesh({vertexArr:event.data.vertices,
+							                           faceArr:event.data.faces});
+					    for(var i=0,vl=VandFs.length;i<vl;i++){
+                            var VandF={vertices:VandFs[i].vertexArr,
+								       faces:VandFs[i].faceArr};
+                            var mesh = generateSurfaceMesh(atomlist, VandF, mat);
+                            $3Dmol.mergeGeos(surfobj.geo, mesh);
+                            _viewer.render();
+						}
+
                     //    console.log("async mesh generation " + (+new Date() - time) + "ms");
                         cnt++;
                         if (cnt == extents.length)
@@ -26738,7 +27411,7 @@ $3Dmol.GLViewer = (function() {
                 });
                 addSurfaceHelper(surfobj[surfobj.length-1], atomlist, atomsToShow);
             } 
-            var surfid = surfaces.length;
+            var surfid = nextSurfID++;
             surfaces[surfid] = surfobj;
             
             return surfid;
@@ -26768,41 +27441,36 @@ $3Dmol.GLViewer = (function() {
          * @param {number} surf - surface id
          */
         this.removeSurface = function(surf) {
-				if (surfaces[surf]) {
-					var surfArr = surfaces[surf];
-					for (var i = 0; i < surfArr.length; i++) {
-						 if (surfArr[i] && surfArr[i].lastGL) {
-							  if (surfArr[i].geo !== undefined)
-									surfArr[i].geo.dispose();
-							  if (surfArr[i].mat !== undefined)
-									surfArr[i].mat.dispose();
-							  modelGroup.remove(surfArr[i].lastGL); // remove from scene
-						 }
-					}
-				}
-            //surfaces.splice(surf,1);
-				delete surfaces[surf];
+            var surfArr = surfaces[surf];
+            for (var i = 0; i < surfArr.length; i++) {
+                if (surfArr[i] && surfArr[i].lastGL) {
+                    if (surfArr[i].geo !== undefined)
+                        surfArr[i].geo.dispose();
+                    if (surfArr[i].mat !== undefined)
+                        surfArr[i].mat.dispose();
+                    modelGroup.remove(surfArr[i].lastGL); // remove from scene
+                }
+            }
+            delete surfaces[surf];
             show();
         };
         
         /** Remove all surfaces.
          * @function $3Dmol.GLViewer#removeAllSurfaces */
         this.removeAllSurfaces = function() {
-            for (var n = 0; n < surfaces.length; n++) {
-					 if (surfaces[n]) {
-						var surfArr = surfaces[n];
-						for(var i = 0; i < surfArr.length; i++) {
-							 if (surfArr[i] && surfArr[i].lastGL) {
-								  if (surfArr[i].geo !== undefined)
-										surfArr[i].geo.dispose();
-								  if (surfArr[i].mat !== undefined)
-										surfArr[i].mat.dispose();
-								  modelGroup.remove(surfArr[i].lastGL); // remove from scene
-							 }
-						}
-					 }
-                //surfaces.splice(n,1);
-					 delete surfaces[n];
+            for (n in  surfaces) {
+                if(!surfaces.hasOwnProperty(n)) continue;
+                var surfArr = surfaces[n];
+                for(var i = 0; i < surfArr.length; i++) {
+                    if (surfArr[i] && surfArr[i].lastGL) {
+                        if (surfArr[i].geo !== undefined)
+                            surfArr[i].geo.dispose();
+                        if (surfArr[i].mat !== undefined)
+                            surfArr[i].mat.dispose();
+                        modelGroup.remove(surfArr[i].lastGL); // remove from scene
+                    }
+                }
+                delete surfaces[n];
             }
             show();
             
@@ -27469,12 +28137,7 @@ $3Dmol.MarchingCubeInitializer = function() {
                         intersects[10] = getVertex(i, j, k, code, 3, 7);
                     if (ecode & 2048)
                         intersects[11] = getVertex(i, j, k, code, 2, 6);       
-                    
-                    if(verts.length>=65535){
-                        console.warn("not sufficient vertex buffer index, discard vertices exceeding 635535");
-                        return;
-                    }
-                        
+
                     for (var t = 0; t < ttable.length; t += 3) {
                         
                         var a = intersects[ttable[t]],
@@ -28364,7 +29027,10 @@ $3Dmol.Parsers = (function() {
     parsers.cdj = parsers.jso = // Hack because the file format is truncated
                                 // at the moment
     parsers.cdjson = parsers.json = function(atoms, str, options, modelData) {
-        var molecules = str.m;  // Str is automatically parsed by JQuery
+        if (typeof str === "string") { // Str is usually automatically parsed by JQuery
+            str = JSON.parse(str);
+        }
+        var molecules = str.m;
         var atomsInFile = molecules[0].a; // Assumes there is at least one
         var bondsInFile = molecules[0].b; // molecule and ignores any more
                                           // Ignores any shapes
@@ -28384,6 +29050,7 @@ $3Dmol.Parsers = (function() {
             atom.bondOrder = [];
             
             var elem = currentAtom.l || 'C';
+            atom.elem = elem[0].toUpperCase() + elem.substr(1).toLowerCase();
             atoms.push(atom);
         }
         for (var i = 0; i < bondsInFile.length; i++) {
@@ -28716,7 +29383,7 @@ $3Dmol.Parsers = (function() {
         assignBonds(atoms);
         computeSecondaryStructure(atoms);
         
-        if (mmCIF._pdbx_struct_oper_list !== undefined && !noAssembly) { 
+        if (mmCIF._pdbx_struct_oper_list_id !== undefined && !noAssembly) {
             for (var i = 0; i < mmCIF._pdbx_struct_oper_list_id.length; i++) {
                 var matrix11 = parseFloat(mmCIF['_pdbx_struct_oper_list_matrix[1][1]'][i]);
                 var matrix12 = parseFloat(mmCIF['_pdbx_struct_oper_list_matrix[1][2]'][i]);
@@ -28734,6 +29401,67 @@ $3Dmol.Parsers = (function() {
                 var matrix = new $3Dmol.Matrix4(matrix11, matrix12, matrix13,
                         vector1, matrix21, matrix22, matrix23, vector2,
                         matrix31, matrix32, matrix33, vector3);
+                modelData.symmetries.push(matrix);
+            }
+            processSymmetries("mcif", modelData.symmetries, copyMatrix, atoms);
+        }
+        function parseTerm(term){
+            var negative = term.match('-');
+            term = term.replace(/[-xyz]/g, "");
+            var fractionParts = term.split('/');
+
+            var numerator, denominator;
+            if (fractionParts[1] === undefined) {
+                denominator = 1;
+            }
+            else {
+                denominator = parseInt(fractionParts[1]);
+            }
+            if (fractionParts[0] === "") {
+                numerator = 1;
+            }
+            else {
+                numerator = parseInt(fractionParts[0]);
+            }
+            return numerator / denominator * (negative ? -1 : 1);
+        }
+        if (mmCIF._symmetry_equiv_pos_as_xyz !== undefined) {
+            for (var sym = 0; sym < mmCIF._symmetry_equiv_pos_as_xyz.length; sym++) {
+                var transform = mmCIF._symmetry_equiv_pos_as_xyz[sym].replace(/["' ]/g,"");
+                var componentStrings = transform.split(',').map(
+                    function(val){
+                        return val.replace(/-/g,"+-");
+                    });
+                var matrix = new $3Dmol.Matrix4(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1);
+                for (var coord = 0; coord < 3; coord++) {
+                    var terms = componentStrings[coord].split('+');
+                    var constant = 0, xTerm = 0, yTerm = 0, zTerm = 0;
+                    for (var t = 0; t < terms.length; t++) {
+                        var term = terms[t];
+                        if (term === "")
+                            continue;
+                        var coefficient = parseTerm(term);
+                        if (term.match('x')) {
+                            matrix.elements[coord + 0] = coefficient;
+                        }
+                        else if (term.match('y')) {
+                            matrix.elements[coord + 4] = coefficient;
+                        }
+                        else if (term.match('z')) {
+                            matrix.elements[coord + 8] = coefficient;
+                        }
+                        else {
+                            matrix.elements[coord + 12] = coefficient;
+                        }
+                    }
+                }
+                var conversionMatrix4 = new $3Dmol.Matrix4(
+                    conversionMatrix[0][0], conversionMatrix[0][1], conversionMatrix[0][2], 0,
+                    conversionMatrix[1][0], conversionMatrix[1][1], conversionMatrix[1][2], 0,
+                    conversionMatrix[2][0], conversionMatrix[2][1], conversionMatrix[2][2], 0);
+                var conversionInverse = (new $3Dmol.Matrix4()).getInverse(conversionMatrix4, true);
+                matrix = (new $3Dmol.Matrix4()).multiplyMatrices(matrix, conversionInverse);
+                matrix = (new $3Dmol.Matrix4()).multiplyMatrices(conversionMatrix4, matrix);
                 modelData.symmetries.push(matrix);
             }
             processSymmetries("mcif", modelData.symmetries, copyMatrix, atoms);
@@ -29036,7 +29764,11 @@ $3Dmol.Parsers = (function() {
             line = lines[i].replace(/^\s*/, ''); // remove indent
             var recordName = line.substr(0, 6);
             var startChain, startResi, endChain, endResi;
-            if (recordName == 'ATOM  ' || recordName == 'HETATM') {
+            
+            if(recordName.indexOf("END") == 0) {
+                break;
+            }
+            else if (recordName == 'ATOM  ' || recordName == 'HETATM') {
                 var resn, chain, resi, icode, x, y, z, hetflag, elem, serial, altLoc, b;
                 altLoc = line.substr(16, 1);
                 if (altLoc != ' ' && altLoc != 'A')
