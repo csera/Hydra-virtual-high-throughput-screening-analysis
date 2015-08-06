@@ -2,8 +2,12 @@ webix.ready(function(){
    //webix.ui.fullScreen(); //for fullscreen on mobile devices
 
 var uploadControls = 
-   {header:"Import Compounds", maxWidth:250, autoheight:true, collapsed:false, body:
+   {header:"Import Compounds", maxWidth:250, gravity:2, collapsed:false, body:
       {rows:[ //removed view:'form' to make this take up the whole width
+         {
+            id:'process', view:'checkbox', label:'Process Files', align:'right',
+            labelWidth:120, value:0
+         },
          { //Uploader element
             id:"uploader_1", view:"uploader",
             value:"Upload Files",
@@ -30,11 +34,11 @@ var uploadControls =
             cols:[
                {
                   view:"button",id:"load_click",value:"Update Data",type:"form",
-                  click:"load_fxn"
+                  click:load_fxn
                },
                {
                   view:"button",id:"clear_click",value:"Delete Data",type:"danger",
-                  click:"clear_fxn"
+                  click:clear_fxn
                }
             ]
          }
@@ -42,7 +46,7 @@ var uploadControls =
    };
    
 var gridControls =
-   {header:"Grid Size", maxWidth:250, collapsed:false, body:
+   {header:"Grid Size", maxWidth:250, gravity:1, collapsed:false, body:
       {view:"form", id:"grid_dim", elements:[
          //{view:"text",value:"blarg",label:"test",name:"mg"},
          {
@@ -84,7 +88,6 @@ var mainControls =
                   }
                }
             }
-         
          },
          {id:'mSurfType', view:'richselect', label:'Surface', options:[
             {id:'surfNone', value:'None'},
@@ -219,44 +222,10 @@ hydraUI = webix.ui({
       // second row, main content of app goes here
       {cols:[{id:'leftCol',
          // left column has control panel, upload manager as accordioned components
-         /*type:'clean', rows:[
-            //Panels that switch in the multiview: animation off, persistent views on.
-            {view:'tabbar', selected:'files&grid',
-               multiview:true, options:[
-               {value:'Files & Grid', id:'files&grid'},
-               {value:'Viewer Controls', id:'viewerCtrls'}
-            ]},
-            {animate:true, keepViews:true, cells:[
-               {id:'files&grid', view:"scrollview",
-               scroll:"y", type:"line",
-               body:
-                  {multi:true, view:"accordion", type:"line", rows:[
-                     
-                     // Upload compound list / DOCK data
-                     uploadControls,
-                     {view:'resizer'},
-                     
-                     //Webix bug: section below resizer expands when resizer moved up
-                     //TEMP FIX: Need to nest the below sections in one row
-                     {rows:[
-                     // "Grid Controls" - controls for resizing the grid
-                        gridControls,
-                        {}
-                     ]}
-                  ]}
-               },
-               {id:'viewerCtrls', view:'scrollview', scroll:'y', body:
-                  {multi:true, view:'accordion', rows:[
-                     mainControls,
-                     ligandControls
-                  ]}
-               }
-            ]},
-         ]*/
          cells:[
             {id:'files&grid', view:"scrollview",
-            scroll:"y",
-            body:
+               scroll:"y",
+               body:
                {rows:[
                   
                   // Upload compound list / DOCK data
@@ -282,6 +251,13 @@ hydraUI = webix.ui({
                   mainControls,
                   ligandControls,
                   {},
+                  //checkbox for setting whether or not to sync compound rotation across viewers
+                  //unchecked -> 0; checked -> 1
+                  //Want label on right side of box but can't get that to work...
+                  {
+                     id:'syncMove', view:'checkbox', label:'Sync Movements',
+                     labelWidth:120, value:0
+                  },
                   {
                      id:"toF&G",  view:"button", type:"prev", label:'To File & Grid Controls',
                      click:function(){$$('files&grid').show();}
@@ -295,22 +271,22 @@ hydraUI = webix.ui({
       {id:"workspace", view:"scrollview", container:"central_workspace",type:"clean",
          scroll:"xy", //Enables horizontal (x) and vertical (y) scrolling
       
-      //Framework for a resizable grid of GLmol instances
-      //Viewers start at index of 1 with coordinates (x,y)
-      //Eg "viewer2,1" is in the first row, second column from the left
-      body:{id:"workLayout", type:'clean', borderless:true, rows:[{
-         id:"workRow"+"1", type:'clean', borderless:true, css:'inactiveViewer', cols:[{
-            view:"iframe",
-            id:"viewer"+"1"+","+"1",
-            src:"3Dmol frame.html",
-            minWidth:250,minHeight:250,
-            on:{
-               'onAfterLoad':function(){
-                  this.getWindow().setGridCoordinates('1,1');
+         //Framework for a resizable grid of GLmol instances
+         //Viewers start at index of 1 with coordinates (x,y)
+         //Eg "viewer2,1" is in the first row, second column from the left
+         body:{id:"workLayout", type:'clean', borderless:true, rows:[{
+            id:"workRow"+"1", type:'clean', borderless:true, css:'inactiveViewer', cols:[{
+               view:"iframe",
+               id:"viewer"+"1"+","+"1",
+               src:"3Dmol frame.html",
+               minWidth:250,minHeight:250,
+               on:{
+                  'onAfterLoad':function(){
+                     this.getWindow().setGridCoordinates('1,1');
+                  }
                }
-            }
-         }]
-      }]}
+            }]
+         }]}
       },
       
       // right column has compounds list, details are accordioned components
@@ -414,12 +390,14 @@ hydraUI = webix.ui({
  * view:datatable.  Object is then removed so more items may be read successfully.
  */
 $$("uploader_1").attachEvent("onAfterFileAdd",function(){
+   if ($$('process').getValue() == 1) {
+      $$('processorWin').show();
+      return;
+   }
+   
    var reader = new FileReader();
    
-   var numFiles = 1+$$('uploader_1').files.getIndexById($$('uploader_1').files.getLastId());
    var fID, fName, fData;
-   
-   console.log('Number of files found = '+numFiles);
    
    fID = $$('uploader_1').files.getFirstId();
    
@@ -427,43 +405,13 @@ $$("uploader_1").attachEvent("onAfterFileAdd",function(){
    fData = $$("uploader_1").files.getItem(fID).file;
    
    reader.onload = function(e) {
+      //CHANGE THIS SO THAT THE FILES GET ADDED TO THE PROCESSOR WINDOW IF PROCESS == 1
       $$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
                             fileName:fName, fileData:reader.result});
       //Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
       //Added as a string rather than an actual file object
-     
-     // Gets ZINC IDs from file; adds to array zincIds
-      fileText = reader.result;
-      var regex = /ZINC/gi, result, indices = [];
-      var zincIds = [],
-      bonds = [],
-      numRes = [];
-      while ( (result = regex.exec(fileText)) ) {
-          indices.push(result.index);
-          // 12 is the length of ZINC id
-          zincs = fileText.slice(result.index, result.index + 12);
-          zincIds.push(zincs)
-      }
-      lines = fileText.split("\n");
-      console.log("indices: "+indices);
-      for(var x=0; x<indices.length;x++){
-         infoLine = lines.slice(indices[x] + 3, indices[x] + 4)
-         console.log("infoLine: "+infoLine);
-         stringLine = infoLine.toString();
-         a1 = stringLine.search("\ ")+1;
-         a2 = stringLine.slice(a1, stringLine.length).search("\ ")+1;
-         atomInfo = stringLine.slice(a1, a2);
-         bondString = stringLine.slice(a2+1, stringLine.length);
-         b1 = bondString.search("\ ");
-         bondInfo = bondString.slice(0,b1);
-         bonds.push(bondInfo);
-         numRes.push(atomInfo);
-      }
-      compound_fxn(zincIds, numRes, bonds);
-      // compListDetails(zincIds, numRes, bonds);
-      console.log(numRes, bonds)
-
       
+      parseForZinc(reader.result);
    };
    reader.onerror = function(e) {
       console.error("File could not be read. Code: "+e.target.error.code);
@@ -479,14 +427,7 @@ $$("uploader_1").attachEvent("onAfterFileAdd",function(){
 $$('comp_det').bind($$('comp_table'));
 $$("comp_table").select(1);
 
-// syncs the compound list table displayed with the uploaded data DataCollection
-//$$('comp_table').data.sync($$('data_col'));
-
-//logic.init(); //reference to logic section
 });
 
 //Resizes GUI dynamically with the window size
 webix.event(window,"resize", function(){hydraUI.adjust();});
-/*webix.attachEvent('onFocusChange',function(current_view, prev_view){
-   console.log('focused: '+(!view?'null' : view.config.id));
-});*/

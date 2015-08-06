@@ -23,6 +23,8 @@
 <body>
 	
 	<script type="text/javascript">
+	var coords; //For use with the mouse-event passing
+	
 	var glviewer = null;
 	var labels = [];
 	var surfaceObjs = []; //0 index will be for main comp; 1 will be for any ligand
@@ -37,6 +39,10 @@
 	//Group of functions for working with the Hydra parent code
 	function setGridCoordinates(gc) {
          $('#webixID').html(gc); //Pass gc in to show between the div tags
+			
+			//Split the passed coordinates text into coords[0] = x; coords[1] = y
+			coords = gc.split(',');
+			
          console.log("Coordinates set: "+gc);
    }
 	
@@ -140,7 +146,7 @@
 		glviewer = $3Dmol.createViewer("gldiv", {
 			defaultcolors : $3Dmol.rasmolElementColors
 		});
-		glviewer.setBackgroundColor(0xffffff); //White background
+		//glviewer.setBackgroundColor(0xffffff); //White background
 		glviewer.setBackgroundColor(0x000000);
 
 		receptorModel = m = glviewer.addModel(data, "pqr");
@@ -159,10 +165,22 @@
 		
 		//Fires when mouse button is pressed (before release) on anything within the 'root'
 		//(topmost) tags: <html></html> in this case
-		//Calls iframeClicked(...) in the Hydra UI to make this element selected
+		//Calls setActiveViewer(...) in the Hydra UI to make this element selected
 		$(':root').mousedown(function(){
-			window.parent.iframeClicked($('#webixID').text(), getViewMode());
+			window.parent.setActiveViewer($('#webixID').text(), getViewMode());
 		});
+		/*$(':root').contents().on("click dblclick mousedown mousemove mouseover mouseup",
+		function (e) {
+			if(window.parent.$$('syncMove').getValue()==1 &&
+				window.parent.$$('activeCoord').getValue()==$('#webixID').text())
+			{
+				//Haha, as might have been expected, this causes a buffer overflow.  Whoops >.>
+				window.parent.transferMouseEvent(coords, e);
+				console.log($('#webixID').text());
+			}
+			else
+				console.log('not '+$('#webixID').text());
+      });*/
 	});
 	</script>
 	

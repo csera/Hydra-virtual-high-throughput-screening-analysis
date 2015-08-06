@@ -1,5 +1,24 @@
+//Mouse transfer code adapted from code from Kohei Ichikawa
+function transferMouseEvent(coords, e) {
+   //Create an event
+   for(x=1; x<=$$('grid_dim').getValues().numCol; x++) {
+      for(y=1; y<=$$('grid_dim').getValues().numRow; y++){
+         if(x==coords[0] && y==coords[1]) {}
+         else{
+            var evt = $$('viewer'+x+','+y).getWindow().document.createEvent("MouseEvents");
+            
+            evt.initMouseEvent(e.type, true, true, window, e.detail, e.screenX, e.screenY,
+                               e.clientX, e.clientY, e.ctrlKey, e.altKey, e.shiftKey,
+                               e.metaKey, e.button, null);
+            
+            $$('viewer'+x+','+y).getWindow().$("#gldiv>canvas")[0].dispatchEvent(evt);
+         }
+      }
+   }
+}
+
 //Called by iframe if it is clicked, passed coordinates & view settings
-function iframeClicked(activeCoord, viewSettings) {
+function setActiveViewer(activeCoord, viewSettings) {
    //webix.message('You clicked viewer'+coordinates);
    //console.log($$('viewer'+coordinates).getWindow().getViewMode());
    //because JS is stupid and can't work with multidimensional arrays

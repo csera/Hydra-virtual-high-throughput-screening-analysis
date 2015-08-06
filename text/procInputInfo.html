@@ -1,0 +1,16 @@
+<p>
+Please input the indicated information below.  Protein files will be concatenated with ligand files for display together.<br/>
+Use the following field encapsulated in square brackets as needed:<br/>
+<ul>
+   <li>[*] -  Wild card field.  Will accept any text (eg a compound unique name).</li>
+   <li>[ligID] - The ID of the ligand.</li>
+</ul>
+Separate the field and other name components with a period ".".  Please note that your file names must be formatted to have the parts separated by "." otherwise this parser will not work.<br/>
+Sets of files will be identified by matching [ligID]. Fields MAY NOT contain any "." characters.  If any [*] field is broken up by "." chars, please use the field multiple times.<br/>
+Text not encapsulated in [] will be treated as a constant present in all relevant files.<br/>
+Ex: [*].[*].3_top.[ligRef].final_pose.amber.pdb<br/>
+<ul>
+   <li>Will identify a1.noH.3_top.1.final_pose.amber.pdb as a protein file paired with ligand 1.</li>
+   <li>It will not accept noH.3_top.1.final_pose.amber.pdb.</li>
+</ul>
+</p>

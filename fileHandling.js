@@ -1,3 +1,43 @@
+/* Gets ZINC IDs from file; adds to array zincIds
+ * @author Shelby Matlock
+ * @param {FileReader.result} Parsed file contents to scan
+ */
+function parseForZinc(readerResult){
+   fileText = readerResult;
+   var regex = /ZINC/gi, result, indices = [];
+   var zincIds = [],
+   bonds = [],
+   numRes = [];
+   while ( (result = regex.exec(fileText)) )
+   {
+       indices.push(result.index);
+       // 12 is the length of ZINC id
+       zincs = fileText.slice(result.index, result.index + 12);
+       zincIds.push(zincs)
+   }
+   lines = fileText.split("\n");
+   console.log("indices: "+indices);
+   
+   for(var x=0; x<indices.length;x++)
+   {
+      infoLine = lines.slice(indices[x] + 3, indices[x] + 4)
+      console.log("infoLine: "+infoLine);
+      stringLine = infoLine.toString();
+      a1 = stringLine.search("\ ")+1;
+      a2 = stringLine.slice(a1, stringLine.length).search("\ ")+1;
+      atomInfo = stringLine.slice(a1, a2);
+      bondString = stringLine.slice(a2+1, stringLine.length);
+      b1 = bondString.search("\ ");
+      bondInfo = bondString.slice(0,b1);
+      bonds.push(bondInfo);
+      numRes.push(atomInfo);
+   }
+   compound_fxn(zincIds, numRes, bonds);
+   // compListDetails(zincIds, numRes, bonds);
+   console.log(numRes, bonds);
+}
+
+//Loads parsed compounds into the set viewers
 function load_fxn(){
    var fID, fData, fType, x, y, origX, origY;
    
@@ -19,7 +59,7 @@ function load_fxn(){
          //REMOVE THE BELOW COMMAND IF YOU WANT TO DISPLAY MULTIPLE FILES AT ONCE
          viewer.glviewer.clear();
          viewer.toDefaultDisp(); //Resets the display tracking variables to the default
-         iframeClicked(x+','+y, viewer.getViewMode()); //Syncs controls w/ the new settings
+         setActiveViewer(x+','+y, viewer.getViewMode()); //Syncs controls w/ the new settings
          viewer.fileToViewer(fData,fType); //Sends file data for display
          
          //Clear old cell if the structure was loaded
@@ -59,6 +99,7 @@ function getFileType(fID) {
    return fType;
 }
 
+//Removes selected compounds from the list and clears them from the relevant viewers
 function clear_fxn(){
    //$$(...).getSelectedId returns an array of selected items (with param (true))
    var IDs = $$('uploadTable').getSelectedId(true);
@@ -81,6 +122,11 @@ function clear_fxn(){
    $$('uploadTable').remove($$('uploadTable').getSelectedId(true));
 }
 
+/* Checks if the passed coordinates are defined.
+ * @param {int} x The x (column) coordinate
+ * @param {int} y The y (row) coordinate
+ * @returns {boolean} True if the coordinates are valid.  False otherwise.
+ */
 function validCoordinates(x, y) {
    var numCols = $$('grid_dim').getValues().numCol,
       numRows = $$('grid_dim').getValues().numRow;
@@ -93,4 +139,22 @@ function validCoordinates(x, y) {
       console.warn('Invalid coordinates');
       return false;
    }
+}
+
+
+//Function for interpretting raw output of docking programs
+//NOT CURRENTLY UNIVERSALLY COMPATIBLE
+function processRaw(){
+   
+}
+
+
+//Closes processorWin and clears/resets all components
+function closeProcessor(){
+   $$('processorWin').hide();
+   
+   $$('procInTable').clearAll();
+   $$('procOutTable').clearAll();
+   
+   $$('uploader_1').files.clearAll();
 }
