@@ -140,21 +140,3 @@ function validCoordinates(x, y) {
       return false;
    }
 }
-
-
-//Function for interpretting raw output of docking programs
-//NOT CURRENTLY UNIVERSALLY COMPATIBLE
-function processRaw(){
-   
-}
-
-
-//Closes processorWin and clears/resets all components
-function closeProcessor(){
-   $$('processorWin').hide();
-   
-   $$('procInTable').clearAll();
-   $$('procOutTable').clearAll();
-   
-   $$('uploader_1').files.clearAll();
-}

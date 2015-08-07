@@ -58,6 +58,12 @@ popupProcessor = webix.ui({
                {
                   id:"toPO", view:"button", type:"next", label:'Next',
                   click:function(){
+                     //webix.extend($$('processIn'), webix.OverlayBox);
+                     //$$('processIn').showOverlay("HIYA, this is an OverlayBox");
+                     var filteredFiles = filterRaw($$('protNom').getValue(), $$('procInTable'));
+                     console.log(filteredFiles);
+                     $$('protOutTable').parse(fileteredFiles, 'JSON');
+                     
                      $$('processOut').show();
                   }
                }
