@@ -22,19 +22,34 @@ function filterRaw(filter, table){
             if (filterArr[arrIndex] == "[*]") {
                if (arrIndex+1 != filterArr.length)
                   continue; //move onto next iteration
-               else
+               else{
                   filteredFiles.push(table.getItem(fID));
+                  continue;
+               }
             }
             else if (filterArr[arrIndex] == "[ligID]") {
-               if (fNameArr[arrIndex] != 'number')
+               //if (fNameArr[arrIndex] != 'number')
                //CAUSING ERROR: anything spliced from a string is a string by default
-                  break; //mismatch: stop checking this file
+               var regex = /^\d{1,}$/;
+               //Match must start at string start, be at least one digit, and terminate
+               
+               if(fNameArr[arrIndex].search(regex) == -1)
+               {
+                  console.log('File #'+tableIndex+' did not match');
+                  break; //mismatch with filter: stop checking this file
+               }
             }
             else if (filterArr[arrIndex] != fNameArr[arrIndex]) {
+               console.log('File #'+tableIndex+' did not match');
                break; //mismatch: stop checking this file
             }
-            else if (filterArr[arrIndex] != fNameArr[arrIndex]) {
-               filteredFiles.push(table.getItem(fID));
+            else if (filterArr[arrIndex] == fNameArr[arrIndex]) {
+               if(arrIndex+1 != filterArr.length)
+                  continue;
+               else {
+                  filteredFiles.push(table.getItem(fID));
+                  continue;
+               }
             }
             
             //Will only reach here if the name passes all filters
