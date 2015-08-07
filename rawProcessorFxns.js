@@ -63,6 +63,32 @@ function filterRaw(filter, table){
    return filteredFiles;
 }
 
+function addFilteredFiles(){
+   var filteredProts = filterRaw($$('protNom').getValue(), $$('procInTable'));
+   
+   for(var x=0; x<filteredProts.length; x++)
+   {
+      console.log('protOutTable adding: '+filteredProts[x].fileName);
+      $$('protOutTable').add(
+      {
+         protFileName:filteredProts[x].fileName,
+         protData:filteredProts[x].fileData
+      });
+   }
+   
+   var filteredLigs = filterRaw($$('ligNom').getValue(), $$('procInTable'));
+   
+   for(var x=0; x<filteredLigs.length; x++)
+   {
+      console.log('ligOutTable adding: '+filteredLigs[x].fileName);
+      $$('ligOutTable').add(
+      {
+         ligFileName:filteredLigs[x].fileName,
+         ligData:filteredLigs[x].fileData
+      });
+   }
+   
+}
 //Removes selected compounds from the list and clears them from the relevant viewers
 function clear_fxn(){
    //$$(...).getSelectedId returns an array of selected items (with param (true))
