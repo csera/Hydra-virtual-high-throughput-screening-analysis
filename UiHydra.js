@@ -5,11 +5,11 @@ var uploadControls =
    {header:"Import Compounds", maxWidth:250, gravity:2, collapsed:false, body:
       {rows:[ //removed view:'form' to make this take up the whole width
          {
-            id:'process', view:'checkbox', label:'Process Files', align:'right',
-            labelWidth:120, value:0
+            id:'process', view:'button', value:'Process Docking Ouput', type:'form',
+            labelWidth:120, click:function(){$$('processorWin').show();},
          },
          { //Uploader element
-            id:"uploader_1", view:"uploader",
+            id:"hydraUploader", view:"uploader",
             value:"Upload Files",
             multiple:true, autosend:false,
             //upload:"parser.php"
@@ -386,23 +386,19 @@ hydraUI = webix.ui({
 
 /* Called after a file is added to the view:uploader. Called successively for each file
  * if multiple files are sent at once.
- * Takes data from the first file in "uploader_1" and puts it in the "uploadTable"
+ * Takes data from the first file in "hydraUploader" and puts it in the "uploadTable"
  * view:datatable.  Object is then removed so more items may be read successfully.
  */
-$$("uploader_1").attachEvent("onAfterFileAdd",function(){
-   if ($$('process').getValue() == 1) {
-      $$('processorWin').show();
-      return;
-   }
+$$("hydraUploader").attachEvent("onAfterFileAdd",function(){
    
    var reader = new FileReader();
    
    var fID, fName, fData;
    
-   fID = $$('uploader_1').files.getFirstId();
+   fID = $$('hydraUploader').files.getFirstId();
    
-   fName = $$("uploader_1").files.getItem(fID).name;
-   fData = $$("uploader_1").files.getItem(fID).file;
+   fName = $$("hydraUploader").files.getItem(fID).name;
+   fData = $$("hydraUploader").files.getItem(fID).file;
    
    reader.onload = function(e) {
       //CHANGE THIS SO THAT THE FILES GET ADDED TO THE PROCESSOR WINDOW IF PROCESS == 1
@@ -420,7 +416,7 @@ $$("uploader_1").attachEvent("onAfterFileAdd",function(){
    
    reader.readAsText(fData);
    
-   $$('uploader_1').files.remove(fID);
+   $$('hydraUploader').files.remove(fID);
 });
 
 // binds selected compound detail panel with selection in compounds list, default selection is first
