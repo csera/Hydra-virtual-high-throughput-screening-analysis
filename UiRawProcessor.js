@@ -100,7 +100,18 @@ popupProcessor = webix.ui({
                },
                {
                   id:'procOK', view:'button', type:'form', label:'OK',
-                  click:''
+                  click:function(){
+                     $$('procInTable').clearAll();
+                     combineFiles();
+                     
+                     $$('protOutTable').clearAll();
+                     $$('ligOutTable').clearAll();
+                     //Clear tables after concatenation, but leave the filter fields
+                     
+                     //Hide processor first so the user doesn't see it going back
+                     popupProcessor.hide();
+                     $$('processIn').show();
+                  }
                }
             ]}
          ]}

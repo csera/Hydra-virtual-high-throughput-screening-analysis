@@ -1,3 +1,37 @@
+// calls filtereRaw and adds the results to the respective tables in the UI
+//Lists are sorted at end
+function addFilteredFiles(){
+   var filteredProts = filterRaw($$('protNom').getValue(), $$('procInTable'));
+   
+   for(var x=0; x<filteredProts.length; x++)
+   {
+      console.log('protOutTable adding: '+filteredProts[x].fileName);
+      $$('protOutTable').add(
+      {
+         protFileName:filteredProts[x].fileName,
+         protData:filteredProts[x].fileData
+      });
+   }
+   
+   $$('protOutTable').sort('#protFileName#'); //sort files added by file names
+   $$('protOutTable').markSorting('protFileName','asc'); //show button for flipping the sort
+   
+   var filteredLigs = filterRaw($$('ligNom').getValue(), $$('procInTable'));
+   
+   for(var x=0; x<filteredLigs.length; x++)
+   {
+      console.log('ligOutTable adding: '+filteredLigs[x].fileName);
+      $$('ligOutTable').add(
+      {
+         ligFileName:filteredLigs[x].fileName,
+         ligData:filteredLigs[x].fileData
+      });
+   }
+   
+   $$('ligOutTable').sort('#ligFileName#');
+   $$('ligOutTable').markSorting('ligFileName','asc');
+}
+
 /* Compares all files in the specified table to a filter string and returns
  * an array of files that pass the filter
  * @param {string} filter The filter to be applied
@@ -63,38 +97,38 @@ function filterRaw(filter, table){
    return filteredFiles;
 }
 
-// calls filtereRaw and adds the results to the respective tables in the UI
-//Lists are sorted at end
-function addFilteredFiles(){
-   var filteredProts = filterRaw($$('protNom').getValue(), $$('procInTable'));
+function combineFiles () {
+   var protID, protData, ligID, ligData;
    
-   for(var x=0; x<filteredProts.length; x++)
-   {
-      console.log('protOutTable adding: '+filteredProts[x].fileName);
-      $$('protOutTable').add(
-      {
-         protFileName:filteredProts[x].fileName,
-         protData:filteredProts[x].fileData
-      });
+   //Loop through all items
+   for (var i=0; i<$$('protOutTable').count(); i++) {
+      console.log(i);
+      //Dump the protein file data into protData and append with TER on a new line
+      protID = $$('protOutTable').getIdByIndex(i);
+      protData = $$('protOutTable').getItem(protID).protData;
+      protFileName = $$('protOutTable').getItem(protID).protFileName;
+      //$$('protOutTable').remove(protID); //remove from table after getting data
+      
+      //protData += '\nTER';
+      
+      ligID = $$('ligOutTable').getIdByIndex(i);
+      ligData = $$('ligOutTable').getItem(ligID).ligData;
+      //$$('ligOutTable').remove(ligID);
+      
+      ligData = ligData.replace(/ATOM  /g, 'HETATM');
+      //No replaceAll() in JS
+      //Need to use a regular expression (regex) with the g (global)
+      
+      protData += ligData;
+      //for now, ignore zinc
+      //later, pull ZINC ID from the set file and add 'REMARK 10   [ZINC ID]'
+      
+      $$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
+                            fileName:protFileName, fileData:protData});
+      
+      //temp implementation: still need to implement zinc id
+      //also need to store ZINC ID's in case that the file names alone don't work
    }
-   
-   $$('protOutTable').sort('#protFileName#'); //sort files added by file names
-   $$('protOutTable').markSorting('protFileName','asc'); //show button for flipping the sort
-   
-   var filteredLigs = filterRaw($$('ligNom').getValue(), $$('procInTable'));
-   
-   for(var x=0; x<filteredLigs.length; x++)
-   {
-      console.log('ligOutTable adding: '+filteredLigs[x].fileName);
-      $$('ligOutTable').add(
-      {
-         ligFileName:filteredLigs[x].fileName,
-         ligData:filteredLigs[x].fileData
-      });
-   }
-   
-   $$('ligOutTable').sort('#ligFileName#');
-   $$('ligOutTable').markSorting('ligFileName','asc');
 }
 
 //Removes selected compounds from the list and clears them from the relevant viewers
@@ -110,7 +144,8 @@ function closeProcessor(){
    $$('processorWin').hide();
    
    $$('procInTable').clearAll();
-   $$('procOutTable').clearAll();
+   $$('protOutTable').clearAll();
+   $$('ligOutTable').clearAll();
    
-   $$('uploader_1').files.clearAll();
+   $$('procUploader').files.clearAll();
 }

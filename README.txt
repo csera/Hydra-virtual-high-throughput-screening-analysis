@@ -1,6 +1,9 @@
-Hydra is a browser-based tool for high-throughput screening still under development.
+﻿Hydra is a browser-based tool for high-throughput screening still under development.
 It is an open-source project which makes use of 3Dmol.js for displaying molecules
 and the Webix code library for general GUI generation and functionality.
+
+If you wish to keep your data private, don't worry: your files are not uploaded
+to any servers. "Uploading" files only places them in the browser's local instance.
 
 This README will be updated as development proceeds.
 
@@ -15,11 +18,14 @@ This README will be updated as development proceeds.
 - Surface representations
   - Van der Waals, molecular, solvent accessible, solvent excluded
 - Fetching of compound information for compounds in the ZINC database
+- Processing of raw molecular docking simulation output
+  - Filters uploaded files based upon a user-inputted filename template
+  - Concatenates ligand and protein files then places them in the main workspace
 
 - Please see 3Dmol.js's documentation for more extensive detail on the following:
-- Tranlations, rotation, and zoom with mouse and touchscreen
-- Non-exhaustive list of supported filetypes:
-  - .mol2, .pdb, .cif, .sdf
+  - Tranlations, rotation, and zoom with mouse and touchscreen
+  - Non-exhaustive list of supported filetypes:
+    - .mol2, .pdb, .cif, .sdf
 
 
 == Basic Usage ==
@@ -43,6 +49,19 @@ This README will be updated as development proceeds.
     whilst "active"
   - Display mode may only be altered for the ACTIVE VIEWER
   - New display modes will be applied soon as a change in the settings is detected
+- Using the file processor
+  - The file processor GUI will open upon pressing the labeled button
+  - All files outputted by a simulation may be uploaded via "Upload Raw Files"
+  - Follow the in-program instructions for filtering relevant files
+    - NOTE: if no filters are applied, nothing will happen
+  - Confirm that all relevant files are present and that all other files have been 
+    screened out then press "OK"
+    - Return and modify the filters if not
+  - The ligand files will have "ATOM" tags replaced with "HETATM" then be appended
+    to the protein files
+  - Pressing "OK" will clear the file processor tables, add them to the main Hydra
+    interface, and close (technically, hide) the processor popup.  Filters will,
+    however, not be cleared and will still be there if the processor is reopened.
 
 
 == System requirements ==
