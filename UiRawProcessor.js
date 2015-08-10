@@ -123,7 +123,10 @@ $$("procUploader").attachEvent("onAfterFileAdd",function(){
       //CHANGE THIS SO THAT THE FILES GET ADDED TO THE PROCESSOR WINDOW IF PROCESS == 1
       $$('procInTable').add({fileName:fName, fileData:reader.result});
       //Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
-      //Added as a string rather than an actual file object
+      //Added as an object with string props rather than an actual file object
+      
+      $$('procInTable').sort('#fileName#'); //sort by file name after adding
+      $$('procInTable').markSorting('fileName','asc'); //show button for flipping the sort
    };
    reader.onerror = function(e) {
       console.error("File could not be read. Code: "+e.target.error.code);

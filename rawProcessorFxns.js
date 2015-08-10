@@ -63,6 +63,8 @@ function filterRaw(filter, table){
    return filteredFiles;
 }
 
+// calls filtereRaw and adds the results to the respective tables in the UI
+//Lists are sorted at end
 function addFilteredFiles(){
    var filteredProts = filterRaw($$('protNom').getValue(), $$('procInTable'));
    
@@ -76,6 +78,9 @@ function addFilteredFiles(){
       });
    }
    
+   $$('protOutTable').sort('#protFileName#'); //sort files added by file names
+   $$('protOutTable').markSorting('protFileName','asc'); //show button for flipping the sort
+   
    var filteredLigs = filterRaw($$('ligNom').getValue(), $$('procInTable'));
    
    for(var x=0; x<filteredLigs.length; x++)
@@ -88,7 +93,10 @@ function addFilteredFiles(){
       });
    }
    
+   $$('ligOutTable').sort('#ligFileName#');
+   $$('ligOutTable').markSorting('ligFileName','asc');
 }
+
 //Removes selected compounds from the list and clears them from the relevant viewers
 function clear_fxn(){
    //$$(...).getSelectedId returns an array of selected items (with param (true))
