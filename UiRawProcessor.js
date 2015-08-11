@@ -26,7 +26,7 @@ popupProcessor = webix.ui({
                      drag:true,
                      select:true, multiselect:true, //ctrl+click & shift+click work
                      columns:[
-                        {id:"fileName", header:"File Name", width:300},
+                        {id:"fileName", header:"File Name", fillspace:1},
                         {id:"fileData", header:"Data", hidden:true},
                      ],
                   }
@@ -73,14 +73,17 @@ popupProcessor = webix.ui({
                   {
                      id:"protOutTable", view:"datatable",
                      columns:[
-                        {id:"protFileName", header:"Protein File Name", width:300},
+                        {id:'pot_ligID', header:'#', width:60},
+                        {id:"protFileName", header:"Protein File Name", fillspace:1},
                         {id:"protFileData", header:"Data", hidden:true},
                      ],
                   },
                   {
                      id:"ligOutTable", view:"datatable",
                      columns:[
-                        {id:"ligFileName", header:"Ligand File Name", width:300},
+                        {id:'lot_ligID', header:'#', width:60},
+                        {id:"ligFileName", header:"Ligand File Name", fillspace:3},
+                        {id:'zincId', header:'ZINC', fillspace:2},
                         {id:"ligFileData", header:"Data", hidden:true},
                      ],
                   }

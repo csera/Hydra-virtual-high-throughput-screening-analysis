@@ -8,13 +8,14 @@ function addFilteredFiles(){
       console.log('protOutTable adding: '+filteredProts[x].fileName);
       $$('protOutTable').add(
       {
+         pot_ligID:filteredProts[x].ligID,
          protFileName:filteredProts[x].fileName,
          protData:filteredProts[x].fileData
       });
    }
    
-   $$('protOutTable').sort('#protFileName#'); //sort files added by file names
-   $$('protOutTable').markSorting('protFileName','asc'); //show button for flipping the sort
+   $$('protOutTable').sort('#pot_ligID#'); //sort files added by file names
+   $$('protOutTable').markSorting('pot_ligID','asc'); //show button for flipping the sort
    
    var filteredLigs = filterRaw($$('ligNom').getValue(), $$('procInTable'));
    
@@ -23,13 +24,14 @@ function addFilteredFiles(){
       console.log('ligOutTable adding: '+filteredLigs[x].fileName);
       $$('ligOutTable').add(
       {
+         lot_ligID:filteredLigs[x].ligID,
          ligFileName:filteredLigs[x].fileName,
          ligData:filteredLigs[x].fileData
       });
    }
    
-   $$('ligOutTable').sort('#ligFileName#');
-   $$('ligOutTable').markSorting('ligFileName','asc');
+   $$('ligOutTable').sort('#lot_ligID#');
+   $$('ligOutTable').markSorting('lot_ligID','asc');
 }
 
 /* Compares all files in the specified table to a filter string and returns
@@ -41,12 +43,14 @@ function addFilteredFiles(){
 function filterRaw(filter, table){
    var filteredFiles = [];
    var filterArr = filter.split('.');
+   var ligID;
    
    for(var tableIndex=0; tableIndex<table.count(); tableIndex++)
    {
       fID = table.getIdByIndex(tableIndex);
       fName = table.getItem(fID).fileName;
       fNameArr = fName.split('.');
+      ligID = ''; //clears the value from the previous loop run
       
       //Initial filter compares the number of '.' delimited elements
       if (fNameArr.length == filterArr.length) {
@@ -65,12 +69,16 @@ function filterRaw(filter, table){
                //if (fNameArr[arrIndex] != 'number')
                //CAUSING ERROR: anything spliced from a string is a string by default
                var regex = /^\d{1,}$/;
-               //Match must start at string start, be at least one digit, and terminate
+               //Match must start at string start until the string end; must only be digits
                
                if(fNameArr[arrIndex].search(regex) == -1)
                {
                   console.log('File #'+tableIndex+' did not match');
                   break; //mismatch with filter: stop checking this file
+               }
+               else{
+                  ligID = fNameArr[arrIndex];
+                  continue;
                }
             }
             else if (filterArr[arrIndex] != fNameArr[arrIndex]) {
@@ -81,7 +89,11 @@ function filterRaw(filter, table){
                if(arrIndex+1 != filterArr.length)
                   continue;
                else {
-                  filteredFiles.push(table.getItem(fID));
+                  var item = table.getItem(fID);
+                     item.ligID = ligID;
+                  
+                  console.log('Match: file #'+tableIndex);
+                  filteredFiles.push(item);
                   continue;
                }
             }
