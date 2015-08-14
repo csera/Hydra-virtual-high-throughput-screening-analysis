@@ -38,13 +38,16 @@ popupProcessor = webix.ui({
                      labelPosition:'top'},
                   {id:'ligNom', view:'text', label:'Ligand File Nomenclature',
                      labelPosition:'top'},
-                  {id:'ZINCloc', view:'richselect', label:'Ligand ZINC ID location',
+                  /*{id:'ZINCloc', view:'richselect', label:'Ligand ZINC ID location',
                   labelPosition:'top', options:[
                      {id:'zInFinalPdb', value:'In final conformation .pdb'},
                      {id:'zInInitPdb', value:'In initial .pdb'},
                      {id:'zInMol2', value:'In initial .mol2'},
                      {id:'zNon', value:'No ZINC ID prsent'}
-                  ]},
+                  ]},*/
+                  {id:'zincNom', view:'text',
+                     label:'ZINC ID file Nomenclature (may resuse an above filter)',
+                     labelPosition:'top'}
                ]}
             ]},
             {cols:[
@@ -73,7 +76,7 @@ popupProcessor = webix.ui({
                   {
                      id:"protOutTable", view:"datatable",
                      columns:[
-                        {id:'pot_ligID', header:'#', width:60},
+                        {id:'pot_ligID', header:'#', width:40},
                         {id:"protFileName", header:"Protein File Name", fillspace:1},
                         {id:"protFileData", header:"Data", hidden:true},
                      ],
@@ -81,7 +84,7 @@ popupProcessor = webix.ui({
                   {
                      id:"ligOutTable", view:"datatable",
                      columns:[
-                        {id:'lot_ligID', header:'#', width:60},
+                        {id:'lot_ligID', header:'#', width:40},
                         {id:"ligFileName", header:"Ligand File Name", fillspace:3},
                         {id:'zincId', header:'ZINC', fillspace:2},
                         {id:"ligFileData", header:"Data", hidden:true},

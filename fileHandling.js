@@ -4,7 +4,8 @@
  */
 function parseForZinc(readerResult){
    fileText = readerResult;
-   var regex = /ZINC/gi, result, indices = [];
+   var regex = /ZINC/gi; //All (g, global) case-insensitive (i) matches for "ZINC"
+   var result, indices = [];
    var zincIds = [],
    bonds = [],
    numRes = [];
@@ -13,14 +14,14 @@ function parseForZinc(readerResult){
        indices.push(result.index);
        // 12 is the length of ZINC id
        zincs = fileText.slice(result.index, result.index + 12);
-       zincIds.push(zincs)
+       zincIds.push(zincs);
    }
    lines = fileText.split("\n");
    console.log("indices: "+indices);
    
    for(var x=0; x<indices.length;x++)
    {
-      infoLine = lines.slice(indices[x] + 3, indices[x] + 4)
+      infoLine = lines.slice(indices[x] + 3, indices[x] + 4);
       console.log("infoLine: "+infoLine);
       stringLine = infoLine.toString();
       a1 = stringLine.search("\ ")+1;

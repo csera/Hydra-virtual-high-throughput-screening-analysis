@@ -1,8 +1,10 @@
 // calls filtereRaw and adds the results to the respective tables in the UI
 //Lists are sorted at end
 function addFilteredFiles(){
+   //Make an array of relevant file objects using the filter function
    var filteredProts = filterRaw($$('protNom').getValue(), $$('procInTable'));
    
+   //Loop through the array to add each file to the table
    for(var x=0; x<filteredProts.length; x++)
    {
       console.log('protOutTable adding: '+filteredProts[x].fileName);
@@ -32,6 +34,37 @@ function addFilteredFiles(){
    
    $$('ligOutTable').sort('#lot_ligID#');
    $$('ligOutTable').markSorting('lot_ligID','asc');
+   
+   var filteredZincs = filterRaw($$('zincNom').getValue(), $$('procInTable'));
+   var matchLocation; //Index within the file-data string of the ZINC ID
+   var zincId;
+   
+   for(var x=0; x<filteredZincs.length; x++)
+   {
+      zincId =''; //set to a blank string at start of each loop run
+      
+      //Case-insensitive search of the file for the ZINC ID
+      matchLocation = filteredZincs[x].fileData.search(/zinc/i);
+      
+      if (matchLocation == -1) { //If no match to the regular expression found
+         continue; //Stop processing this file if there's no ZINC ID
+      }
+      else {
+         //ZINC ID's are 12 characters long
+         zincId = filteredZincs[x].fileData.slice(matchLocation, matchLocation+12);
+         
+         //Go through each item in the ligOutTable until a match is found
+         for(var ligIndex=0; ligIndex<$$('ligOutTable').count(); ligIndex++)
+         {
+            var tableId = $$('ligOutTable').getIdByIndex(ligIndex);
+            var ligObj = $$('ligOutTable').getItem(tableId);
+            
+            if (filteredZincs[x].ligID == ligObj.lot_ligID) {
+               ligObj.zincId = zincId; //Add ZINC ID to the table
+            }
+         }
+      }
+   }
 }
 
 /* Compares all files in the specified table to a filter string and returns
@@ -76,7 +109,7 @@ function filterRaw(filter, table){
                   console.log('File #'+tableIndex+' did not match');
                   break; //mismatch with filter: stop checking this file
                }
-               else{
+               else {
                   ligID = fNameArr[arrIndex];
                   continue;
                }
@@ -115,31 +148,31 @@ function combineFiles () {
    //Loop through all items
    for (var i=0; i<$$('protOutTable').count(); i++) {
       console.log(i);
-      //Dump the protein file data into protData and append with TER on a new line
+      //Dump the protein file data into protData
       protID = $$('protOutTable').getIdByIndex(i);
       protData = $$('protOutTable').getItem(protID).protData;
       protFileName = $$('protOutTable').getItem(protID).protFileName;
-      //$$('protOutTable').remove(protID); //remove from table after getting data
-      
-      //protData += '\nTER';
       
       ligID = $$('ligOutTable').getIdByIndex(i);
       ligData = $$('ligOutTable').getItem(ligID).ligData;
-      //$$('ligOutTable').remove(ligID);
       
+      //Replace "ATOM" tags with "HETATM"
+      //Uses a regular expression (regex) with the g (global) setting
       ligData = ligData.replace(/ATOM  /g, 'HETATM');
-      //No replaceAll() in JS
-      //Need to use a regular expression (regex) with the g (global)
       
-      protData += ligData;
-      //for now, ignore zinc
-      //later, pull ZINC ID from the set file and add 'REMARK 10   [ZINC ID]'
+      //Add ZINC ID to protData
+      protData +=
+         'REMARK   10                                                                     '+
+         '\nREMARK   10 '+$$('ligOutTable').getItem(ligID).zincId;
+      protData += '\n'+ligData; //Join files
       
       $$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
                             fileName:protFileName, fileData:protData});
       
-      //temp implementation: still need to implement zinc id
-      //also need to store ZINC ID's in case that the file names alone don't work
+      //Would prefer to do this via an event in the uploadTable, but not sure how to
+      //grab the contents for what's being added
+      //Parse for the ZINC ID and pull data using that
+      parseForZinc(protData);
    }
 }
 
