@@ -36,9 +36,10 @@ function searchData(zincArr, searchableData){
             allSplit = all[line].split("\t");
             json_var = {idNum: i, compound: allSplit[0], 
                comp_img: "http://zinc.docking.org/img/sub/"+allSplit[0]+".gif",
-               vendor: allSplit[1], website: allSplit[3],  email: allSplit[4], phone: allSplit[5], 
+               vendor: allSplit[1], website: allSplit[3],
+               email: allSplit[4], phone: allSplit[5], 
                fax:allSplit[6], orderurl:allSplit[7]}
-               vendorCollect.push(json_var)
+            vendorCollect.push(json_var)
          }
       }
    }

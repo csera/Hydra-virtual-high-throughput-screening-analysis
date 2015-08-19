@@ -45,12 +45,12 @@ function addFilteredFiles(){
       atomLoc = filteredZincs[x].fileData.search(/@<TRIPOS>ATOM/i);
       
       /* @<TRIPOS>MOLECULE has the following format:
-       * mol_name
-       * num_atoms [num_bonds] [num_subst] [num_feat] [num_sets]
-       * mol_type
-       * charge_type
-       * [status_bits
-       * [mol_comment]]
+         mol_name
+         num_atoms [num_bonds] [num_subst] [num_feat] [num_sets]
+         mol_type
+         charge_type
+         [status_bits
+         [mol_comment]]
        */
       
       if (molLoc != -1 && atomLoc != -1) {

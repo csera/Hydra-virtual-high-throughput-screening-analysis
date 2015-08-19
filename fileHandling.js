@@ -1,5 +1,5 @@
 /* Gets ZINC IDs from file; adds to array zincIds
- * @author Shelby Matlock
+ * @author Shelby Matlock & csera
  * @param {FileReader.result} Parsed file contents to scan
  */
 function parseForZinc(readerResult){

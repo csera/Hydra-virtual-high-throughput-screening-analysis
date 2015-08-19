@@ -347,7 +347,7 @@ hydraUI = webix.ui({
                { view:"datatable", 
                id:"vendors",
                select:true, 
-               multiselect:true, // want to make double click do an alert
+               multiselect:true,
                drag:true, 
                maxWidth:250, 
                columns:[
@@ -360,18 +360,15 @@ hydraUI = webix.ui({
                ],
                data:'',
                on:{
-                  onItemClick:function(){ 
-                     console.log(vendorCollect[0].website)
+                  onItemDblClick:function(id){
                      alert(
-   
-                        "Compound: " + vendorCollect[5].compound + "\n" +
-                        "Website: " + vendorCollect[5].website + "\n" +
-                        "Phone #: " + vendorCollect[5].phone + "\n" +
-                        "Fax #: " + vendorCollect[5].fax + "\n" +
-                        "Contact Email: " + vendorCollect[5].email + "\n" +
-                        "Directly order: " + vendorCollect[5].orderurl + "\n"
-   
-                        );
+                        "Compound: " + this.getItem(id).compound + "\n" +
+                        "Website: " + this.getItem(id).website + "\n" +
+                        "Phone #: " + this.getItem(id).phone + "\n" +
+                        "Fax #: " + this.getItem(id).fax + "\n" +
+                        "Contact Email: " + this.getItem(id).email + "\n" +
+                        "Directly order: " + this.getItem(id).orderurl + "\n"
+                     );
                   }
                }
                },
