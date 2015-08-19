@@ -23,7 +23,7 @@
 <body>
 	
 	<script type="text/javascript">
-	var coords; //For use with the mouse-event passing
+	//var coords; //For use with the mouse-event passing
 	
 	var glviewer = null;
 	var labels = [];
@@ -41,7 +41,7 @@
          $('#webixID').html(gc); //Pass gc in to show between the div tags
 			
 			//Split the passed coordinates text into coords[0] = x; coords[1] = y
-			coords = gc.split(',');
+			//coords = gc.split(',');
 			
          console.log("Coordinates set: "+gc);
    }
@@ -152,7 +152,7 @@
 		receptorModel = m = glviewer.addModel(data, "pqr");
 		
 		atoms = m.selectedAtoms({});
-
+		
 		for ( var i in atoms) {
 			var atom = atoms[i];
 			atom.clickable = true;
@@ -169,18 +169,18 @@
 		$(':root').mousedown(function(){
 			window.parent.setActiveViewer($('#webixID').text(), getViewMode());
 		});
-		/*$(':root').contents().on("click dblclick mousedown mousemove mouseover mouseup",
+		$(':root').contents().on("click dblclick mousedown mousemove mouseup",
 		function (e) {
+			//console.log('act: '+window.parent.$$('activeCoord').getValue());
+			//console.log('this: '+$('#webixID').text());
 			if(window.parent.$$('syncMove').getValue()==1 &&
 				window.parent.$$('activeCoord').getValue()==$('#webixID').text())
 			{
-				//Haha, as might have been expected, this causes a buffer overflow.  Whoops >.>
-				window.parent.transferMouseEvent(coords, e);
 				console.log($('#webixID').text());
+				//Haha, as might have been expected, this causes a buffer overflow.  Whoops >.>
+				window.parent.transferMouseEvent($('#webixID').text(),e);
 			}
-			else
-				console.log('not '+$('#webixID').text());
-      });*/
+      });
 	});
 	</script>
 	
