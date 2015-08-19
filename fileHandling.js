@@ -4,6 +4,8 @@
  */
 function parseForZinc(readerResult){
    fileText = readerResult;
+   //Get rid of duplicate adding bug by only processing from @<TRIPOS>MOLECULE to @<TRIPOS>ATOM
+   //if it is a .mol2
    var regex = /ZINC/gi; //All (g, global) case-insensitive (i) matches for "ZINC"
    var result, indices = [];
    var zincIds = [],
@@ -16,10 +18,10 @@ function parseForZinc(readerResult){
        zincs = fileText.slice(result.index, result.index + 12);
        zincIds.push(zincs);
    }
-   lines = fileText.split("\n");
+   //lines = fileText.split("\n");
    console.log("indices: "+indices);
    
-   for(var x=0; x<indices.length;x++)
+   /*for(var x=0; x<indices.length;x++)
    {
       infoLine = lines.slice(indices[x] + 3, indices[x] + 4);
       console.log("infoLine: "+infoLine);
@@ -32,7 +34,7 @@ function parseForZinc(readerResult){
       bondInfo = bondString.slice(0,b1);
       bonds.push(bondInfo);
       numRes.push(atomInfo);
-   }
+   }*/
    compound_fxn(zincIds, numRes, bonds);
    // compListDetails(zincIds, numRes, bonds);
    console.log(numRes, bonds);

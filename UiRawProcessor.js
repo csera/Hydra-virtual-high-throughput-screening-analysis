@@ -18,7 +18,7 @@ popupProcessor = webix.ui({
                {rows:[ //Table showing uploaded files
                   { //Uploader element
                      id:"procUploader", view:"uploader",
-                     value:"Upload Raw Files",
+                     value:"Upload Data Files",
                      multiple:true, autosend:false,
                   },
                   {

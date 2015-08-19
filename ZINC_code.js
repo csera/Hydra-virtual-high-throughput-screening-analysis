@@ -31,7 +31,7 @@ function searchData(zincArr, searchableData){
    all = searchableData.split("\n")
    for (var i=0;i<zincArr.length;i++){
       for (var line in all){
-         toFind = all[line].indexOf(zincArr[i])
+         toFind = all[line].indexOf(zincArr[i]);
          if (toFind != -1){
             allSplit = all[line].split("\t");
             json_var = {idNum: i, compound: allSplit[0], 
@@ -51,9 +51,9 @@ function searchData(zincArr, searchableData){
 function zincRequests(arr1, arr2, arr3){
    basicInfo = new Array();
    for(var i=0;i<arr1.length;i++){
-      json_head = {compound: arr1[i], category: "ZN ligand", res: arr2[i], bond: arr3[i]}
-      basicInfo.push(json_head)
-      console.log(json_head)
+      json_head = {compound: arr1[i], category: "ZN ligand", res: arr2[i], bond: arr3[i]};
+      basicInfo.push(json_head);
+      console.log(json_head);
    }
    return basicInfo
 };

@@ -253,11 +253,15 @@ hydraUI = webix.ui({
                   {},
                   //checkbox for setting whether or not to sync compound rotation across viewers
                   //unchecked -> 0; checked -> 1
-                  //Want label on right side of box but can't get that to work...
-                  {
-                     id:'syncMove', view:'checkbox', label:'Sync Movements',
-                     labelWidth:120, value:0
-                  },
+                  //Needed to do an ungly workaround to get the label on the right
+                  {cols:[
+                     {
+                        id:'syncMove', view:'checkbox', value:0,
+                     },
+                     {
+                        view:'label', label:'Sync movements', align:'left', width:210
+                     }
+                  ]},
                   {
                      id:"toF&G",  view:"button", type:"prev", label:'To File & Grid Controls',
                      click:function(){$$('files&grid').show();}
