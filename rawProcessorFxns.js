@@ -5,8 +5,7 @@ function addFilteredFiles(){
    var filteredProts = filterRaw($$('protNom').getValue(), $$('procInTable'));
    
    //Loop through the array to add each file to the table
-   for(var x=0; x<filteredProts.length; x++)
-   {
+   for(var x=0; x<filteredProts.length; x++){
       console.log('protOutTable adding: '+filteredProts[x].fileName);
       $$('protOutTable').add(
       {
@@ -21,8 +20,7 @@ function addFilteredFiles(){
    
    var filteredLigs = filterRaw($$('ligNom').getValue(), $$('procInTable'));
    
-   for(var x=0; x<filteredLigs.length; x++)
-   {
+   for(var x=0; x<filteredLigs.length; x++){
       console.log('ligOutTable adding: '+filteredLigs[x].fileName);
       $$('ligOutTable').add(
       {
@@ -37,32 +35,96 @@ function addFilteredFiles(){
    
    var filteredZincs = filterRaw($$('zincNom').getValue(), $$('procInTable'));
    var matchLocation; //Index within the file-data string of the ZINC ID
-   var zincId;
+   var zincId, ligObj;
    
-   for(var x=0; x<filteredZincs.length; x++)
-   {
+   for(var x=0; x<filteredZincs.length; x++){
       zincId =''; //set to a blank string at start of each loop run
       
-      //Case-insensitive search of the file for the ZINC ID
-      matchLocation = filteredZincs[x].fileData.search(/zinc/i);
+      //For .mol2 files
+      molLoc = filteredZincs[x].fileData.search(/@<TRIPOS>MOLECULE/i);
+      atomLoc = filteredZincs[x].fileData.search(/@<TRIPOS>ATOM/i);
       
-      if (matchLocation == -1) { //If no match to the regular expression found
-         continue; //Stop processing this file if there's no ZINC ID
-      }
-      else {
-         //ZINC ID's are 12 characters long
-         zincId = filteredZincs[x].fileData.slice(matchLocation, matchLocation+12);
+      /* @<TRIPOS>MOLECULE has the following format:
+       * mol_name
+       * num_atoms [num_bonds] [num_subst] [num_feat] [num_sets]
+       * mol_type
+       * charge_type
+       * [status_bits
+       * [mol_comment]]
+       */
+      
+      if (molLoc != -1 && atomLoc != -1) {
+         molInfo = filteredZincs[x].fileData.substr(molLoc, atomLoc);
+         var lines = molInfo.split(/\r?\n/);
+         var ligObj = matchLigToZinc(filteredZincs[x]);
+         var currLine; //The line being processed
          
-         //Go through each item in the ligOutTable until a match is found
-         for(var ligIndex=0; ligIndex<$$('ligOutTable').count(); ligIndex++)
-         {
-            var tableId = $$('ligOutTable').getIdByIndex(ligIndex);
-            var ligObj = $$('ligOutTable').getItem(tableId);
-            
-            if (filteredZincs[x].ligID == ligObj.lot_ligID) {
-               ligObj.zincId = zincId; //Add ZINC ID to the table
-            }
+         //Add to data's beginning in reverse order so that it gets written properly
+         if (lines[5]) { //Not always present so put in if statement
+            //For IUPAC name (which is usually what's here)
+            ligObj.ligData =
+               'REMARK   15'+
+               '\nREMARK   15 '+lines[5]+
+               '\n'+ligObj.ligData;
          }
+         
+         //For #atoms and bonds info
+         ligObj.ligData =
+               'REMARK   12'+
+               '\nREMARK   12 '+lines[2]+
+               '\n'+ligObj.ligData;
+         
+         if(lines[1].search(/ZINC/i) != -1){ //For ZINC
+            //currLine = lines[i].replace(/^\s*/, ''); // remove indent
+            
+            ligObj.zincId = lines[1];
+            
+            ligObj.ligData =
+               'REMARK   11'+
+               '\nREMARK   11 '+lines[1]+
+               '\n'+ligObj.ligData;
+         }
+         //$$('file_dump').setValue(ligObj.ligData);
+      }
+      else{ //.mol2 style info not found so just add ZINC ID
+         //Case-insensitive search of the file for the ZINC ID
+         matchLocation = filteredZincs[x].fileData.search(/zinc/i);
+         
+         if (matchLocation == -1) { //If no match to the regular expression found
+            continue; //Stop processing this file if there's no ZINC ID
+         }
+         else {
+            //ZINC ID's are 12 characters long
+            zincId = filteredZincs[x].fileData.slice(matchLocation, matchLocation+12);
+            
+            ligObj = matchLigToZinc(filteredZincs[x]);
+            ligObj.zincId = zincId;
+            
+            ligObj.ligData =
+               'REMARK   15                                                                     '+
+               '\nREMARK   15 '+zincId+
+               '\n'+ligObj.fileData;
+         }
+      }
+   }
+}
+
+/* Finds the relevant ligand object in $$('ligOutTable')
+ * @param {Object} fileObj Single element from array returned by filterRaw
+ * @returns {Object} ligObj Ligand object that was matched to the input object
+ */
+function matchLigToZinc(fileObj){
+   var tableId, ligObj;
+   
+   //Go through each item in the ligOutTable until a match is found
+   for(var ligIndex=0; ligIndex<$$('ligOutTable').count(); ligIndex++)
+   {
+      tableId = $$('ligOutTable').getIdByIndex(ligIndex);
+      ligObj = $$('ligOutTable').getItem(tableId);
+      
+      if (fileObj.ligID == ligObj.lot_ligID) {
+         //ligObj.zincId = zincId; //Add ZINC ID to the table
+         return ligObj;
       }
    }
 }
@@ -72,6 +134,7 @@ function addFilteredFiles(){
  * @param {string} filter The filter to be applied
  * @param {object} table The Webix table object ('view') to obtain the items from
  * @returns {Array} An array of file objects that passed the filter checks
+ *                  Each element has the following properties: fileData, fileName, & ligID.          
  */
 function filterRaw(filter, table){
    var filteredFiles = [];
@@ -142,17 +205,21 @@ function filterRaw(filter, table){
    return filteredFiles;
 }
 
+/* Combines files for output to main Hydra interface.
+ * No input params required, and no output is returned.
+ */
 function combineFiles () {
    var protID, protData, ligID, ligData;
    
    //Loop through all items
    for (var i=0; i<$$('protOutTable').count(); i++) {
-      console.log(i);
+      
       //Dump the protein file data into protData
       protID = $$('protOutTable').getIdByIndex(i);
       protData = $$('protOutTable').getItem(protID).protData;
       protFileName = $$('protOutTable').getItem(protID).protFileName;
       
+      //Dump lig file data into ligData
       ligID = $$('ligOutTable').getIdByIndex(i);
       ligData = $$('ligOutTable').getItem(ligID).ligData;
       
@@ -161,9 +228,9 @@ function combineFiles () {
       ligData = ligData.replace(/ATOM  /g, 'HETATM');
       
       //Add ZINC ID to protData
-      protData +=
+      /*protData +=
          'REMARK   10                                                                     '+
-         '\nREMARK   10 '+$$('ligOutTable').getItem(ligID).zincId;
+         '\nREMARK   10 '+$$('ligOutTable').getItem(ligID).zincId;*/
       protData += '\n'+ligData; //Join files
       
       $$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
@@ -173,6 +240,8 @@ function combineFiles () {
       //grab the contents for what's being added
       //Parse for the ZINC ID and pull data using that
       parseForZinc(protData);
+      
+      //$$('file_dump').setValue(protData);
    }
 }
 
