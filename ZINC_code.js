@@ -24,6 +24,9 @@ function readTextFile(file){
 
 /* Gets information from database regarding input Zinc IDs
  * @author smatlock
+ * @param {Array} zincArr Array of strings for the ZINC IDs
+ * @param {String} searchableData Compound data-containing String
+ * @returns {Array} vendorCollect Array of objects containing vendor info
  */
 function searchData(zincArr, searchableData){
    // validation = searchableData.indexOf("ZINC");
@@ -39,7 +42,7 @@ function searchData(zincArr, searchableData){
                vendor: allSplit[1], website: allSplit[3],
                email: allSplit[4], phone: allSplit[5], 
                fax:allSplit[6], orderurl:allSplit[7]}
-            vendorCollect.push(json_var)
+            vendorCollect.push(json_var);
          }
       }
    }

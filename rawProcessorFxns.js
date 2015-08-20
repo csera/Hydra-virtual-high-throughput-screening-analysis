@@ -54,12 +54,10 @@ function addFilteredFiles(){
        */
       
       if (molLoc != -1 && atomLoc != -1) {
-         molInfo = filteredZincs[x].fileData.substr(molLoc, atomLoc);
+         molInfo = filteredZincs[x].fileData.substring(molLoc, atomLoc);
          var lines = molInfo.split(/\r?\n/);
          var ligObj = matchLigToZinc(filteredZincs[x]);
-         var currLine; //The line being processed
          
-         //Add to data's beginning in reverse order so that it gets written properly
          if (lines[5]) { //Not always present so put in if statement
             //For IUPAC name (which is usually what's here)
             ligObj.ligData =

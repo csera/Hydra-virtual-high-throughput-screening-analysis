@@ -12,7 +12,6 @@ var uploadControls =
             id:"hydraUploader", view:"uploader",
             value:"Upload Files",
             multiple:true, autosend:false,
-            //upload:"parser.php"
          },
          { //Table showing uploaded files
             id:"uploadTable", view:"datatable",
@@ -220,8 +219,9 @@ hydraUI = webix.ui({
       {template:"html->titlebar", height:1 },
       
       // second row, main content of app goes here
-      {cols:[{id:'leftCol',
-         // left column has control panel, upload manager as accordioned components
+      {cols:[
+      //Left column is a sliding pane: [upload controls, grid controls], [model controls]
+      {id:'leftCol',
          cells:[
             {id:'files&grid', view:"scrollview",
                scroll:"y",
@@ -271,7 +271,7 @@ hydraUI = webix.ui({
          ]
       },
       
-      // middle column contains central workspace with all of the visualization object
+      // middle column contains central workspace with all of the visualization objects
       {id:"workspace", view:"scrollview", container:"central_workspace",type:"clean",
          scroll:"xy", //Enables horizontal (x) and vertical (y) scrolling
       
@@ -307,8 +307,10 @@ hydraUI = webix.ui({
                select:true, 
                columns:[
                   // { id:"idNum", header:"ID", width:50}, 
-                  { id:"compound", header:"Compound Name", width:135 },
-                  { id:"category", header:"Category", fillspace:1},
+                  { id:"compound", header:"Compound Name", width:135 }, //The ZINC ID
+                  { id:'numAtoms', hidden:true},
+                  { id:'numBonds', hidden:true},
+                  { id:'techName', hidden:true}
                ], 
                data:'',
                minWidth:250,
@@ -330,10 +332,10 @@ hydraUI = webix.ui({
          {rows:[
             {header:"Compound Details", collapsed:false, body:
                {view:"form", id:"comp_det", maxWidth:250, rows:[
-                  { view:"text",name:"category",label:"Category" },
-                  { view:"text",name:"compound",label:"Compound" },
-                  { view:"text",name:"res",label:"# Residues" },
-                  { view:"text",name:"bond",label:"# Bonds" },
+                  { view:"text",name:"zId",label:"ZINC ID" },
+                  { view:"text",name:"compName",label:"Name" },
+                  { view:"text",name:"numAtom",label:"# Atoms" },
+                  { view:"text",name:"numBond",label:"# Bonds" },
                ]}
             },
             
