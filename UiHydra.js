@@ -330,10 +330,10 @@ hydraUI = webix.ui({
          {rows:[
             {header:"Compound Details", collapsed:false, body:
                {view:"form", id:"comp_det", maxWidth:250, rows:[
-                  { view:"text",name:"zincId",label:"ZINC ID" },
-                  { view:"text",name:"techName",label:"Name" },
-                  { view:"text",name:"numAtoms",label:"# Atoms" },
-                  { view:"text",name:"numBonds",label:"# Bonds" },
+                  { view:"text",name:"zincId",label:"ZINC ID", readonly:true },
+                  { view:"text",name:"techName",label:"Name", readonly:true },
+                  { view:"text",name:"numAtoms",label:"# Atoms", readonly:true },
+                  { view:"text",name:"numBonds",label:"# Bonds", readonly:true },
                ]}
             },
             
