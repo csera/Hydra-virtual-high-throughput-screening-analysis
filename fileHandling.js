@@ -37,7 +37,96 @@ function parseForZinc(readerResult){
    }*/
    compound_fxn(zincIds, numRes, bonds);
    // compListDetails(zincIds, numRes, bonds);
-   console.log(numRes, bonds);
+   //console.log(numRes, bonds);
+}
+
+/* Searches file text for information placed by file processor. And adds it
+ * to the relevant object placed in the main interface by ZINC_code.
+ * This currently ONLY works with data from the file processor.
+ * @param {String} fileText Plain text of the processed file
+ */
+/* Format used by file processor:
+ *    REMARK   11
+ *    REMARK   11 ZINC_ID
+ *    REMARK   12
+ *    REMARK   12 num_atoms [num_bonds] [num_subst] [num_feat] [num_sets]
+ *    [REMARK   15
+ *    REMARK   15 COMPOUND_NAME]
+ *    REMARK   20
+ *    REMARK   20 END LIGAND INFO
+ */
+function parseLigInfo(fileText){
+   var ligInfo = new Object();
+   
+   var zincRmkLoc = fileText.search("REMARK   11\nREMARK   11 ZINC")
+      //fileText.search(/REMARK   11 ZINC/i);
+   var endInfoLoc = fileText.search("REMARK   20 END LIGAND INFO");
+   
+   if (zincRmkLoc!=-1 && endInfoLoc!=-1) {
+      //27 is length of the final line of the end block
+      //Split this identified block into an array by lines
+      var infoLines = fileText.substr(zincRmkLoc,endInfoLoc+27).split(/\r?\n/);
+      
+      for(x=0; x<infoLines.length; x++){
+         infoLines[x] = infoLines[x].replace(/^\s+/,""); //Remove any leading spaces
+         
+         //Note: modular regex's could be used to remove "REMARK" stuff too, but this
+         //would not be necessary for every line and would reduce code readability
+         
+         if (infoLines[x] == 'REMARK   11') {
+            //Remove "REMARK   11" then any spaces after remark #
+            var zLine = infoLines[x+1];
+            zLine = zLine.replace("REMARK   11","").replace(/^\s+/,"");
+            
+            ligInfo.zincId = zLine;
+         }
+         else if (infoLines[x] == 'REMARK   12') {
+            infoLines[x+1] = infoLines[x+1].replace("REMARK   12","").replace(/^\s+/,"");
+            
+            //Replace any multi-spaces with a single space then split
+            var numLineInfo = infoLines[x+1].replace(/\s+/g," ").split(" ");
+            
+            ligInfo.numAtoms = parseInt(numLineInfo[0]); //Make String -> int
+            ligInfo.numBonds = parseInt(numLineInfo[1]);
+         }
+         else if (infoLines[x] == 'REMARK   15') {
+            //Trim infoLines[x+1] of the remark and space
+            //Set the $$('comp_table')'s item's techName to this
+            
+            infoLines[x+1] = infoLines[x+1].replace("REMARK   15","").replace(/^\s+/,"");
+            
+            ligInfo.name = infoLines[x+1];
+         }
+         if (infoLines[x] == 'REMARK   20') {
+            var ligObj = matchZincInTable(ligInfo.zincId, $$('comp_table'));
+            
+            ligObj.zincId = ligInfo.zincId;
+            ligObj.numAtoms = ligInfo.numAtoms;
+            ligObj.numBonds = ligInfo.numBonds;
+            ligObj.techName = ligInfo.name;
+            
+            break;
+         }
+      }
+   }
+}
+
+function matchZincInTable(zincId,table){
+   var tableId, ligObj;
+   
+   //Go through each item in the ligOutTable until a match is found
+   for(var ligIndex=0; ligIndex<table.count(); ligIndex++)
+   {
+      tableId = table.getIdByIndex(ligIndex);
+      ligObj = table.getItem(tableId);
+      
+      if (zincId == ligObj.zincId) {
+         return ligObj;
+      }
+      else if (ligIndex == table.count()-1) {
+         return null;
+      }
+   }
 }
 
 //Loads parsed compounds into the set viewers

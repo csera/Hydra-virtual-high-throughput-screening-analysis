@@ -53,10 +53,17 @@ function addFilteredFiles(){
          [mol_comment]]
        */
       
+      //Add info from the @<TRIPOS>MOLECULE block if present
       if (molLoc != -1 && atomLoc != -1) {
          molInfo = filteredZincs[x].fileData.substring(molLoc, atomLoc);
          var lines = molInfo.split(/\r?\n/);
-         var ligObj = matchLigToZinc(filteredZincs[x]);
+         var ligObj = matchLigToZinc(filteredZincs[x].ligID);
+         
+         //Add to data's beginning in reverse order so that it gets written properly
+         ligObj.ligData = //Marks end of ligand info for Hydra's parser
+            'REMARK   20'+
+            '\nREMARK   20 END LIGAND INFO'+
+            '\n'+ligObj.ligData;
          
          if (lines[5]) { //Not always present so put in if statement
             //For IUPAC name (which is usually what's here)
@@ -108,10 +115,10 @@ function addFilteredFiles(){
 }
 
 /* Finds the relevant ligand object in $$('ligOutTable')
- * @param {Object} fileObj Single element from array returned by filterRaw
+ * @param {Object} ligId ID # lig-protein pair to match to (NOT ZINC ID)
  * @returns {Object} ligObj Ligand object that was matched to the input object
  */
-function matchLigToZinc(fileObj){
+function matchLigToZinc(ligId){
    var tableId, ligObj;
    
    //Go through each item in the ligOutTable until a match is found
@@ -120,8 +127,7 @@ function matchLigToZinc(fileObj){
       tableId = $$('ligOutTable').getIdByIndex(ligIndex);
       ligObj = $$('ligOutTable').getItem(tableId);
       
-      if (fileObj.ligID == ligObj.lot_ligID) {
-         //ligObj.zincId = zincId; //Add ZINC ID to the table
+      if (ligId == ligObj.lot_ligID) {
          return ligObj;
       }
    }
@@ -238,6 +244,7 @@ function combineFiles () {
       //grab the contents for what's being added
       //Parse for the ZINC ID and pull data using that
       parseForZinc(protData);
+      parseLigInfo(protData);
       
       //$$('file_dump').setValue(protData);
    }

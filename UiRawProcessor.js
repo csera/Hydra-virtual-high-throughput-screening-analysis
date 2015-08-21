@@ -34,9 +34,13 @@ popupProcessor = webix.ui({
                {rows:[
                   {view:'template', //optional, included for clarity
                      scroll:'y', src:'text/procInputInfo.html'},
-                  {id:'protNom', view:'text', label:'Protein File Nomenclature',
+                  {id:'protNom', view:'text',
+                     value:'[*].[*].[ligID].final_pose.[*].pdb',
+                     label:'Protein file nomenclature',
                      labelPosition:'top'},
-                  {id:'ligNom', view:'text', label:'Ligand File Nomenclature',
+                  {id:'ligNom', view:'text',
+                     value:'[*].[ligID].final_pose.[*].pdb',
+                     label:'Ligand file nomenclature',
                      labelPosition:'top'},
                   /*{id:'ZINCloc', view:'richselect', label:'Ligand ZINC ID location',
                   labelPosition:'top', options:[
@@ -46,7 +50,8 @@ popupProcessor = webix.ui({
                      {id:'zNon', value:'No ZINC ID prsent'}
                   ]},*/
                   {id:'zincNom', view:'text',
-                     label:'ZINC ID file Nomenclature (may resuse an above filter)',
+                     value:'[*].[ligID].mol2',
+                     label:'Metadata containing file nomenclature (optional)',
                      labelPosition:'top'}
                ]}
             ]},

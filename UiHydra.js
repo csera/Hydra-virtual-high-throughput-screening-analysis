@@ -307,7 +307,7 @@ hydraUI = webix.ui({
                select:true, 
                columns:[
                   // { id:"idNum", header:"ID", width:50}, 
-                  { id:"compound", header:"Compound Name", width:135 }, //The ZINC ID
+                  { id:"zincId", header:"Compound Name", width:135 }, //The ZINC ID
                   { id:'numAtoms', hidden:true},
                   { id:'numBonds', hidden:true},
                   { id:'techName', hidden:true}
@@ -323,8 +323,6 @@ hydraUI = webix.ui({
                   this.hideOverlay();
                }
             },
-               //datatype:"json",
-               //url:'compounds.json'
             }
          },
          {view:"resizer"},
@@ -332,10 +330,10 @@ hydraUI = webix.ui({
          {rows:[
             {header:"Compound Details", collapsed:false, body:
                {view:"form", id:"comp_det", maxWidth:250, rows:[
-                  { view:"text",name:"zId",label:"ZINC ID" },
-                  { view:"text",name:"compName",label:"Name" },
-                  { view:"text",name:"numAtom",label:"# Atoms" },
-                  { view:"text",name:"numBond",label:"# Bonds" },
+                  { view:"text",name:"zincId",label:"ZINC ID" },
+                  { view:"text",name:"techName",label:"Name" },
+                  { view:"text",name:"numAtoms",label:"# Atoms" },
+                  { view:"text",name:"numBonds",label:"# Bonds" },
                ]}
             },
             
@@ -411,6 +409,7 @@ $$("hydraUploader").attachEvent("onAfterFileAdd",function(){
       //Added as a string rather than an actual file object
       
       parseForZinc(reader.result);
+      parseLigInfo(reader.result);
    };
    reader.onerror = function(e) {
       console.error("File could not be read. Code: "+e.target.error.code);

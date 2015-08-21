@@ -55,7 +55,7 @@ function searchData(zincArr, searchableData){
 function zincRequests(arr1, arr2, arr3){
    basicInfo = new Array();
    for(var i=0;i<arr1.length;i++){
-      json_head = {compound: arr1[i], category: "ZN ligand", res: arr2[i], bond: arr3[i]};
+      json_head = {zincId: arr1[i], numAtoms: arr2[i], numBonds: arr3[i], techName:''};
       basicInfo.push(json_head);
       console.log(json_head);
    }
@@ -75,8 +75,8 @@ function compound_fxn(arr1, arr2, arr3){
    // refreshes the compounds list id comp_table via .refresh()
    $$("comp_table").define("data",compInfo);
    $$("comp_table").refresh();
-   $$("comp_det").define("data",compInfo);
-   $$("comp_det").refresh();
+   //$$("comp_det").define("data",compInfo);
+   //$$("comp_det").refresh();
    $$("vendors").define("data",dummy_comp);
    $$("vendors").refresh();
 }
