@@ -52,33 +52,29 @@ function searchData(zincArr, searchableData){
 /* Gets information for compound list and details
  * @author smatlock
  */
-function zincRequests(zincIds, targetItem){
+function zincRequests(arr1, arr2, arr3){
    basicInfo = new Array();
-   for(var i=0;i<zincIds.length;i++){
-     /* json_head = {zincId: arr1[i], numAtoms: arr2[i], numBonds: arr3[i], techName:''};
+   for(var i=0;i<arr1.length;i++){
+      json_head = {zincId: arr1[i], numAtoms: arr2[i], numBonds: arr3[i], techName:''};
       basicInfo.push(json_head);
-      console.log(json_head);*/
-     targetItem.zincId = zincIds[i];
+      console.log(json_head);
    }
    return basicInfo
 };
 
 /* Change this fxn to update what's displayed in the viewers and compound list coordinates
- * @author smatlock & csera
- * @param {Array} zincIds Array of strings for the ZINC IDs
- * @param {Object} targetItem Webix datatable item to add metadata to
+ * @author smatlock
  */
-function compound_fxn(zincIds, targetItem){
+function compound_fxn(arr1, arr2, arr3){
    var smallDatabase = readTextFile("codebase/3_purch.xls"),
-   //compInfo = zincRequests(zincIds, numRes, numBonds),
-   dummy_comp = searchData(zincIds, smallDatabase);
-   
-   zincRequests(zincIds, targetItem);
+   compInfo = zincRequests(arr1, arr2, arr3),
+   dummy_comp = searchData(arr1, smallDatabase);
+
    // loads uploaded.js to overwrite compound_data var with uploaded data
    //delete compound_data;
    // refreshes the compounds list id comp_table via .refresh()
-   /*$$("comp_table").define("data",compInfo);
-   $$("comp_table").refresh();*/
+   $$("comp_table").define("data",compInfo);
+   $$("comp_table").refresh();
    //$$("comp_det").define("data",compInfo);
    //$$("comp_det").refresh();
    $$("vendors").define("data",dummy_comp);

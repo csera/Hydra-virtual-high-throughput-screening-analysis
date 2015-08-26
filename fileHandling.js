@@ -1,29 +1,22 @@
 /* Gets ZINC IDs from file; adds to array zincIds
  * @author Shelby Matlock & csera
  * @param {FileReader.result} Parsed file contents to scan
- * @param {Object} Webix datatable object to add metadata to
  */
-function parseForZinc(readerResult, targetItem){
+function parseForZinc(readerResult){
    fileText = readerResult;
    //Get rid of duplicate adding bug by only processing from @<TRIPOS>MOLECULE to @<TRIPOS>ATOM
    //if it is a .mol2
-   //var regex = /ZINC/gi; //All (g, global) case-insensitive (i) matches for "ZINC"
-   var regex = /ZINC/i;
+   var regex = /ZINC/gi; //All (g, global) case-insensitive (i) matches for "ZINC"
    var result, indices = [];
-   var zincIds = [];
-   var zincIndex = fileText.search(regex);
-   //bonds = [],
-   //numRes = [];
-   /*while ( (result = regex.exec(fileText)) )
+   var zincIds = [],
+   bonds = [],
+   numRes = [];
+   while ( (result = regex.exec(fileText)) )
    {
        indices.push(result.index);
        // 12 is the length of ZINC id
        zincs = fileText.slice(result.index, result.index + 12);
        zincIds.push(zincs);
-   }*/
-   if (zincIndex != -1) {
-      //12 is the length of ZINC IDs
-      zincIds.push(fileText.slice(zincIndex, zincIndex+12));
    }
    //lines = fileText.split("\n");
    console.log("indices: "+indices);
@@ -42,7 +35,7 @@ function parseForZinc(readerResult, targetItem){
       bonds.push(bondInfo);
       numRes.push(atomInfo);
    }*/
-   compound_fxn(zincIds, targetItem);
+   compound_fxn(zincIds, numRes, bonds);
    // compListDetails(zincIds, numRes, bonds);
    //console.log(numRes, bonds);
 }
@@ -62,7 +55,7 @@ function parseForZinc(readerResult, targetItem){
  *    REMARK   20
  *    REMARK   20 END LIGAND INFO
  */
-function parseLigInfo(fileText, targetItem){
+function parseLigInfo(fileText){
    var ligInfo = new Object();
    
    var zincRmkLoc = fileText.search("REMARK   11\nREMARK   11 ZINC")
@@ -105,19 +98,12 @@ function parseLigInfo(fileText, targetItem){
             ligInfo.name = infoLines[x+1];
          }
          if (infoLines[x] == 'REMARK   20') {
-            /*var ligObj = matchZincInTable(ligInfo.zincId, $$('uploadTable'));//$$('comp_table'));
+            var ligObj = matchZincInTable(ligInfo.zincId, $$('comp_table'));
             
             ligObj.zincId = ligInfo.zincId;
             ligObj.numAtoms = ligInfo.numAtoms;
             ligObj.numBonds = ligInfo.numBonds;
-            ligObj.techName = ligInfo.name;*/
-            
-            //var ligObj = matchZincInTable(ligInfo.zincId, $$('uploadTable'));
-            
-            targetItem.zincId = ligInfo.zincId;
-            targetItem.numAtoms = ligInfo.numAtoms;
-            targetItem.numBonds = ligInfo.numBonds;
-            targetItem.techName = ligInfo.name;
+            ligObj.techName = ligInfo.name;
             
             break;
          }

@@ -216,8 +216,6 @@ function combineFiles () {
    var protID, protData, ligID, ligData;
    
    //Loop through all items
-   //This works, but is fairly slow for any more than a few files.
-   //TRY USING WEB WORKERS
    for (var i=0; i<$$('protOutTable').count(); i++) {
       
       //Dump the protein file data into protData
@@ -242,17 +240,22 @@ function combineFiles () {
       $$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
                             fileName:protFileName, fileData:protData});
       
-      lastId = $$('uploadTable').getLastId();
-      lastItem = $$('uploadTable').getItem(lastId);
-      
       //Would prefer to do this via an event in the uploadTable, but not sure how to
       //grab the contents for what's being added
       //Parse for the ZINC ID and pull data using that
-      parseForZinc(protData, lastItem);
-      parseLigInfo(protData, lastItem);
+      parseForZinc(protData);
+      parseLigInfo(protData);
       
       //$$('file_dump').setValue(protData);
    }
+}
+
+//Removes selected compounds from the list and clears them from the relevant viewers
+function clear_fxn(){
+   //$$(...).getSelectedId returns an array of selected items (with param (true))
+   var IDs = $$('procInTable').getSelectedId(true);
+   
+   $$('procInTable').remove($$('procInTable').getSelectedId(true));
 }
 
 //Closes processorWin and clears/resets all components
