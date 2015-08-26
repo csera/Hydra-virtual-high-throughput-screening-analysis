@@ -407,13 +407,15 @@ $$("hydraUploader").attachEvent("onAfterFileAdd",function(){
                             fileName:fName, fileData:reader.result});
       //Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
       //Added as a string rather than an actual file object
+      lastId = $$('uploadTable').getLastId();
+      lastItem = $$('uploadTable').getItem(lastId);
       
-      parseForZinc(reader.result);
-      parseLigInfo(reader.result);
+      parseForZinc(reader.result, lastItem);
+      parseLigInfo(reader.result, lastItem);
    };
    reader.onerror = function(e) {
       console.error("File could not be read. Code: "+e.target.error.code);
-      alert("error");
+      alert("Error while reading a file");
    };
    
    reader.readAsText(fData);
@@ -425,6 +427,11 @@ $$("hydraUploader").attachEvent("onAfterFileAdd",function(){
 $$('comp_det').bind($$('comp_table'));
 $$("comp_table").select(1);
 
+//$$('comp_table').data.sync('uploadTable');
+//$$('comp_table').data.sync($$('uploadTable'));
+//$$('uploadTable').sync($$('comp_table'));
+$$('comp_table').bind($$('uploadTable'));
+$$('uploadTable').bind($$('comp_table'));
 });
 
 //Resizes GUI dynamically with the window size
