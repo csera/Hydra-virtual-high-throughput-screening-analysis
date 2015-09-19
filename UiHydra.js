@@ -30,6 +30,12 @@ var uploadControls =
                {id:"fileName", header:"File Name", width:200},
                {id:"fileData", header:"Data", hidden:true},
             ],
+            on:{
+               //Selecting an item here selects the corresponding in comp_table
+               onAfterSelect:function(id){ //id is an optional param to take
+                  $$('comp_table').select(id);
+               },
+            }
          },
          {
             cols:[
@@ -317,14 +323,18 @@ hydraUI = webix.ui({
                data:'',
                minWidth:250,
                
-            on:{
-               onBeforeLoad:function(){
-                  this.showOverlay("Loading...");
+               on:{
+                  onBeforeLoad:function(){
+                     this.showOverlay("Loading...");
+                  },
+                  onAfterLoad:function(){
+                     this.hideOverlay();
+                  },
+                  //Selecting an item here selects the corresponding in uploadTable
+                  onAfterSelect:function(id){ //id is an optional param to take
+                     $$('comp_table').select(id);
+                  },
                },
-               onAfterLoad:function(){
-                  this.hideOverlay();
-               }
-            },
             }
          },
          {view:"resizer"},
@@ -392,7 +402,7 @@ hydraUI = webix.ui({
  * Takes data from the first file in "hydraUploader" and puts it in the "uploadTable"
  * view:datatable.  Object is then removed so more items may be read successfully.
  */
-$$("hydraUploader").attachEvent("onAfterFileAdd",function(){
+$$("hydraUploader").attachEvent("onAfterFileAdd", function(){
    
    var reader = new FileReader();
    
@@ -425,6 +435,14 @@ $$("hydraUploader").attachEvent("onAfterFileAdd",function(){
    reader.readAsText(fData);
    
    $$('hydraUploader').files.remove(fID);
+});
+
+/*$$('uploadTable').attachEvent('onAfterSelect', function(id){
+   $$('comp_table').select(id);
+});*/
+
+$$('comp_table').attachEvent('onAfterSelect', function(id){
+   $$('uploadTable').select(id);
 });
 
 // binds selected compound detail panel with selection in compounds list, default selection is first
