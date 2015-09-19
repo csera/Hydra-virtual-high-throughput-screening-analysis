@@ -1,5 +1,5 @@
 /* Allows access to database file
- * @author smatlock
+ * @author smatlock & csera
  * @param {file} rawFile (database) to be parsed
  * @returns {String} Plaintext of a rawFile
  */
@@ -22,7 +22,7 @@ function readTextFile(file){
     return txt;
 }
 
-/* Gets information from database regarding input Zinc IDs
+/* Gets information from VENDOR database regarding input Zinc IDs
  * @author smatlock
  * @param {Array} zincArr Array of strings for the ZINC IDs
  * @param {String} searchableData Compound data-containing String
@@ -50,26 +50,27 @@ function searchData(zincArr, searchableData){
 }
 
 /* Gets information for compound list and details
- * @author smatlock
+ * @author smatlock & csera
  */
-function zincRequests(arr1, arr2, arr3){
-   basicInfo = new Array();
-   for(var i=0;i<arr1.length;i++){
-      json_head = {zincId: arr1[i], numAtoms: arr2[i], numBonds: arr3[i], techName:''};
-      basicInfo.push(json_head);
-      console.log(json_head);
+function zincRequests(zIdArr, nAtmArr, nBndArr){
+   //basicInfo = new Array();
+   for(var i=0; i<zIdArr.length; i++){
+      dataObjs.add({zincId: zIdArr[i], numAtoms: nAtmArr[i], numBonds: nBndArr[i], techName:''});
+      //json_head = {zincId: zIdArr[i], numAtoms: nAtmArr[i], numBonds: nBndArr[i], techName:''};
+      //basicInfo.push(json_head);
+      //console.log(json_head);
    }
-   return basicInfo
+   //return basicInfo;
 };
 
 /* Change this fxn to update what's displayed in the viewers and compound list coordinates
- * @author smatlock
+ * @author smatlock & csera
  */
-function compound_fxn(arr1, arr2, arr3){
+function compound_fxn(zIdArr, nAtmArr, nBndArr){
    var smallDatabase = readTextFile("codebase/3_purch.xls"),
-   compInfo = zincRequests(arr1, arr2, arr3),
-   dummy_comp = searchData(arr1, smallDatabase);
-
+   compInfo = zincRequests(zIdArr, nAtmArr, nBndArr),
+   dummy_comp = searchData(zIdArr, smallDatabase);
+   
    // loads uploaded.js to overwrite compound_data var with uploaded data
    //delete compound_data;
    // refreshes the compounds list id comp_table via .refresh()

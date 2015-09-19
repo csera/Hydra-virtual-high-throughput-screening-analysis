@@ -1,3 +1,5 @@
+var dataObjs = new webix.DataCollection({});
+
 webix.ready(function(){
    //webix.ui.fullScreen(); //for fullscreen on mobile devices
 
@@ -307,7 +309,7 @@ hydraUI = webix.ui({
                select:true, 
                columns:[
                   // { id:"idNum", header:"ID", width:50}, 
-                  { id:"zincId", header:"Compound Name", width:135 }, //The ZINC ID
+                  { id:"zincId", header:"Compound Name", width:230}, //The ZINC ID
                   { id:'numAtoms', hidden:true},
                   { id:'numBonds', hidden:true},
                   { id:'techName', hidden:true}
@@ -394,7 +396,7 @@ $$("hydraUploader").attachEvent("onAfterFileAdd",function(){
    
    var reader = new FileReader();
    
-   var fID, fName, fData;
+   var fID, fName, fData, objId;
    
    fID = $$('hydraUploader').files.getFirstId();
    
@@ -402,14 +404,18 @@ $$("hydraUploader").attachEvent("onAfterFileAdd",function(){
    fData = $$("hydraUploader").files.getItem(fID).file;
    
    reader.onload = function(e) {
-      //CHANGE THIS SO THAT THE FILES GET ADDED TO THE PROCESSOR WINDOW IF PROCESS == 1
-      $$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
+      //Add the parsed file data to the central dataCollection w/ default coordinates 0,0
+      //Parse contents to string rather than adding raw file object
+      dataObjs.add({col:0, oCol:0, row:0, oRow:0,
                             fileName:fName, fileData:reader.result});
-      //Add the parsed file data to 'uploadTable" w/ default coordinates 0,0
-      //Added as a string rather than an actual file object
+      objId = dataObjs.getLastId();
       
-      parseForZinc(reader.result);
-      parseLigInfo(reader.result);
+      parseForZinc(reader.result, objId);
+      parseLigInfo(reader.result, objId);
+      
+      //Display new object in the tables
+      $$('uploadTable').parse(dataObjs);
+      $$('comp_table').parse(dataObjs);
    };
    reader.onerror = function(e) {
       console.error("File could not be read. Code: "+e.target.error.code);
@@ -424,6 +430,9 @@ $$("hydraUploader").attachEvent("onAfterFileAdd",function(){
 // binds selected compound detail panel with selection in compounds list, default selection is first
 $$('comp_det').bind($$('comp_table'));
 $$("comp_table").select(1);
+
+$$('uploadTable').data.sync(dataObjs);
+$$('comp_table').data.sync(dataObjs);
 
 });
 

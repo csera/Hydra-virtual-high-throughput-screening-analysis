@@ -213,7 +213,7 @@ function filterRaw(filter, table){
  * No input params required, and no output is returned.
  */
 function combineFiles () {
-   var protID, protData, ligID, ligData;
+   var protID, protData, ligID, ligData, objId;
    
    //Loop through all items
    for (var i=0; i<$$('protOutTable').count(); i++) {
@@ -237,14 +237,19 @@ function combineFiles () {
          '\nREMARK   10 '+$$('ligOutTable').getItem(ligID).zincId;*/
       protData += '\n'+ligData; //Join files
       
-      $$('uploadTable').add({col:0, oCol:0, row:0, oRow:0,
+      dataObjs.add({col:0, oCol:0, row:0, oRow:0,
                             fileName:protFileName, fileData:protData});
+      objId = dataObjs.getLastId();
       
       //Would prefer to do this via an event in the uploadTable, but not sure how to
       //grab the contents for what's being added
       //Parse for the ZINC ID and pull data using that
-      parseForZinc(protData);
-      parseLigInfo(protData);
+      parseForZinc(protData, objId);
+      parseLigInfo(protData, objId);
+      
+      //Display new data object in each table
+      $$('uploadTable').parse(dataObjs);
+      $$('comp_table').parse(dataObjs);
       
       //$$('file_dump').setValue(protData);
    }

@@ -2,8 +2,18 @@
  * @author Shelby Matlock & csera
  * @param {FileReader.result} Parsed file contents to scan
  */
-function parseForZinc(readerResult){
-   fileText = readerResult;
+function parseForZinc(fileText, objId){
+   //Note: THIS WILL NOT WORK WITH FILES CONTAINING MULTIPLE ZINC IDs
+   var regex = /ZINC/i; //Matches to first case-insensitive (i) instance of "ZINC"
+   var zincLoc = fileText.search(regex);
+   
+   //12 is length of ZINC ID
+   var zId = fileText.slice(zincLoc, zincLoc+12);
+   
+   //Set the ZINC ID as a new property for the object
+   dataObjs.getItem(objId).zincId = zId;
+   
+   /*fileText = readerResult;
    //Get rid of duplicate adding bug by only processing from @<TRIPOS>MOLECULE to @<TRIPOS>ATOM
    //if it is a .mol2
    var regex = /ZINC/gi; //All (g, global) case-insensitive (i) matches for "ZINC"
@@ -19,7 +29,7 @@ function parseForZinc(readerResult){
        zincIds.push(zincs);
    }
    //lines = fileText.split("\n");
-   console.log("indices: "+indices);
+   console.log("indices: "+indices);*/
    
    /*for(var x=0; x<indices.length;x++)
    {
@@ -35,7 +45,7 @@ function parseForZinc(readerResult){
       bonds.push(bondInfo);
       numRes.push(atomInfo);
    }*/
-   compound_fxn(zincIds, numRes, bonds);
+   //compound_fxn(zincIds, nAtmArr, nBndArr); 17 Sept '15 commented out
    // compListDetails(zincIds, numRes, bonds);
    //console.log(numRes, bonds);
 }
@@ -98,7 +108,7 @@ function parseLigInfo(fileText){
             ligInfo.name = infoLines[x+1];
          }
          if (infoLines[x] == 'REMARK   20') {
-            var ligObj = matchZincInTable(ligInfo.zincId, $$('comp_table'));
+            var ligObj = matchZincInCollection(ligInfo.zincId, dataObjs);
             
             ligObj.zincId = ligInfo.zincId;
             ligObj.numAtoms = ligInfo.numAtoms;
@@ -111,19 +121,24 @@ function parseLigInfo(fileText){
    }
 }
 
-function matchZincInTable(zincId,table){
+/** Searches the data object collection and matches the passed zincId to
+ * the object's zincId
+ * @param {String} zincId The ZINC ID to match to
+ * @param {Object} coll Collection of data objects to scan
+ */
+function matchZincInCollection(zincId,coll){
    var tableId, ligObj;
    
    //Go through each item in the ligOutTable until a match is found
-   for(var ligIndex=0; ligIndex<table.count(); ligIndex++)
+   for(var ligIndex=0; ligIndex<coll.count(); ligIndex++)
    {
-      tableId = table.getIdByIndex(ligIndex);
-      ligObj = table.getItem(tableId);
+      tableId = coll.getIdByIndex(ligIndex);
+      ligObj = coll.getItem(tableId);
       
       if (zincId == ligObj.zincId) {
          return ligObj;
       }
-      else if (ligIndex == table.count()-1) {
+      else if (ligIndex == coll.count()-1) {
          return null;
       }
    }
