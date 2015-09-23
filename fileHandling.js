@@ -50,20 +50,10 @@ function parseForZinc(fileText, objId){
    //console.log(numRes, bonds);
 }
 
-/* Searches file text for information placed by file processor. And adds it
- * to the relevant object placed in the main interface by ZINC_code.
- * This currently ONLY works with data from the file processor.
+/* Searches file text for information from a .mol2 file and adds it to
+ * the relevant object placed in the main interface. Info can be read
+ * natively from a .mol2 or from an object created by the file processor.
  * @param {String} fileText Plain text of the processed file
- */
-/* Format used by file processor:
- *    REMARK   11
- *    REMARK   11 ZINC_ID
- *    REMARK   12
- *    REMARK   12 num_atoms [num_bonds] [num_subst] [num_feat] [num_sets]
- *    [REMARK   15
- *    REMARK   15 COMPOUND_NAME]
- *    REMARK   20
- *    REMARK   20 END LIGAND INFO
  */
 function parseLigInfo(fileText){
    var ligInfo = new Object();
@@ -72,6 +62,17 @@ function parseLigInfo(fileText){
       //fileText.search(/REMARK   11 ZINC/i);
    var endInfoLoc = fileText.search("REMARK   20 END LIGAND INFO");
    
+   //For custom format from file processor   
+   /* Format used by file processor:
+    *    REMARK   11
+    *    REMARK   11 ZINC_ID
+    *    REMARK   12
+    *    REMARK   12 num_atoms [num_bonds] [num_subst] [num_feat] [num_sets]
+    *    [REMARK   15
+    *    REMARK   15 COMPOUND_NAME]
+    *    REMARK   20
+    *    REMARK   20 END LIGAND INFO
+    */
    if (zincRmkLoc!=-1 && endInfoLoc!=-1) {
       //27 is length of the final line of the end block
       //Split this identified block into an array by lines
@@ -107,6 +108,7 @@ function parseLigInfo(fileText){
             
             ligInfo.name = infoLines[x+1];
          }
+         //Add above properties to 
          if (infoLines[x] == 'REMARK   20') {
             var ligObj = matchZincInCollection(ligInfo.zincId, dataObjs);
             
@@ -115,9 +117,55 @@ function parseLigInfo(fileText){
             ligObj.numBonds = ligInfo.numBonds;
             ligObj.techName = ligInfo.name;
             
-            break;
+            return;
          }
       }
+   }
+   
+   //for .mol2 format
+   /* Format used in the @<TRIPOS>MOLECULE info section
+    *    mol_name/ZINC_ID
+    *    num_atoms [num_bonds] [num_subst] [num_feat] [num_sets]
+    *    mol_type - types: SMALL, BIOPOLYMER, PROTEIN, NUCLEIC_ACID, SACCHARIDE
+    *    charge_type - type of charge assoc w/ mol: NO_CHARGES, DEL_RE, HUCKEL, USER_CHARGES, ETC
+    *    [status_bits - SYBYL status bits. NEVER set by user.
+    *    [mol_comment]] - user comment
+    * Only uses lines 1, 2, 5
+    */
+   var molHeadLoc = fileText.search('@<TRIPOS>MOLECULE');
+   if(molHeadLoc != -1){
+      var atmHeadLoc = fileText.search('@<TRIPOS>ATOM');
+      var infoLines;
+      
+      if (atmHeadLoc!=-1 && atmHeadLoc>molHeadLoc) { //atom tag after molecule tag
+         //'@<TRIPOS>MOLECULE' is 17 chars long + 1 for newline char
+         //Read from end of this to start of next section-1 so that newline char not included
+         infoLines = fileText.substring(molHeadLoc+18,atmHeadLoc-1).split(/\r?\n/);
+         console.log(infoLines);
+         //get info from infoLines
+      }
+      else if (atmHeadLoc!=-1 && atmHeadLoc<molHeadLoc) { //atom tag before molecule tag
+         //'@<TRIPOS>ATOM' is 13 chars long + 1 for newline char
+         //Read from end of this to start of next section
+         infoLines = fileText.substring(atmHeadLoc+14,molHeadLoc-1).split(/\r?\n/);
+         console.log(infoLines);
+         //get info from infoLines
+      }
+      
+      ligInfo.zincId = infoLines[0];
+      ligInfo.name = infoLines[4];
+      
+      //Remove leading spaces, replace any multi-spaces with a single space, then split at spaces
+      var numLineInfo = infoLines[1].replace(/^\s+/,"").replace(/\s+/g," ").split(" ");
+      ligInfo.numAtoms = parseInt(numLineInfo[0]); //Make String -> int
+      ligInfo.numBonds = parseInt(numLineInfo[1]);
+      
+      //Add info to the actual obj in the main program
+      var ligObj = matchZincInCollection(ligInfo.zincId, dataObjs);
+      ligObj.zincId = ligInfo.zincId;
+      ligObj.numAtoms = ligInfo.numAtoms;
+      ligObj.numBonds = ligInfo.numBonds;
+      ligObj.techName = ligInfo.name;
    }
 }
 
