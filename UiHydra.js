@@ -405,10 +405,6 @@ hydraUI = webix.ui({
                compInfo,
                {}
             ]},
-            //For debugging: Textarea to display contents of files
-            /*{header:"File Value", collapsed:false, body:
-               {view:"textarea", id:"file_dump", maxWidth:300}
-            },*/
             {
                view:"button", id:"toCompDet", type:"next", label:'To Compound Details',
                click:function(){$$('comp_det').show();}
@@ -475,9 +471,44 @@ $$("hydraUploader").attachEvent("onAfterFileAdd", function(){
    $$('hydraUploader').files.remove(fID);
 });
 
-/*$$('uploadTable').attachEvent('onAfterSelect', function(id){
-   $$('comp_table').select(id);
-});*/
+$$('uploadTable').attachEvent('onAfterSelect', function(id){
+   
+   var selectedObj = $$("comp_table").getSelectedItem();
+   
+   $$('vendors').clearAll();
+   
+   /* Search databases on item selection and add relevant info.
+    * Only searches if the item has a ZINC and nothing from a DB has been added yet.
+    * Do this here so giant DBs only searched as needed & so info in comp_det is
+    * updated if the user changes the selection while still looking at comp_det.
+    * Note that vendors and molWeight are each set to ' ' if there is no match
+    * for the object on the first run so the slow search code only runs once/obj.
+    */
+   if (selectedObj && selectedObj.zincId) {
+      if (!selectedObj.vendors) {
+         console.log('adding vendors');
+         var vendorDb = readTextFile("codebase/3_purch.xls");
+         /*var vendInfo = ['compound', 'vendor', 'website', 'email',
+                         'phone', 'fax', 'orderurl'];
+         var vendInfoIndices = [0,1,3,4,5,6,7];*/
+         
+         selectedObj.vendors = searchData(selectedObj.zincId,vendorDb);
+         
+         //addPropFromDB(vendorDb,vendInfo,vendInfoIndices,selectedObj);
+      }
+      $$('vendors').define('data',selectedObj.vendors);
+      
+      if(!selectedObj.molWeight){
+         console.log('adding props');
+         var propDb = readTextFile("codebase/47_prop.xls");
+         var props = ['molWeight', 'logP', 'HBD', 'HBA', 'SMILES'];
+         var propsIndices = [1,2,5,6,10];
+         
+         addPropFromDB(propDb,props,propsIndices,selectedObj);
+      }
+   }             
+   //$$('comp_table').select(id);
+});
 
 $$('comp_table').attachEvent('onAfterSelect', function(id){
    $$('uploadTable').select(id);
@@ -485,6 +516,7 @@ $$('comp_table').attachEvent('onAfterSelect', function(id){
 
 // binds selected compound detail panel with selection in compounds list, default selection is first
 $$('comp_info').bind($$('comp_table'));
+$$('comp_prop').bind($$('uploadTable'));
 $$("comp_table").select(1);
 
 $$('uploadTable').data.sync(dataObjs);
