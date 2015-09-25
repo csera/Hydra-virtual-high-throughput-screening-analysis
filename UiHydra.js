@@ -217,6 +217,96 @@ var ligandControls =
       ]}
    };
 
+var compList =
+   {header:"Compound List", height:300, collapsed:false, body:
+      {
+         id:"comp_table",
+         view:"datatable",
+         select:true, 
+         columns:[
+            // { id:"idNum", header:"ID", width:50}, 
+            { id:"zincId", header:"Compound Name", width:230}, //The ZINC ID
+            { id:'numAtoms', hidden:true},
+            { id:'numBonds', hidden:true},
+            { id:'techName', hidden:true}
+         ], 
+         data:'',
+         minWidth:250,
+         
+         on:{
+            onBeforeLoad:function(){
+               this.showOverlay("Loading...");
+            },
+            onAfterLoad:function(){
+               this.hideOverlay();
+            },
+            //Selecting an item here selects the corresponding in uploadTable
+            onAfterSelect:function(id){ //id is an optional param to take
+               $$('comp_table').select(id);
+            },
+         },
+      }
+   };
+
+var compInfo =
+   {header:"Compound Information", collapsed:false, body:
+      {view:"form", id:"comp_info", maxWidth:250, rows:[
+         { view:"text",name:"zincId",label:"ZINC ID", readonly:true },
+         { view:"text",name:"techName",label:"Name", readonly:true },
+         { view:"text",name:"numAtoms",label:"# Atoms", readonly:true },
+         { view:"text",name:"numBonds",label:"# Bonds", readonly:true },
+      ]}
+   };
+
+var compProp =
+   {header:'Compound Properties', collapsed:false, body:
+      //SMILES, 2D struct, logPH, #H bond donors, #H bond acceptors, mol weight
+      {view:'form', id:'comp_prop', maxWidth:250, rows:[
+         {view:'textarea', name:'SMILES', label:'SMILES',
+            labelPosition:'top', readonly:true},
+         {view:'text', name:'logP', label:'LogP',
+            labelPosition:'top', readonly:true},
+         { view:"text", name:"HBD", label:"H-bond Donors", 
+            labelPosition:'top', readonly:true },
+         { view:"text", name:"HBA", label:"H-bond Acceptors", 
+            labelPosition:'top', readonly:true },
+         { view:'text', name:'molWeight', label:'Molecular Weight', 
+            labelPosition:'top', readonly:true}
+      ]}
+   };
+
+var vendList =
+   {header:"Vendor List", collapsed:false, body:
+      { view:"datatable", 
+      id:"vendors",
+      select:true, 
+      multiselect:true,
+      drag:true, 
+      maxWidth:250, 
+      columns:[
+         {  template: "#compound# #vendor#",
+            header:"Zinc ID : Vendor", 
+            width:250, 
+            height: 350,
+            editor:"text",
+         }
+      ],
+      data:'',
+      on:{
+         onItemDblClick:function(id){
+            alert(
+               "Compound: " + this.getItem(id).compound + "\n" +
+               "Website: " + this.getItem(id).website + "\n" +
+               "Phone #: " + this.getItem(id).phone + "\n" +
+               "Fax #: " + this.getItem(id).fax + "\n" +
+               "Contact Email: " + this.getItem(id).email + "\n" +
+               "Directly order: " + this.getItem(id).orderurl + "\n"
+            );
+         }
+      }
+      },
+   };
+
 hydraUI = webix.ui({
    container:"masterarea",
    type:"line",
@@ -302,97 +392,45 @@ hydraUI = webix.ui({
       },
       
       // right column has compounds list, details are accordioned components
-      {view:"scrollview",scroll:"y",body:
-      {
-         multi:true, view:"accordion", type:"line", 
-         rows:[
-         
-         // Compound list showing cat,name from uploaded file
-         {header:"Compound List", height:300, collapsed:false, body:
-            {
-               id:"comp_table",
-               view:"datatable",
-               select:true, 
-               columns:[
-                  // { id:"idNum", header:"ID", width:50}, 
-                  { id:"zincId", header:"Compound Name", width:230}, //The ZINC ID
-                  { id:'numAtoms', hidden:true},
-                  { id:'numBonds', hidden:true},
-                  { id:'techName', hidden:true}
-               ], 
-               data:'',
-               minWidth:250,
-               
-               on:{
-                  onBeforeLoad:function(){
-                     this.showOverlay("Loading...");
-                  },
-                  onAfterLoad:function(){
-                     this.hideOverlay();
-                  },
-                  //Selecting an item here selects the corresponding in uploadTable
-                  onAfterSelect:function(id){ //id is an optional param to take
-                     $$('comp_table').select(id);
-                  },
-               },
-            }
-         },
-         {view:"resizer"},
-         // Details of selected compound not shown in list, such as scores
-         {rows:[
-            {header:"Compound Details", collapsed:false, body:
-               {view:"form", id:"comp_det", maxWidth:250, rows:[
-                  { view:"text",name:"zincId",label:"ZINC ID", readonly:true },
-                  { view:"text",name:"techName",label:"Name", readonly:true },
-                  { view:"text",name:"numAtoms",label:"# Atoms", readonly:true },
-                  { view:"text",name:"numBonds",label:"# Bonds", readonly:true },
-               ]}
-            },
+      {id:'rightCol', cells:[
+         {id:'compsOverview', view:"scrollview", scroll:"y", body:{
+            multi:true, view:"accordion", type:"line", 
+            rows:[
             
-            {view:"resizer",
-               container:"vendorDiv",
-               scroll: 'xy',
-               id:"all_vendors"},
-               
+            // Compound list showing cat,name from uploaded file
+            compList,
+            {view:"resizer"},
             // Details of selected compound not shown in list, such as scores
-            {header:"Vendor List", collapsed:false, body:
-               { view:"datatable", 
-               id:"vendors",
-               select:true, 
-               multiselect:true,
-               drag:true, 
-               maxWidth:250, 
-               columns:[
-                  {  template: "#compound# #vendor#",
-                     header:"Zinc ID : Vendor", 
-                     width:250, 
-                     height: 350,
-                     editor:"text",
-                  }
-               ],
-               data:'',
-               on:{
-                  onItemDblClick:function(id){
-                     alert(
-                        "Compound: " + this.getItem(id).compound + "\n" +
-                        "Website: " + this.getItem(id).website + "\n" +
-                        "Phone #: " + this.getItem(id).phone + "\n" +
-                        "Fax #: " + this.getItem(id).fax + "\n" +
-                        "Contact Email: " + this.getItem(id).email + "\n" +
-                        "Directly order: " + this.getItem(id).orderurl + "\n"
-                     );
-                  }
-               }
+            {rows:[ //in this seemingly redundant row to prevent weird resizing bug
+               compInfo,
+               {}
+            ]},
+            //For debugging: Textarea to display contents of files
+            /*{header:"File Value", collapsed:false, body:
+               {view:"textarea", id:"file_dump", maxWidth:300}
+            },*/
+            {
+               view:"button", id:"toCompDet", type:"next", label:'To Compound Details',
+               click:function(){$$('comp_det').show();}
+            }
+         ]}},
+         {id:'comp_det', view:"scrollview", scroll:"y", body:{
+            multi:true, view:"accordion", type:"line", 
+            rows:[
+            
+               compProp,
+               
+               {view:"resizer"},
+                  
+               // Details of selected compound not shown in list, such as scores
+               vendList,
+               {
+                  id:"toF&G",  view:"button", type:"prev", label:'To Compounds Overview',
+                  click:function(){$$('compsOverview').show();}
                },
-            },
-         ]},
-         //For debugging: Textarea to display contents of files
-         /*{header:"File Value", collapsed:false, body:
-            {view:"textarea", id:"file_dump", maxWidth:300}
-         },*/
+         ]}}
+      ]}
          
-      ]},	
-      },
       ]}
    ]
 });
@@ -446,7 +484,7 @@ $$('comp_table').attachEvent('onAfterSelect', function(id){
 });
 
 // binds selected compound detail panel with selection in compounds list, default selection is first
-$$('comp_det').bind($$('comp_table'));
+$$('comp_info').bind($$('comp_table'));
 $$("comp_table").select(1);
 
 $$('uploadTable').data.sync(dataObjs);
