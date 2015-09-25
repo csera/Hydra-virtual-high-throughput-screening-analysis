@@ -284,8 +284,8 @@ var vendList =
       drag:true, 
       maxWidth:250, 
       columns:[
-         {  template: "#compound# #vendor#",
-            header:"Zinc ID : Vendor", 
+         {  template: "#vendor#",
+            header:"Vendor", 
             width:250, 
             height: 350,
             editor:"text",
