@@ -58,9 +58,11 @@ function parseForZinc(fileText, objId){
 function parseLigInfo(fileText){
    var ligInfo = new Object();
    
-   var zincRmkLoc = fileText.search("REMARK   11\nREMARK   11 ZINC")
+   //use String.indexOf() for string args bc faster
+   //String.search() converts to regex -> slower
+   var zincRmkLoc = fileText.indexOf("REMARK   11\nREMARK   11 ZINC")
       //fileText.search(/REMARK   11 ZINC/i);
-   var endInfoLoc = fileText.search("REMARK   20 END LIGAND INFO");
+   var endInfoLoc = fileText.indexOf("REMARK   20 END LIGAND INFO");
    
    //For custom format from file processor   
    /* Format used by file processor:
