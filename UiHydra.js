@@ -231,7 +231,7 @@ var compList =
             { id:'techName', hidden:true}
          ], 
          data:'',
-         minWidth:250,
+         maxWidth:250,
          
          on:{
             onBeforeLoad:function(){

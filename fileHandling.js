@@ -277,6 +277,7 @@ function clear_fxn(){
    }
    
    $$('uploadTable').remove($$('uploadTable').getSelectedId(true));
+   $$('comp_table').refresh();
 }
 
 /* Checks if the passed coordinates are defined.
