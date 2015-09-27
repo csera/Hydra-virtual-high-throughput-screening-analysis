@@ -250,7 +250,7 @@ var compList =
 
 var compInfo =
    {header:"Compound Information", collapsed:false, body:
-      {view:"form", id:"comp_info", maxWidth:250, rows:[
+      {view:"form", id:"comp_info", maxWidth:250, elements:[
          { view:"text",name:"zincId",label:"ZINC ID", readonly:true },
          { view:"text",name:"techName",label:"Name", readonly:true },
          { view:"text",name:"numAtoms",label:"# Atoms", readonly:true },
@@ -261,17 +261,18 @@ var compInfo =
 var compProp =
    {header:'Compound Properties', collapsed:false, body:
       //SMILES, 2D struct, logPH, #H bond donors, #H bond acceptors, mol weight
-      {view:'form', id:'comp_prop', maxWidth:250, rows:[
-         {view:'textarea', name:'SMILES', label:'SMILES',
-            labelPosition:'top', readonly:true},
-         {view:'text', name:'logP', label:'LogP',
-            labelPosition:'top', readonly:true},
-         { view:"text", name:"HBD", label:"H-bond Donors", 
+      {id:'comp_prop', view:'form', maxWidth:250, rows:[
+         {view:'text', name:'logP', label:'LogP:', readonly:true},
+         { view:'text', name:'molWeight', label:'Mol Mass:', readonly:true},
+         { view:"text", name:"HBD", label:"H-bond Donors:",
             labelPosition:'top', readonly:true },
-         { view:"text", name:"HBA", label:"H-bond Acceptors", 
+         { view:"text", name:"HBA", label:"H-bond Acceptors:", 
             labelPosition:'top', readonly:true },
-         { view:'text', name:'molWeight', label:'Molecular Weight', 
-            labelPosition:'top', readonly:true}
+         {view:'textarea', name:'SMILES', label:'SMILES:',
+            labelPosition:'top', readonly:true},
+         {id:'viewStruct', view:'button', value:'View structure',
+            click:"$$('structPopup').show()"
+         }
       ]}
    };
 
@@ -306,6 +307,41 @@ var vendList =
       }
       },
    };
+
+structPopup = webix.ui({
+   id:'structPopup',
+   view:'window',
+   modal:true, //Freezes rest of interface when open
+   height:300, width:350,
+   position:'center',
+   head:{
+      view:"toolbar", margin:-4, cols:[
+         {view:"label", label: 'View Compound Structure'},
+         { view:"icon", icon:"times-circle",
+            click:"$$('structPopup').hide();"}
+      ]
+   },
+   body:{
+      id:'structPopup_body',
+   },
+   on:{
+      onBeforeShow:function(){
+         console.log('showing');
+         newContent = {
+            id:'structPopup_body',
+            template:function(){
+               var zId = $$('comp_table').getSelectedItem().zincId;
+               zId = zId.replace(/zinc/i,''); //Case-insensitive remval of "ZINC"
+               
+               return 'ZINC'+zId+'\n'+
+                  '<img src =http://zinc.docking.org/img/sub/'+zId+'.gif>';
+            }
+         };
+         
+         webix.ui(newContent, $$('structPopup'), $$('structPopup_body'));
+      }
+   }
+});
 
 hydraUI = webix.ui({
    container:"masterarea",
