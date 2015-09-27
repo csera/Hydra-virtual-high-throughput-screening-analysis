@@ -262,15 +262,17 @@ var compProp =
    {header:'Compound Properties', collapsed:false, body:
       //SMILES, 2D struct, logPH, #H bond donors, #H bond acceptors, mol weight
       {id:'comp_prop', view:'form', maxWidth:250, rows:[
-         {view:'text', name:'logP', label:'LogP:', readonly:true},
-         { view:'text', name:'molWeight', label:'Mol Mass:', readonly:true},
-         { view:"text", name:"HBD", label:"H-bond Donors:",
-            labelPosition:'top', readonly:true },
-         { view:"text", name:"HBA", label:"H-bond Acceptors:", 
-            labelPosition:'top', readonly:true },
-         {view:'textarea', name:'SMILES', label:'SMILES:',
+         { view:'text', name:'logP', width:215, label:'LogP:',
+            labelWidth:130, readonly:true },
+         { view:'text', name:'molWeight', width:215, label:'Mol Mass:',
+            labelWidth:130, readonly:true },
+         { view:"text", name:"HBD", width:215, label:"H-bond Donors:",
+            labelWidth:130, readonly:true },
+         { view:"text", name:"HBA", width:215, label:"H-bond Acceptors:", 
+            labelWidth:130, readonly:true },
+         { view:'textarea', name:'SMILES', label:'SMILES:',
             labelPosition:'top', readonly:true},
-         {id:'viewStruct', view:'button', value:'View structure',
+         { id:'viewStruct', view:'button', value:'View structure',
             click:"$$('structPopup').show()"
          }
       ]}
