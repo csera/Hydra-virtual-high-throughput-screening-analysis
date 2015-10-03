@@ -12,42 +12,6 @@ function parseForZinc(fileText, objId){
    
    //Set the ZINC ID as a new property for the object
    dataObjs.getItem(objId).zincId = zId;
-   
-   /*fileText = readerResult;
-   //Get rid of duplicate adding bug by only processing from @<TRIPOS>MOLECULE to @<TRIPOS>ATOM
-   //if it is a .mol2
-   var regex = /ZINC/gi; //All (g, global) case-insensitive (i) matches for "ZINC"
-   var result, indices = [];
-   var zincIds = [],
-   bonds = [],
-   numRes = [];
-   while ( (result = regex.exec(fileText)) )
-   {
-       indices.push(result.index);
-       // 12 is the length of ZINC id
-       zincs = fileText.slice(result.index, result.index + 12);
-       zincIds.push(zincs);
-   }
-   //lines = fileText.split("\n");
-   console.log("indices: "+indices);*/
-   
-   /*for(var x=0; x<indices.length;x++)
-   {
-      infoLine = lines.slice(indices[x] + 3, indices[x] + 4);
-      console.log("infoLine: "+infoLine);
-      stringLine = infoLine.toString();
-      a1 = stringLine.search("\ ")+1;
-      a2 = stringLine.slice(a1, stringLine.length).search("\ ")+1;
-      atomInfo = stringLine.slice(a1, a2);
-      bondString = stringLine.slice(a2+1, stringLine.length);
-      b1 = bondString.search("\ ");
-      bondInfo = bondString.slice(0,b1);
-      bonds.push(bondInfo);
-      numRes.push(atomInfo);
-   }*/
-   //compound_fxn(zincIds, nAtmArr, nBndArr); 17 Sept '15 commented out
-   // compListDetails(zincIds, numRes, bonds);
-   //console.log(numRes, bonds);
 }
 
 /* Searches file text for information from a .mol2 file and adds it to

@@ -554,13 +554,8 @@ $$('uploadTable').attachEvent('onAfterSelect', function(id){
       if (!selectedObj.vendors) {
          console.log('adding vendors');
          var vendorDb = readTextFile("codebase/47_purch.xls");
-         /*var vendInfo = ['compound', 'vendor', 'website', 'email',
-                         'phone', 'fax', 'orderurl'];
-         var vendInfoIndices = [0,1,3,4,5,6,7];*/
          
          selectedObj.vendors = searchData(selectedObj.zincId,vendorDb);
-         
-         //addPropFromDB(vendorDb,vendInfo,vendInfoIndices,selectedObj);
       }
       $$('vendors').define('data',selectedObj.vendors);
       
@@ -572,8 +567,7 @@ $$('uploadTable').attachEvent('onAfterSelect', function(id){
          
          addPropFromDB(propDb,props,propsIndices,selectedObj);
       }
-   }             
-   //$$('comp_table').select(id);
+   }
 });
 
 $$('comp_table').attachEvent('onAfterSelect', function(id){

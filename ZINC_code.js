@@ -85,36 +85,3 @@ function addPropFromDB(db, propNames, propIndices, obj){
    }
    console.log(obj);
 }
-
-/* Gets information for compound list and details
- * @author smatlock & csera
- */
-function zincRequests(zIdArr, nAtmArr, nBndArr){
-   //basicInfo = new Array();
-   for(var i=0; i<zIdArr.length; i++){
-      dataObjs.add({zincId: zIdArr[i], numAtoms: nAtmArr[i], numBonds: nBndArr[i], techName:''});
-      //json_head = {zincId: zIdArr[i], numAtoms: nAtmArr[i], numBonds: nBndArr[i], techName:''};
-      //basicInfo.push(json_head);
-      //console.log(json_head);
-   }
-   //return basicInfo;
-};
-
-/* Change this fxn to update what's displayed in the viewers and compound list coordinates
- * @author smatlock & csera
- */
-function compound_fxn(zIdArr, nAtmArr, nBndArr){
-   var smallDatabase = readTextFile("codebase/47_purch.xls"),
-   compInfo = zincRequests(zIdArr, nAtmArr, nBndArr),
-   dummy_comp = searchData(zIdArr, smallDatabase);
-   
-   // loads uploaded.js to overwrite compound_data var with uploaded data
-   //delete compound_data;
-   // refreshes the compounds list id comp_table via .refresh()
-   $$("comp_table").define("data",compInfo);
-   $$("comp_table").refresh();
-   //$$("comp_det").define("data",compInfo);
-   //$$("comp_det").refresh();
-   $$("vendors").define("data",dummy_comp);
-   $$("vendors").refresh();
-}

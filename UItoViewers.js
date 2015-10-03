@@ -8,7 +8,7 @@ function transferMouseEvent(coords, e) {
          loopCoords = x+','+y;
          
          //If coords are not the viewer being manipulated, transfer the event
-         if(loopCoords != coords)//$$('activeCoord').getValue())
+         if(loopCoords != coords)
          {
             var evt = $$('viewer'+x+','+y).getWindow().document.createEvent("MouseEvents");
             
@@ -21,32 +21,9 @@ function transferMouseEvent(coords, e) {
       }
    }
 }
-/*$(document).ready(function(){
-   console.log('BLARRRRRRRRRRRRRRRRRRRGGGGGGGGGGGG');
-   $$('viewer1,1').getWindow().contents().on('click dblclick mousedown mousemove mouseup', function(e){
-      console.log('evt')
-      for(x=1; x<=$$('grid_dim').getValues().numCol; x++) {
-         for(y=1; y<=$$('grid_dim').getValues().numRow; y++)
-         {
-            transferMouseEvent(x,y,e)
-         }
-      }
-   });
-});
-function transferMouseEvent(x, y, e){
-   var evt = $$('viewer'+x+','+y).getWindow().document.createEvent("MouseEvents");
-   
-   evt.initMouseEvent(e.type, true, true, window, e.detail, e.screenX, e.screenY,
-                      e.clientX, e.clientY, e.ctrlKey, e.altKey, e.shiftKey,
-                      e.metaKey, e.button, null);
-   
-   $$('viewer'+x+','+y).getWindow().$("#gldiv>canvas")[0].dispatchEvent(evt);
-}*/
 
 //Called by iframe if it is clicked, passed coordinates & view settings
 function setActiveViewer(activeCoord, viewSettings) {
-   //webix.message('You clicked viewer'+coordinates);
-   //console.log($$('viewer'+coordinates).getWindow().getViewMode());
    //because JS is stupid and can't work with multidimensional arrays
    //The data contained in these arrays is the actual value of the selected item's id
    var structType = viewSettings[0];

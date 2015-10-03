@@ -89,7 +89,6 @@ function addFilteredFiles(){
                '\nREMARK   11 '+lines[1]+
                '\n'+ligObj.ligData;
          }
-         //$$('file_dump').setValue(ligObj.ligData);
       }
       else{ //.mol2 style info not found so just add ZINC ID
          //Case-insensitive search of the file for the ZINC ID

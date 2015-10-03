@@ -42,13 +42,6 @@ popupProcessor = webix.ui({
                      value:'[*].[ligID].final_pose.[*].pdb',
                      label:'Ligand file nomenclature',
                      labelPosition:'top'},
-                  /*{id:'ZINCloc', view:'richselect', label:'Ligand ZINC ID location',
-                  labelPosition:'top', options:[
-                     {id:'zInFinalPdb', value:'In final conformation .pdb'},
-                     {id:'zInInitPdb', value:'In initial .pdb'},
-                     {id:'zInMol2', value:'In initial .mol2'},
-                     {id:'zNon', value:'No ZINC ID prsent'}
-                  ]},*/
                   {id:'zincNom', view:'text',
                      value:'[*].[ligID].mol2',
                      label:'Metadata containing file nomenclature (optional)',
@@ -66,8 +59,6 @@ popupProcessor = webix.ui({
                {
                   id:"toPO", view:"button", type:"next", label:'Next',
                   click:function(){
-                     //webix.extend($$('processIn'), webix.OverlayBox);
-                     //$$('processIn').showOverlay("HIYA, this is an OverlayBox");
                      addFilteredFiles();
                      
                      $$('processOut').show();
