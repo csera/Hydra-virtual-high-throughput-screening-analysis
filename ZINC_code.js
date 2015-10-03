@@ -104,7 +104,7 @@ function zincRequests(zIdArr, nAtmArr, nBndArr){
  * @author smatlock & csera
  */
 function compound_fxn(zIdArr, nAtmArr, nBndArr){
-   var smallDatabase = readTextFile("codebase/3_purch.xls"),
+   var smallDatabase = readTextFile("codebase/47_purch.xls"),
    compInfo = zincRequests(zIdArr, nAtmArr, nBndArr),
    dummy_comp = searchData(zIdArr, smallDatabase);
    

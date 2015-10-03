@@ -525,7 +525,7 @@ $$('uploadTable').attachEvent('onAfterSelect', function(id){
    if (selectedObj && selectedObj.zincId) {
       if (!selectedObj.vendors) {
          console.log('adding vendors');
-         var vendorDb = readTextFile("codebase/3_purch.xls");
+         var vendorDb = readTextFile("codebase/47_purch.xls");
          /*var vendInfo = ['compound', 'vendor', 'website', 'email',
                          'phone', 'fax', 'orderurl'];
          var vendInfoIndices = [0,1,3,4,5,6,7];*/
