@@ -296,15 +296,9 @@ var vendList =
       ],
       data:'',
       on:{
-         onItemDblClick:function(id){
-            alert(
-               "Compound: " + this.getItem(id).compound + "\n" +
-               "Website: " + this.getItem(id).website + "\n" +
-               "Phone #: " + this.getItem(id).phone + "\n" +
-               "Fax #: " + this.getItem(id).fax + "\n" +
-               "Contact Email: " + this.getItem(id).email + "\n" +
-               "Directly order: " + this.getItem(id).orderurl + "\n"
-            );
+         onItemDblClick:function(){
+            //Can get item id for this event but not needed here
+            $$('vendorPopup').show();
          }
       }
       },
@@ -328,7 +322,6 @@ structPopup = webix.ui({
    },
    on:{
       onBeforeShow:function(){
-         console.log('showing');
          newContent = {
             id:'structPopup_body',
             template:function(){
@@ -341,6 +334,41 @@ structPopup = webix.ui({
          };
          
          webix.ui(newContent, $$('structPopup'), $$('structPopup_body'));
+      }
+   }
+});
+
+vendorPopup = webix.ui({
+   id:'vendorPopup',
+   view:'window',
+   modal:true, //Freezes rest of interface when open
+   height:300, width:350,
+   position:'center',
+   head:{
+      view:"toolbar", margin:-4, cols:[
+         {view:"label", label: 'View Vendor Details'},
+         { view:"icon", icon:"times-circle",
+            click:"$$('vendorPopup').hide();"}
+      ]
+   },
+   body:{
+      id:'vendorPopup_body',
+   },
+   on:{
+      onBeforeShow:function(){
+         newContent = {
+            id:'vendorPopup_body',
+            view:'textarea',
+            readonly:true,
+            value:"Compound: " + $$('vendors').getSelectedItem().compound + "\n" +
+               "Website: " + $$('vendors').getSelectedItem().website + "\n" +
+               "Phone #: " + $$('vendors').getSelectedItem().phone + "\n" +
+               "Fax #: " + $$('vendors').getSelectedItem().fax + "\n" +
+               "Contact Email: " + $$('vendors').getSelectedItem().email + "\n" +
+               "Directly order: " + $$('vendors').getSelectedItem().orderurl + "\n"
+         };
+         
+         webix.ui(newContent, $$('vendorPopup'), $$('vendorPopup_body'));
       }
    }
 });
