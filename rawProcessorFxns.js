@@ -1,4 +1,4 @@
-// calls filtereRaw and adds the results to the respective tables in the UI
+//Calls filtereRaw and adds the results to the respective tables in the UI
 //Lists are sorted at end
 function addFilteredFiles(){
    //Make an array of relevant file objects using the filter function
@@ -208,7 +208,7 @@ function filterRaw(filter, table){
    return filteredFiles;
 }
 
-/* Combines files for output to main Hydra interface.
+/* Combines files in the two "output" tables for output to main Hydra interface.
  * No input params required, and no output is returned.
  */
 function combineFiles () {
@@ -262,7 +262,7 @@ function clear_fxn(){
    $$('procInTable').remove($$('procInTable').getSelectedId(true));
 }
 
-//Closes processorWin and clears/resets all components
+//Closes processorWin (the file processor) and clears/resets all components
 function closeProcessor(){
    $$('processorWin').hide();
    

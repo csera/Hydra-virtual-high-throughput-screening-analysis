@@ -23,7 +23,6 @@
 <body>
 	
 	<script type="text/javascript">
-	//var coords; //For use with the mouse-event passing
 	
 	var glviewer = null;
 	var labels = [];
@@ -39,9 +38,6 @@
 	//Group of functions for working with the Hydra parent code
 	function setGridCoordinates(gc) {
          $('#webixID').html(gc); //Pass gc in to show between the div tags
-			
-			//Split the passed coordinates text into coords[0] = x; coords[1] = y
-			//coords = gc.split(',');
 			
          console.log("Coordinates set: "+gc);
    }
@@ -63,6 +59,12 @@
 		surfOpacity[1] = 100;
 	}
 	
+	/* Gives the viewer's display settings in a single array
+	 * @returns {String[]} viewSettings Array of display settings for
+	 * 							[0] the structure type
+	 * 							[1] the surface type
+	 * 							[2] the surface opacity
+	 */
 	function getViewMode() {
 		var viewSettings = []; //Pseudo 2D array for exporting viewer's settings
 			viewSettings[0] = structType;
@@ -72,6 +74,10 @@
 		return viewSettings;
 	}
 	
+	/* Sends file passed from parent Hydra UI to the contained 3Dmol.js instance
+	 * @param {String} fData The compound's parsed file data/contents
+	 * @param {String} fType The uploaded file's format type (eg .pdb)
+	 */
 	function fileToViewer(fData, fType){
 		var title = '';
 		
@@ -139,7 +145,14 @@
 
 		}
 	};
-
+	
+	/* jQuery initialization.
+	 * Basic initialization commands for 3Dmol and Hydra specific events:
+	 * 	$(':root').mousedown() - Sets this to the "active viewer" in Hydra
+	 * 	$(':root').contents().on("click dblclick mousedown mousemove mouseup") -
+	 * 		Transfers local mouse events to other viewers if Hydra is set to
+	 * 		synchronize the viewer model transformations (motions)
+	 */
 	$(document).ready(function() {
 		
 		moldata = data = $("#moldata_pdb_large").val();
@@ -171,13 +184,13 @@
 		});
 		$(':root').contents().on("click dblclick mousedown mousemove mouseup",
 		function (e) {
-			//console.log('act: '+window.parent.$$('activeCoord').getValue());
-			//console.log('this: '+$('#webixID').text());
 			if(window.parent.$$('syncMove').getValue()==1 &&
 				window.parent.$$('activeCoord').getValue()==$('#webixID').text())
 			{
 				console.log($('#webixID').text());
-				//Haha, as might have been expected, this causes a buffer overflow.  Whoops >.>
+				/*Haha, as might have been expected, poses a buffer overflow
+				 *problem, depending on transferMouseEvent(). Whoops >.>
+				 */
 				window.parent.transferMouseEvent($('#webixID').text(),e);
 			}
       });
@@ -192,42 +205,6 @@
 	
 	<input type="button" value="Recenter" class='text' style='font-size:80%; position:absolute;
 		right:10px; bottom:10px;' onclick="glviewer.zoomTo();"></input>
-	
-	<!--<hr style="margin: 0;">
-	
-	<br>
-	<input type="button" value="Stick"
-		onclick="glviewer.setStyle({},{stick:{}}); glviewer.render();"></input>
-	<input type="button" value="Line"
-		onclick="glviewer.setStyle({},{line:{}}); glviewer.render();"></input>
-	<input type="button" value="Cross"
-		onclick="glviewer.setStyle({},{cross:{linewidth:5}}); glviewer.render();"></input>
-	<input type="button" value="Sphere"
-		onclick="glviewer.setStyle({},{sphere:{}}); glviewer.render();"></input>
-	<input type="button" value="Cartoon"
-		onclick="glviewer.setStyle({hetflag:false},{cartoon:{color: 'spectrum'}});
-		glviewer.render();"></input>
-	<input type="button" value="Label alpha C's"
-		onclick="addLabels(glviewer); glviewer.render();"></input>
-	<br>
-	<input type="button" value="Surface1"
-		onclick="surf1 = glviewer.addSurface($3Dmol.SurfaceType.VDW, {}, {hetflag:false,chain:'A'},
-														 {hetflag:false,chain:'A'});"></input>
-	<input type="button" value="Surface2"
-		onclick="surf2 = glviewer.addSurface($3Dmol.SurfaceType.MS, {map:{prop:'partialCharge',
-			scheme:new $3Dmol.Gradient.RWB(-.6,.6)}, opacity:0.85}, {chain:'B'},{chain:'B'});"></input>
-	<input type="button" value="RM Surface1"
-		onclick="glviewer.removeSurface(surf1), lastsurfstyle = 1;"></input>
-	<input type="button" value="RM Surface2"
-		onclick="glviewer.removeSurface(surf2), lastsurfstyle = 1;"></input>
-	<br>
-	<input type="button" value="Recenter" onclick="glviewer.zoomTo();"></input>
-	<br>
-	<input id="pdbid" value="1UBQ" size=4>
-	<button
-		onclick="glviewer.clear(); m = $3Dmol.download('pdb:' + $('#pdbid').val(), glviewer,
-		{doAssembly:true});">Download</button>
-	-->
 
 	<textarea style="display: none;" id="moldata_pdb_large">
 		HEADER    COMPLEX (ONCOGENE PROTEIN/PEPTIDE)      30-SEP-96   1YCR              

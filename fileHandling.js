@@ -1,6 +1,8 @@
-/* Gets ZINC IDs from file; adds to array zincIds
+/* Gets ZINC ID from file data and adds it as a new property to an object
+ * in the datatable
  * @author Shelby Matlock & csera
- * @param {FileReader.result} Parsed file contents to scan
+ * @param {String} fileText Parsed file contents to scan
+ * @param {String} objId ID of the object in the relevant datatable to modify
  */
 function parseForZinc(fileText, objId){
    //Note: THIS WILL NOT WORK WITH FILES CONTAINING MULTIPLE ZINC IDs
@@ -207,6 +209,9 @@ function load_fxn(){
    }
 }
 
+/* Gets the file type from the full file name
+ * @param {String} fID ID of the item/file in uploadTable
+ */
 function getFileType(fID) {
    var fName = $$('uploadTable').getItem(fID).fileName;
    var fType;

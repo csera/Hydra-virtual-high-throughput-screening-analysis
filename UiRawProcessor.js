@@ -1,5 +1,6 @@
 webix.ready(function(){
 
+//Webix UI for the file processor
 popupProcessor = webix.ui({
    id:'processorWin', view:'window', position:'center', move:true,
    modal:true, //Freezes main interface until this window is dismissed
@@ -121,6 +122,9 @@ popupProcessor = webix.ui({
    }
 });
 
+/* Called on file upload via upload button.
+ * Takes file name and data and adds it to the "input table" of  the file processor
+ */
 $$("procUploader").attachEvent("onAfterFileAdd",function(){
    
    var reader = new FileReader();

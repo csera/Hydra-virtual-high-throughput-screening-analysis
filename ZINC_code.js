@@ -29,7 +29,6 @@ function readTextFile(file){
  * @returns {Object[]} vendorCollect Array of objects containing vendor info
  */
 function searchData(zincArr, searchableData){
-   // validation = searchableData.indexOf("ZINC");
    vendorCollect = new Array();
    all = searchableData.split("\n")
    

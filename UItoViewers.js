@@ -1,4 +1,9 @@
-//Mouse transfer code adapted from code from Kohei Ichikawa
+//Slightly buggy: Requires initial click and release before it will activate
+/* Transfers/passes mouse events done on one viewer to all other viewers.
+ * Adapted from code by Kohei Ichikawa
+ * @param {String} coord "Coordinates" in [x],[y] format for the view to manipulate
+ * @param {Event} e The mouse event to transfer
+ */
 function transferMouseEvent(coords, e) {
    var loopCoords;
    
@@ -22,7 +27,16 @@ function transferMouseEvent(coords, e) {
    }
 }
 
-//Called by iframe if it is clicked, passed coordinates & view settings
+/* Called by iframe if it is clicked or a file is sent to the viewer.
+ * Updates the "active viewer" being referenced, changes Hydra's model display
+ * settings to the current viewer's settings, and changes the viewer's frame
+ * style to "activeViewer"
+ * @param {String} activeCoord
+ * @param {String[]} viewSettings Array containing the viewer's display settings.
+ *                               [0] is structure type
+ *                               [1] is surface type
+ *                               [2] is surface opacity
+ */
 function setActiveViewer(activeCoord, viewSettings) {
    //because JS is stupid and can't work with multidimensional arrays
    //The data contained in these arrays is the actual value of the selected item's id
@@ -53,6 +67,14 @@ function setActiveViewer(activeCoord, viewSettings) {
    $$('lSurfType').setValue(surfType[1]);
 }
 
+/* Sets the properties for the molecular surface to display
+ * @param {String} coord "Coordinates" in [x],[y] format for the view to manipulate
+ * @param {Object} listObj Webix drop-down menu object for structure type selection
+ * @param {int} surfIndex Index of the relevant surface in the viewer's array of
+ *                         molecular surfaces.
+ *                         0 -> main compound.
+ *                         1 -> ligand denoted by HetAtm tag in the .pdb
+ */
 function setStruct(coord, listObj, structIndex){
    var glviewer = $$('viewer'+coord).getWindow().glviewer;
    var itemID = listObj.getValue();
@@ -82,13 +104,21 @@ function setStruct(coord, listObj, structIndex){
    $$('viewer'+coord).getWindow().structType[structIndex] = itemVal;
 }
 
+/* Sets the properties for the molecular surface to display
+ * @param {String} coord "Coordinates" in [x],[y] format for the view to manipulate
+ * @param {String} surfID The type of surface to show. Options:
+ *                         surfVDW, surfMS, surfSAS, surfSES
+ *                         See 3Dmol.js documentation for details
+ * @param {int} surfIndex Index of the relevant surface in the viewer's array of
+ *                         molecular surfaces.
+ *                         0 -> main compound.
+ *                         1 -> ligand denoted by HetAtm tag in the .pdb
+ * @param {int} opacSet A number from 0-100 denoting the surface's % opacity
+ */
 function setSurface(coord, surfID, surfIndex, opacSet){
    var iViewer = $$('viewer'+coord).getWindow();
    var glviewer = iViewer.glviewer;
    var setHetAtms;
-   //var surfID = listObj.getValue(); //ID of of the surface type list item
-   //var surfType = listObj.getPopup().getList().getItem(itemID).value;
-      //What the list item actually displays
    
    if (surfIndex == 0)
       setHetAtms = false;
@@ -131,5 +161,6 @@ function setSurface(coord, surfID, surfIndex, opacSet){
    }
    
    iViewer.surfType[surfIndex] = surfID; //surfType stores ID of applied surf type
-   iViewer.surfOpacity[surfIndex] = opacSet*100; //surfOpacity stores values of the slider
+   iViewer.surfOpacity[surfIndex] = opacSet*100;
+      //surfOpacity stores values of the slider
 }

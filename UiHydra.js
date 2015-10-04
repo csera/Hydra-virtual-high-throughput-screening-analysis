@@ -118,13 +118,9 @@ var mainControls =
             }
          },
          
-         //if time permits: add color setting option for surface and for actual model
+         //Add color setting option for surface and for actual model?
          //https://github.com/dkoes/3Dmol.js/issues/88 &
          //https://github.com/dkoes/3Dmol.js/commit/2973a4eebf4ee32972fc13a19d9c0188a89e9efc
-         /*{id:'mSurfColor', view:'richselect', label:'Surface Color', options:[
-            {id:'mSElement', value:'By Element'},
-            {id:'mSCharge', value:'By Charge'}
-         ]},*/
          
          {id:'mSurfOpacity', view:'slider', level:'Opacity', label:'Opacity',
             value:'50', min:0, max:100,
@@ -466,8 +462,8 @@ hydraUI = webix.ui({
             // Compound list showing cat,name from uploaded file
             compList,
             {view:"resizer"},
-            // Details of selected compound not shown in list, such as scores
-            {rows:[ //in this seemingly redundant row to prevent weird resizing bug
+            
+            {rows:[ //Put in this seemingly redundant row to prevent weird resizing bug
                compInfo,
                {}
             ]},
@@ -483,8 +479,7 @@ hydraUI = webix.ui({
                compProp,
                
                {view:"resizer"},
-                  
-               // Details of selected compound not shown in list, such as scores
+               
                vendList,
                {
                   id:"toF&G",  view:"button", type:"prev", label:'To Compounds Overview',
@@ -537,6 +532,10 @@ $$("hydraUploader").attachEvent("onAfterFileAdd", function(){
    $$('hydraUploader').files.remove(fID);
 });
 
+/* Upon item selection in uploadTable, searches packaged databases by ZINC ID
+ * for purchase/vendor and chemical property information about the compound.
+ * Event natively passes the selected item's Webix ID
+ */
 $$('uploadTable').attachEvent('onAfterSelect', function(id){
    
    var selectedObj = $$("comp_table").getSelectedItem();
@@ -570,6 +569,10 @@ $$('uploadTable').attachEvent('onAfterSelect', function(id){
    }
 });
 
+/* Selects the corresponding item in uploadTable when an item is selected in
+ * comp_table
+ * Event natively passes the selected item's Webix ID
+ */
 $$('comp_table').attachEvent('onAfterSelect', function(id){
    $$('uploadTable').select(id);
 });
@@ -577,8 +580,8 @@ $$('comp_table').attachEvent('onAfterSelect', function(id){
 // binds selected compound detail panel with selection in compounds list, default selection is first
 $$('comp_info').bind($$('comp_table'));
 $$('comp_prop').bind($$('uploadTable'));
-$$("comp_table").select(1);
 
+//Syncs the objects in these datatables to the main data object collection (dataObjs)
 $$('uploadTable').data.sync(dataObjs);
 $$('comp_table').data.sync(dataObjs);
 
