@@ -238,7 +238,7 @@ var compList =
             },
             //Selecting an item here selects the corresponding in uploadTable
             onAfterSelect:function(id){ //id is an optional param to take
-               $$('comp_table').select(id);
+               $$('uploadTable').select(id);
             },
          },
       }
@@ -567,14 +567,6 @@ $$('uploadTable').attachEvent('onAfterSelect', function(id){
          addPropFromDB(propDb,props,propsIndices,selectedObj);
       }
    }
-});
-
-/* Selects the corresponding item in uploadTable when an item is selected in
- * comp_table
- * Event natively passes the selected item's Webix ID
- */
-$$('comp_table').attachEvent('onAfterSelect', function(id){
-   $$('uploadTable').select(id);
 });
 
 // binds selected compound detail panel with selection in compounds list, default selection is first
