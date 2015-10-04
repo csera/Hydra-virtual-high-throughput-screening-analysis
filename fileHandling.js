@@ -245,8 +245,8 @@ function clear_fxn(){
       }
    }
    
-   $$('uploadTable').remove($$('uploadTable').getSelectedId(true));
-   $$('comp_table').refresh();
+   $$('uploadTable').remove(IDs);
+   $$('comp_table').remove(IDs);
 }
 
 /* Checks if the passed coordinates are defined.
