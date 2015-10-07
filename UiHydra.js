@@ -268,7 +268,7 @@ var compProp =
             labelWidth:130, readonly:true },
          { view:'textarea', name:'SMILES', label:'SMILES:',
             labelPosition:'top', readonly:true},
-         { id:'viewStruct', view:'button', value:'View structure',
+         { id:'viewStruct', view:'button', value:'View 2D structure',
             click:"$$('structPopup').show()"
          }
       ]}
