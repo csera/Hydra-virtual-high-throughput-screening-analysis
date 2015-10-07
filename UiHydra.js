@@ -401,7 +401,7 @@ hydraUI = webix.ui({
                   ]},
                   
                   {
-                     view:"button", id:"toVC", type:"next", label:'To Compound Controls',
+                     id:"toVC", view:"button", type:"next", label:'To Compound Controls',
                      click:function(){$$('compoundCtrls').show();}
                   }
                ]}
@@ -423,7 +423,8 @@ hydraUI = webix.ui({
                      }
                   ]},
                   {
-                     id:"toF&G",  view:"button", type:"prev", label:'To File & Grid Controls',
+                     //Webix 3.0.1 doesn't like '&' in id's for buttons it seems
+                     id:"toFG",  view:"button", type:"prev", label:'To File & Grid Controls',
                      click:function(){$$('files&grid').show();}
                   },
                ]}
