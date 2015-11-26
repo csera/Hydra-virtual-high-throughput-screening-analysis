@@ -357,6 +357,7 @@ vendorPopup = webix.ui({
             view:'textarea',
             readonly:true,
             value:"Compound: " + $$('vendors').getSelectedItem().compound + "\n" +
+               "Item reference code: "+ $$('vendors').getSelectedItem().code + "\n" +
                "Website: " + $$('vendors').getSelectedItem().website + "\n" +
                "Phone #: " + $$('vendors').getSelectedItem().phone + "\n" +
                "Fax #: " + $$('vendors').getSelectedItem().fax + "\n" +
@@ -554,8 +555,8 @@ $$('uploadTable').attachEvent('onAfterSelect', function(id){
       if (!selectedObj.vendors) {
          console.log('adding vendors');
          
-         var vendInfo = ['vendor', 'website', 'email', 'phone', 'fax', 'orderurl'];
-         var vendInfoIndices = [1,3,4,5,6,7]; //0 indexed col num of desired props in db spreadsheet
+         var vendInfo = ['vendor', 'code', 'website', 'email', 'phone', 'fax', 'orderurl'];
+         var vendInfoIndices = [1,2,3,4,5,6,7]; //0 indexed col num of desired props in db spreadsheet
          
          addVendFromDb(vendInfo,vendInfoIndices,selectedObj);
       }
