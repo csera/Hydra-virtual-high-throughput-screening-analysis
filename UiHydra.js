@@ -553,19 +553,21 @@ $$('uploadTable').attachEvent('onAfterSelect', function(id){
    if (selectedObj && selectedObj.zincId) {
       if (!selectedObj.vendors) {
          console.log('adding vendors');
-         var vendorDb = readTextFile("codebase/47_purch.xls");
          
-         selectedObj.vendors = searchData(selectedObj.zincId,vendorDb);
+         var vendInfo = ['vendor', 'website', 'email', 'phone', 'fax', 'orderurl'];
+         var vendInfoIndices = [1,3,4,5,6,7]; //0 indexed col num of desired props in db spreadsheet
+         
+         addVendFromDb(vendInfo,vendInfoIndices,selectedObj);
       }
       $$('vendors').define('data',selectedObj.vendors);
       
       if(!selectedObj.molWeight){
          console.log('adding props');
-         var propDb = readTextFile("codebase/47_prop.xls");
-         var props = ['molWeight', 'logP', 'HBD', 'HBA', 'SMILES'];
-         var propsIndices = [1,2,5,6,10];
          
-         addPropFromDB(propDb,props,propsIndices,selectedObj);
+         var props = ['molWeight', 'logP', 'HBD', 'HBA', 'SMILES'];
+         var propsIndices = [1,2,5,6,10]; //0 indexed col num of desired props in db spreadsheet
+         
+         addPropFromDb(props,propsIndices,selectedObj);
       }
    }
 });
