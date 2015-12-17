@@ -13518,7 +13518,7 @@ $3Dmol.download = function(query, viewer, options, callback) {
 
 /**
  * Load a local file passed by the container into the viewer.
- * @author: csera
+ * @author csera
  * @function $3Dmol.loadFile
  * @param {string} The parsed data read from the file
  * @param {string} Detected file type
