@@ -220,7 +220,6 @@ var compList =
          view:"datatable",
          select:true, 
          columns:[
-            // { id:"idNum", header:"ID", width:50}, 
             { id:"zincId", header:"Compound Name", width:230}, //The ZINC ID
             { id:'numAtoms', hidden:true},
             { id:'numBonds', hidden:true},
@@ -356,7 +355,7 @@ vendorPopup = webix.ui({
             id:'vendorPopup_body',
             view:'textarea',
             readonly:true,
-            value:"Compound: " + $$('vendors').getSelectedItem().compound + "\n" +
+            value:"Compound: " + $$('comp_table').getSelectedItem().zincId + "\n" +
                "Item reference code: "+ $$('vendors').getSelectedItem().code + "\n" +
                "Website: " + $$('vendors').getSelectedItem().website + "\n" +
                "Phone #: " + $$('vendors').getSelectedItem().phone + "\n" +
