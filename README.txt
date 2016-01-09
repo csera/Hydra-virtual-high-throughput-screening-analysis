@@ -18,6 +18,12 @@ This README will be updated as development proceeds.
 - Surface representations
   - Van der Waals, molecular, solvent accessible, solvent excluded
 - Fetching of compound information for compounds in the ZINC database
+  - Uses "boutique shards" subset (subset #47)
+  - Vendor list creation
+  - Displayed properties:
+      - "Compounds Overview": ZINC ID, IUPAC name, number of atoms, number of bonds
+      - "Compound Details": LogP, molecular mass, nubmer of H-bond donors, number of
+        H-bond acceptors, SMILES code, 2D bond-line representation, vendor list
 - Processing of raw molecular docking simulation output
   - Filters uploaded files based upon a user-inputted filename template
   - Concatenates ligand and protein files then places them in the main workspace
@@ -66,11 +72,11 @@ This README will be updated as development proceeds.
 
 == System requirements ==
 
-Hydra has been developed largely on Firefox and Chrome, but it should also work
+Hydra has been developed primarily on Firefox and Chrome, but it should also work
 in most other browsers as long as they support WebGL and Javascript.
 It also works well on mobile devices and has been tested on Chrome for Android.
 
-While it may still work, Internet Explorer is unfortunately not supported at this time.
+While it may still work, Internet Explorer is not supported at this time.
 
 
 == Troubleshooting ==
