@@ -72,9 +72,9 @@ var gridControls =
    };
 
 //Note that the following compound controls pass in an index into each display-setting fxn
-//0 = main compound; 1 = ligand
+//0 = target protein; 1 = ligand
 var mainControls =
-   {header:"Main Compound", maxWidth:250, collapsed:false, body:
+   {header:"Target Protein", maxWidth:250, collapsed:false, body:
       {rows:[
          //Hidden element which keeps track of the active viewer. Avoids making global var
          {id:'activeCoord', view:'text', hidden:true},

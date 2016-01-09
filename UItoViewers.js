@@ -72,7 +72,7 @@ function setActiveViewer(activeCoord, viewSettings) {
  * @param {Object} listObj Webix drop-down menu object for structure type selection
  * @param {int} surfIndex Index of the relevant surface in the viewer's array of
  *                         molecular surfaces.
- *                         0 -> main compound.
+ *                         0 -> target protein.
  *                         1 -> ligand denoted by HetAtm tag in the .pdb
  */
 function setStruct(coord, listObj, structIndex){
@@ -111,7 +111,7 @@ function setStruct(coord, listObj, structIndex){
  *                         See 3Dmol.js documentation for details
  * @param {int} surfIndex Index of the relevant surface in the viewer's array of
  *                         molecular surfaces.
- *                         0 -> main compound.
+ *                         0 -> target protein.
  *                         1 -> ligand denoted by HetAtm tag in the .pdb
  * @param {int} opacSet A number from 0-100 denoting the surface's % opacity
  */
