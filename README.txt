@@ -1,14 +1,12 @@
 ﻿Hydra is a browser-based tool for high-throughput screening still under development.
-It is an open-source project which makes use of 3Dmol.js for displaying molecules
-and the Webix code library for general GUI generation and functionality.
+It is an open-source project which utilizes 3Dmol.js for molecular modeling and the
+Webix JavaScript library for the general GUI.
 
 If you wish to keep your data private, don't worry: your files are not uploaded
 to any servers. "Uploading" files only places them in the browser's local instance.
 
-This README will be updated as development proceeds.
-
 -------------------------------------------------------------
-== Completed Features ==
+== **Features** ==
 - Display of up to 18 different compounds at once in an adjustable grid of 3Dmol
   instances
   - Grid may be resized in terms of number of viewers and in terms of raw pixels
@@ -34,7 +32,7 @@ This README will be updated as development proceeds.
     - .mol2, .pdb, .cif, .sdf
 
 
-== Basic Usage ==
+== **How to** ==
 - Upload files into Hydra via the "Upload Files" button
   - Multiple files may be uploaded at once via shift+click and ctrl+click
   - Uploaded files will appear in the file list
@@ -70,7 +68,7 @@ This README will be updated as development proceeds.
     however, not be cleared and will still be there if the processor is reopened.
 
 
-== System requirements ==
+== **System requirements** ==
 
 Hydra has been developed primarily on Firefox and Chrome, but it should also work
 in most other browsers as long as they support WebGL and Javascript.
@@ -79,7 +77,7 @@ It also works well on mobile devices and has been tested on Chrome for Android.
 While it may still work, Internet Explorer is not supported at this time.
 
 
-== Troubleshooting ==
+== **Troubleshooting** ==
 
 Why won't my file load?
 If you are running Hydra locally, please note that some browsers (eg Google Chrome)
