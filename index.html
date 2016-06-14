@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Hydra-virtual-high-throughput-screening-analysis by csera</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Hydra-virtual-high-throughput-screening-analysis</h1>
+        <h2>A high-throughput virtual screening data visualization and analysis tool</h2>
+        <a href="https://github.com/csera/Hydra-virtual-high-throughput-screening-analysis" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <p>Hydra is a browser-based tool for high-throughput screening still under development.
+It is an open-source project which makes use of 3Dmol.js for displaying molecules
+and the Webix code library for general GUI generation and functionality.</p>
+
+<p>If you wish to keep your data private, don't worry: your files are not uploaded
+to any servers. "Uploading" files only places them in the browser's local instance.</p>
+
+<p>This README will be updated as development proceeds.</p>
+
+<hr>
+
+<p>== Completed Features ==</p>
+
+<ul>
+<li>Display of up to 18 different compounds at once in an adjustable grid of 3Dmol
+instances
+
+<ul>
+<li>Grid may be resized in terms of number of viewers and in terms of raw pixels</li>
+<li>Exact number of simultaneous instances may fluctuate.  It is usually ~16</li>
+</ul>
+</li>
+<li>Structural representations
+
+<ul>
+<li>Cartoon, line (double/triple bonds supported), ball &amp; stick, cross, sphere</li>
+</ul>
+</li>
+<li>Surface representations
+
+<ul>
+<li>Van der Waals, molecular, solvent accessible, solvent excluded</li>
+</ul>
+</li>
+<li>Fetching of compound information for compounds in the ZINC database
+
+<ul>
+<li>Uses "boutique shards" subset (subset #47)</li>
+<li>Vendor list creation</li>
+<li>Displayed properties:
+
+<ul>
+<li>"Compounds Overview": ZINC ID, IUPAC name, number of atoms, number of bonds</li>
+<li>"Compound Details": LogP, molecular mass, nubmer of H-bond donors, number of
+H-bond acceptors, SMILES code, 2D bond-line representation, vendor list</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Processing of raw molecular docking simulation output
+  - Filters uploaded files based upon a user-inputted filename template
+  - Concatenates ligand and protein files then places them in the main workspace</p></li>
+<li><p>Please see 3Dmol.js's documentation for more extensive detail on the following:
+  - Tranlations, rotation, and zoom with mouse and touchscreen
+  - Non-exhaustive list of supported filetypes:
+  - .mol2, .pdb, .cif, .sdf</p></li>
+</ul>
+
+<p>== Basic Usage ==</p>
+
+<ul>
+<li>Upload files into Hydra via the "Upload Files" button
+
+<ul>
+<li>Multiple files may be uploaded at once via shift+click and ctrl+click</li>
+<li>Uploaded files will appear in the file list</li>
+</ul>
+</li>
+<li>Items in the file list may be reorded via drag and drop
+
+<ul>
+<li>Multiple items can be selected at once and removed via "Delete Data"</li>
+</ul>
+</li>
+<li>Uploaded files may be sent to a viewer by entering the corresponding viewer's
+coordinates in the "Col" and "Row" fields via double-click
+
+<ul>
+<li>The viewer coordinates are displayed in Col,Row format in the bottom left of
+each 3Dmol instance</li>
+<li>Once all desired coordinates have been set, press the "Upload Data" button</li>
+<li>Please note that changing the coordinates of an already loaded molecule will 
+clear it from its original viewer and reload it with the default display 
+settings in the new viewer</li>
+</ul>
+</li>
+<li>The number of viewers in the grid may be resized via the "Grid Controls" pane</li>
+<li>To change the display settings of a given compound, navigate to the "Viewer Controls"
+panel which can be accessed via the multiview tab-bar on the bottom left
+
+<ul>
+<li>Select a viewer to make "active" by simply clicking on it. It will be highlighted
+whilst "active"</li>
+<li>Display mode may only be altered for the ACTIVE VIEWER</li>
+<li>New display modes will be applied soon as a change in the settings is detected</li>
+</ul>
+</li>
+<li>Using the file processor
+  - The file processor GUI will open upon pressing the labeled button
+  - All files outputted by a simulation may be uploaded via "Upload Raw Files"
+  - Follow the in-program instructions for filtering relevant files
+    - NOTE: if no filters are applied, nothing will happen
+  - Confirm that all relevant files are present and that all other files have been 
+    screened out then press "OK"
+    - Return and modify the filters if not
+  - The ligand files will have "ATOM" tags replaced with "HETATM" then be appended
+    to the protein files
+  - Pressing "OK" will clear the file processor tables, add them to the main Hydra
+    interface, and close (technically, hide) the processor popup.  Filters will,
+    however, not be cleared and will still be there if the processor is reopened.</li>
+</ul>
+
+<p>== System requirements ==</p>
+
+<p>Hydra has been developed primarily on Firefox and Chrome, but it should also work
+in most other browsers as long as they support WebGL and Javascript.
+It also works well on mobile devices and has been tested on Chrome for Android.</p>
+
+<p>While it may still work, Internet Explorer is not supported at this time.</p>
+
+<p>== Troubleshooting ==</p>
+
+<p>Why won't my file load?
+If you are running Hydra locally, please note that some browsers (eg Google Chrome)
+have strict security settings which block uploading local files to a locally run 
+instance as a Same-Origin-Policy violation (null source and null destination).
+Please run this on a server or from a different browser (eg Firefox)
+If you are running into a different problem, please verify that your filetype is 
+supported by 3Dmol.js.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/csera/Hydra-virtual-high-throughput-screening-analysis/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/csera/Hydra-virtual-high-throughput-screening-analysis/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/csera/Hydra-virtual-high-throughput-screening-analysis"></a> is maintained by <a href="https://github.com/csera">csera</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
