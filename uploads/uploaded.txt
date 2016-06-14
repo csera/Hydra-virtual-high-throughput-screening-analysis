@@ -1,4 +1,0 @@
-[
-	{ id:1, pdb:"N/A", compname:"SSH1_charged", category:"D", res:145},
-	{ id:2, pdb:"N/A", compname:"lig_charged", category: "L", res:10},
-];
