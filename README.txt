@@ -5,6 +5,12 @@ Webix JavaScript library for the general GUI.
 If you wish to keep your data private, don't worry: your files are not uploaded
 to any servers. "Uploading" files only places them in the browser's local instance.
 
+Original publication:
+Curtis Sera, Shelby Matlock, Yasuhiro Watashiba, Kohei Ichikawa, Jason H. Haga, 
+Hydra: A High-throughput Virtual Screening Data Visualization and Analysis Tool, 
+Procedia Computer Science, Volume 80, 2016, Pages 2312-2316, ISSN 1877-0509.
+<a href="http://dx.doi.org/10.1016/j.procs.2016.05.427">Article link</a>.
+
 -------------------------------------------------------------
 == **Features** ==
 - Display of up to 18 different compounds at once in an adjustable grid of 3Dmol
