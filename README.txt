@@ -9,7 +9,7 @@ Original publication:
 Curtis Sera, Shelby Matlock, Yasuhiro Watashiba, Kohei Ichikawa, Jason H. Haga, 
 Hydra: A High-throughput Virtual Screening Data Visualization and Analysis Tool, 
 Procedia Computer Science, Volume 80, 2016, Pages 2312-2316, ISSN 1877-0509.
-<a href="http://dx.doi.org/10.1016/j.procs.2016.05.427">Article link</a>.
+http://dx.doi.org/10.1016/j.procs.2016.05.427
 
 -------------------------------------------------------------
 == **Features** ==
